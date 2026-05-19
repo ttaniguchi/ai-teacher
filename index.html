@@ -10,82 +10,114 @@
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="index.html">技術質問ノート</a>
-      <nav class="nav" aria-label="主要ナビゲーション">
-        <a href="ai-development/mcp-server.html">MCP</a>
-        <a href="ai-development/rag.html">RAG</a>
-        <a href="ai-development/ai-agent.html">AI Agent</a>
-        <a href="programming/package-managers.html">Package Managers</a>
-        <a href="programming/react-router-vs-tanstack-router.html">React Routers</a>
-        <a href="programming/nodejs-versions.html">Node.js</a>
-        <a href="programming/temporal-api.html">Temporal</a>
-        <a href="programming/spa-ssg-ssr.html">SPA/SSG/SSR</a>
+      <nav class="nav" aria-label="カテゴリ">
+        <a href="#ai">AI関連</a>
+        <a href="#app-development">アプリ開発</a>
+        <a href="#javascript">JavaScript基盤</a>
       </nav>
     </div>
   </header>
 
   <main class="page">
     <section class="hero">
-      <p class="eyebrow">AI開発 / 知識整理</p>
+      <p class="eyebrow">知識整理</p>
       <h1>技術的な疑問を、あとから読み返せる形で残す</h1>
-      <p class="lead">このサイトは、質問への回答をHTMLとして蓄積していくためのインデックスです。現在はAIを介した開発、RAG、AI Agentの基礎をまとめています。</p>
+      <p class="lead">このサイトは、質問への回答をHTMLとして蓄積していくためのインデックスです。記事が増えても探しやすいよう、AI関連、アプリ開発、JavaScript基盤に分けて整理しています。</p>
     </section>
 
-    <section class="article-list" aria-label="記事一覧">
-      <a class="article-card" href="ai-development/mcp-server.html">
-        <p class="eyebrow">AIを介した開発</p>
-        <h2>MCPはなぜサーバーを立ち上げる必要があるのか</h2>
-        <p>LLMアプリと外部ツールをつなぐ境界として、MCPサーバーが担う役割を整理します。</p>
-        <span class="meta">図解あり</span>
+    <section class="category-nav" aria-label="カテゴリ一覧">
+      <a href="#ai">
+        <strong>AI関連</strong>
+        <span>MCP、RAG、AI Agent</span>
       </a>
+      <a href="#app-development">
+        <strong>アプリ開発</strong>
+        <span>Reactのルーティングと配信方式</span>
+      </a>
+      <a href="#javascript">
+        <strong>JavaScript基盤</strong>
+        <span>Node.js、Temporal、パッケージ管理</span>
+      </a>
+    </section>
 
-      <a class="article-card" href="ai-development/rag.html">
-        <p class="eyebrow">知識拡張</p>
-        <h2>RAGによる知識の拡充はどのように行われるのか</h2>
-        <p>検索、埋め込み、チャンク、プロンプト注入の流れと、今後変わりそうな点を説明します。</p>
-        <span class="meta">図解あり</span>
-      </a>
+    <section class="category-section" id="ai" aria-labelledby="ai-heading">
+      <div class="category-heading">
+        <p class="eyebrow">AI関連</p>
+        <h2 id="ai-heading">LLMアプリと知識拡張</h2>
+      </div>
+      <div class="article-list">
+        <a class="article-card" href="ai-development/mcp-server.html">
+          <p class="eyebrow">AIを介した開発</p>
+          <h3>MCPはなぜサーバーを立ち上げる必要があるのか</h3>
+          <p>LLMアプリと外部ツールをつなぐ境界として、MCPサーバーが担う役割を整理します。</p>
+          <span class="meta">図解あり</span>
+        </a>
 
-      <a class="article-card" href="ai-development/ai-agent.html">
-        <p class="eyebrow">AI Agent</p>
-        <h2>AI Agentの定義と通常のLLMチャットとの違い</h2>
-        <p>Agentを「目標に向けて判断と実行を反復するシステム」として捉え、チャットとの差分を整理します。</p>
-        <span class="meta">図解あり</span>
-      </a>
+        <a class="article-card" href="ai-development/rag.html">
+          <p class="eyebrow">知識拡張</p>
+          <h3>RAGによる知識の拡充はどのように行われるのか</h3>
+          <p>検索、埋め込み、チャンク、プロンプト注入の流れと、今後変わりそうな点を説明します。</p>
+          <span class="meta">図解あり</span>
+        </a>
 
-      <a class="article-card" href="programming/package-managers.html">
-        <p class="eyebrow">JavaScript / パッケージ管理</p>
-        <h2>npm、Yarn、pnpmなどの違いと優位性</h2>
-        <p>主要なパッケージ管理ツールの特徴、使い分け、新しい候補としてのBunやDenoを整理します。</p>
-        <span class="meta">比較表あり</span>
-      </a>
+        <a class="article-card" href="ai-development/ai-agent.html">
+          <p class="eyebrow">AI Agent</p>
+          <h3>AI Agentの定義と通常のLLMチャットとの違い</h3>
+          <p>Agentを「目標に向けて判断と実行を反復するシステム」として捉え、チャットとの差分を整理します。</p>
+          <span class="meta">図解あり</span>
+        </a>
+      </div>
+    </section>
 
-      <a class="article-card" href="programming/react-router-vs-tanstack-router.html">
-        <p class="eyebrow">React / ルーティング</p>
-        <h2>React RouterとTanStack Routerの違い</h2>
-        <p>フレームワーク性、データ取得、型安全性、ストア管理の観点から2つのルーターを比較します。</p>
-        <span class="meta">比較表あり</span>
-      </a>
+    <section class="category-section" id="app-development" aria-labelledby="app-development-heading">
+      <div class="category-heading">
+        <p class="eyebrow">アプリ開発</p>
+        <h2 id="app-development-heading">Reactアプリの設計選択</h2>
+      </div>
+      <div class="article-list">
+        <a class="article-card" href="programming/react-router-vs-tanstack-router.html">
+          <p class="eyebrow">React / ルーティング</p>
+          <h3>React RouterとTanStack Routerの違い</h3>
+          <p>フレームワーク性、データ取得、型安全性、ストア管理の観点から2つのルーターを比較します。</p>
+          <span class="meta">比較表あり</span>
+        </a>
 
-      <a class="article-card" href="programming/nodejs-versions.html">
-        <p class="eyebrow">Node.js / バージョン管理</p>
-        <h2>Node.jsの現在の安定版と前後バージョンの違い</h2>
-        <p>Node.js 24 LTSを中心に、Node.js 22 LTSとの差分とNode.js 26 Currentの優位性を整理します。</p>
-        <span class="meta">公式情報確認済み</span>
-      </a>
+        <a class="article-card" href="programming/spa-ssg-ssr.html">
+          <p class="eyebrow">React / ホスティング方式</p>
+          <h3>Reactで実現できるホスティング方式と長短</h3>
+          <p>SPA、SSG、ISR、SSR、サーバーレス、Edge、API分離などの配信パターンを比較します。</p>
+          <span class="meta">一覧表あり</span>
+        </a>
+      </div>
+    </section>
 
-      <a class="article-card" href="programming/temporal-api.html">
-        <p class="eyebrow">JavaScript / 日付時刻</p>
-        <h2>Temporal APIとは何か</h2>
-        <p>Node.js 26で標準有効化されたTemporal APIについて、Dateとの違い、主要な型、使いどころを整理します。</p>
-        <span class="meta">別ページ解説</span>
-      </a>
+    <section class="category-section" id="javascript" aria-labelledby="javascript-heading">
+      <div class="category-heading">
+        <p class="eyebrow">JavaScript基盤</p>
+        <h2 id="javascript-heading">実行環境とツールチェーン</h2>
+      </div>
+      <div class="article-list">
+        <a class="article-card" href="programming/package-managers.html">
+          <p class="eyebrow">JavaScript / パッケージ管理</p>
+          <h3>npm、Yarn、pnpmなどの違いと優位性</h3>
+          <p>主要なパッケージ管理ツールの特徴、使い分け、新しい候補としてのBunやDenoを整理します。</p>
+          <span class="meta">比較表あり</span>
+        </a>
 
-      <a class="article-card" href="programming/spa-ssg-ssr.html">
-        <p class="eyebrow">React / ホスティング方式</p>
-        <h2>Reactで実現できるホスティング方式と長短</h2>
-        <p>SPA、SSG、ISR、SSR、サーバーレス、Edge、API分離などの配信パターンを比較します。</p>
-        <span class="meta">一覧表あり</span>
-      </a>
+        <a class="article-card" href="programming/nodejs-versions.html">
+          <p class="eyebrow">Node.js / バージョン管理</p>
+          <h3>Node.jsの現在の安定版と前後バージョンの違い</h3>
+          <p>Node.js 24 LTSを中心に、Node.js 22 LTSとの差分とNode.js 26 Currentの優位性を整理します。</p>
+          <span class="meta">公式情報確認済み</span>
+        </a>
+
+        <a class="article-card" href="programming/temporal-api.html">
+          <p class="eyebrow">JavaScript / 日付時刻</p>
+          <h3>Temporal APIとは何か</h3>
+          <p>Node.js 26で標準有効化されたTemporal APIについて、Dateとの違い、主要な型、使いどころを整理します。</p>
+          <span class="meta">別ページ解説</span>
+        </a>
+      </div>
     </section>
   </main>
 

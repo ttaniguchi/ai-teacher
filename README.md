@@ -27,9 +27,9 @@
 
 ### 公開 URL（想定）
 
-リポジトリ `ttaniguchi/teacher` をルートから公開する場合:
+リポジトリ `ttaniguchi/ai-teacher` をルートから公開する場合:
 
-**https://ttaniguchi.github.io/teacher/**
+**https://ttaniguchi.github.io/ai-teacher/**
 
 （`main` ブランチへ push し、GitHub の Pages 設定が有効になったあとにアクセスできます）
 
