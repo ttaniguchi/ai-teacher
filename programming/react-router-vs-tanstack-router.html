@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>React RouterとTanStack Routerの違い | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+      <nav class="nav" aria-label="主要ナビゲーション">
+        <a href="../ai-development/mcp-server.html">MCP</a>
+        <a href="../ai-development/rag.html">RAG</a>
+        <a href="../ai-development/ai-agent.html">AI Agent</a>
+        <a href="package-managers.html">Package Managers</a>
+        <a href="react-router-vs-tanstack-router.html">React Routers</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">React / ルーティング</p>
+        <h1>React RouterとTanStack Routerの違い</h1>
+        <p class="lead">React RouterはReact界隈の標準に近い実績あるルーターで、現在はFramework Modeによってフルスタック寄りの性質も持ちます。TanStack Routerは型安全性、検索パラメータ、TanStack Queryとの連携を強く意識した新しいルーターで、TanStack Startによってフレームワークとしても使えます。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. React RouterとTanStack Routerの一番大きな違いは？</dt>
+          <dd>A. React Routerは実績、互換性、フレームワークとしての安定感が強みです。TanStack Routerはルート、パラメータ、検索条件、リンク、ローダーを型安全に扱う体験が強みです。</dd>
+          <dt>Q. どちらもフレームワークとして使えるのか？</dt>
+          <dd>A. はい。React RouterはFramework Modeで、TanStack RouterはTanStack Startと組み合わせることで、ルーティングだけでなくデータ取得、SSR、フォーム処理、サーバー処理まで含む構成を取れます。</dd>
+          <dt>Q. ストア管理の観点ではどちらが優れている？</dt>
+          <dd>A. サーバーデータとURL状態を中心に考えるならTanStack Router + TanStack Queryの組み合わせが強力です。一方、React Routerはloader/action/revalidationにより、ルーター自身がネットワーク関連状態をかなり吸収してくれます。</dd>
+        </dl>
+      </section>
+
+      <h2>比較の前提</h2>
+      <p>React RouterもTanStack Routerも、単にURLとコンポーネントを対応させるだけのライブラリではなくなっています。データ取得、保留状態、エラー境界、フォーム送信、SSR、ファイルベースルーティングなどを扱えるため、アプリケーション設計全体に影響します。</p>
+      <p>ただし、思想は異なります。React RouterはRemix由来のWeb標準寄りのデータフローをReact Router本体に取り込み、TanStack Routerは型安全なルート定義とTanStackエコシステムとの組み合わせで開発体験を作ります。</p>
+
+      <h2>React Routerの特徴</h2>
+      <p>React Routerは長く使われてきたReactの代表的ルーティングライブラリです。現在はDeclarative、Data、Frameworkという複数のモードがあり、必要に応じて単純なSPAルーターからフルスタック寄りのフレームワークまで段階的に使えます。</p>
+      <h3>優れている点</h3>
+      <ul>
+        <li>採用実績が多く、学習資料や既存コードが豊富。</li>
+        <li>Framework Modeでは、ファイルベースのルート、loader、action、pending UI、SSRなどを扱える。</li>
+        <li>loader/action/useFetcher/revalidationにより、送信後の再読み込みや遷移中状態をルーターが管理しやすい。</li>
+        <li>Remixの考え方を引き継いでおり、フォーム送信やHTTP的なデータフローに強い。</li>
+      </ul>
+      <h3>注意点</h3>
+      <p>型安全性は改善されていますが、TanStack Routerほど「ルートツリー全体から型が推論され、リンクや検索パラメータまで強く型付けされる」体験ではありません。また、サーバーデータのキャッシュやクライアント側の細かな状態管理は、用途によって外部ライブラリと組み合わせることになります。</p>
+
+      <h2>TanStack Routerの特徴</h2>
+      <p>TanStack Routerは、型安全性を中心に設計されたルーターです。ルートパラメータ、検索パラメータ、loader、router context、Linkなどが型推論され、TypeScript前提の開発で強い安心感があります。</p>
+      <h3>優れている点</h3>
+      <ul>
+        <li>ルート定義から型が推論され、リンクやパラメータのミスを早期に見つけやすい。</li>
+        <li>検索パラメータを状態として扱うAPIが強く、フィルタ、ページング、ソートのようなURL状態に向いている。</li>
+        <li>loader、preload、キャッシュ、stale-while-revalidate的なデータ取得体験を持つ。</li>
+        <li>TanStack Query、TanStack Store、TanStack Formなどの関連ライブラリと思想が揃っている。</li>
+      </ul>
+      <h3>注意点</h3>
+      <p>React Routerより新しく、チームやプロジェクトによっては学習コストがあります。型安全な設計は強力ですが、そのぶんルート定義やジェネレータ、ファイルベースルーティングの考え方を理解する必要があります。</p>
+
+      <h2>フレームワークとしての違い</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">観点</th>
+            <th scope="col">React Router</th>
+            <th scope="col">TanStack Router / Start</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>フレームワーク化</td>
+            <td>Framework ModeでViteプラグイン、route module、SSRなどを扱う。</td>
+            <td>TanStack StartがTanStack Routerを土台にフルスタック機能を提供する。</td>
+          </tr>
+          <tr>
+            <td>データ取得</td>
+            <td>loader、clientLoader、action、useFetcher、revalidationが中心。</td>
+            <td>loader、preload、router cacheに加え、TanStack Queryとの連携が自然。</td>
+          </tr>
+          <tr>
+            <td>型安全性</td>
+            <td>Framework Modeで型生成はあるが、ルート全体の型安全DXは控えめ。</td>
+            <td>ルート、params、search、context、linksまで型安全に寄せる設計。</td>
+          </tr>
+          <tr>
+            <td>思想</td>
+            <td>Web標準、フォーム、loader/action、サーバーとの同期を重視。</td>
+            <td>TypeScript DX、URL状態、キャッシュ、TanStackエコシステムを重視。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>ストア管理の観点</h2>
+      <p>ここでいうストア管理は、すべてをReduxやZustandのようなグローバルストアに入れる話ではありません。Reactアプリでは、状態を大きく「URL状態」「サーバー状態」「UIローカル状態」「グローバルなクライアント状態」に分けると整理しやすくなります。</p>
+
+      <h3>React Routerの場合</h3>
+      <p>React Routerは公式ドキュメントでも、loader、action、useNavigation、useFetcher、URL search params、cookies、sessionsなどを使うことで、従来のクライアント状態管理の一部が不要になると説明しています。特にフォーム送信、送信中状態、送信後の再検証、ルートデータの同期はReact Router側に寄せられます。</p>
+      <p>一方で、React Router自体は汎用のクライアントストアではありません。複雑なクライアント状態、リアルタイム性の高いキャッシュ、複数画面で共有する細かなUI状態には、Zustand、Redux Toolkit、Jotai、TanStack Queryなどを併用する設計になります。</p>
+
+      <h3>TanStack Routerの場合</h3>
+      <p>TanStack RouterはURL状態、検索パラメータ、loader、preloadが強く、そこにTanStack Queryを組み合わせるとサーバー状態のキャッシュ、再取得、無効化、楽観更新まで一貫して扱いやすくなります。TanStack公式にも外部キャッシュとしてTanStack Queryを使う案内があります。</p>
+      <p>さらに、クライアント状態にはTanStack Store、フォームにはTanStack Formという選択肢があります。つまり、ルーティング、サーバー状態、フォーム、クライアントストアをTanStack系で揃えられるのが大きな特徴です。</p>
+
+      <h2>どちらが優れているか</h2>
+      <p>絶対的な勝敗というより、プロジェクトの重視点で選ぶのがよいです。</p>
+      <ul>
+        <li>実績、情報量、Web標準寄りのフォーム処理、Remix的なデータフローを重視するならReact Router。</li>
+        <li>TypeScriptの型安全性、URL search params、TanStack Queryとの統合、DXを重視するならTanStack Router。</li>
+        <li>既存のReact Router資産があるなら、無理に移行せずFramework ModeやData Modeを活かす。</li>
+        <li>新規TypeScriptアプリで検索条件やフィルタが多く、URLを状態として強く扱いたいならTanStack Routerが有力。</li>
+        <li>サーバー状態管理を中心に設計するなら、TanStack Router + TanStack Queryの組み合わせがかなり強い。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>React Routerは「実績あるReact標準ルーターがフレームワーク化したもの」、TanStack Routerは「型安全なルーティングとURL状態管理を中心に、TanStackエコシステムへ接続するもの」と考えると整理しやすいです。ストア管理まで含めた新規開発ではTanStack Router + TanStack Queryが強く、既存資産やWeb標準寄りのフレームワーク体験ではReact Routerが堅実です。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://reactrouter.com/start/modes">React Router: Picking a Mode</a></li>
+          <li><a href="https://reactrouter.com/start/framework/data-loading">React Router: Data Loading</a></li>
+          <li><a href="https://reactrouter.com/explanation/state-management">React Router: State Management</a></li>
+          <li><a href="https://tanstack.com/router/latest/docs/framework/react/overview">TanStack Router: Overview</a></li>
+          <li><a href="https://tanstack.com/router/latest/docs/framework/react/guide/data-loading">TanStack Router: Data Loading</a></li>
+          <li><a href="https://tanstack.com/router/latest/docs/framework/start">TanStack Start</a></li>
+          <li><a href="https://tanstack.com/store/latest/docs/reference/index">TanStack Store</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="関連記事">
+        <p><a href="../index.html">インデックスへ戻る</a> / 関連: <a href="package-managers.html">npm、Yarn、pnpmなどの違い</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>

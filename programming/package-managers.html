@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>npm、Yarn、pnpm、Bunの違い | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+      <nav class="nav" aria-label="主要ナビゲーション">
+        <a href="../ai-development/mcp-server.html">MCP</a>
+        <a href="../ai-development/rag.html">RAG</a>
+        <a href="../ai-development/ai-agent.html">AI Agent</a>
+        <a href="package-managers.html">Package Managers</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">JavaScript / パッケージ管理</p>
+        <h1>npm、Yarn、pnpmなどの違いと優位性</h1>
+        <p class="lead">JavaScriptのパッケージ管理ツールは、同じnpmレジストリを使うことが多くても、依存関係の配置、速度、厳密さ、モノレポ対応、開発体験に違いがあります。現在の実務では、無難さならnpm、快適さと効率ならpnpm、思想の強い管理ならYarn、新しい高速ツールならBunが候補になります。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. npm、Yarn、pnpmの違いは何？</dt>
+          <dd>A. npmはNode.js標準の定番、Yarnは依存管理を強く制御できる高機能派、pnpmは高速でディスク効率がよく依存関係も厳密にしやすいツールです。</dd>
+          <dt>Q. 今から新規プロジェクトで選ぶならどれ？</dt>
+          <dd>A. 特別な制約がなければpnpmが有力です。npmに近い感覚で使え、インストールが速く、ディスク消費が少なく、モノレポでも扱いやすいからです。</dd>
+          <dt>Q. 新しい管理ツールで優位性があるものは？</dt>
+          <dd>A. Bunが有力です。パッケージマネージャだけでなく、ランタイム、テスト、実行環境も含む統合ツールとして高速です。ただし既存Node.jsエコシステムとの互換性はプロジェクトごとに確認が必要です。</dd>
+        </dl>
+      </section>
+
+      <h2>まず前提: レジストリとパッケージマネージャは別</h2>
+      <p>npmという言葉は、パッケージを公開するnpmレジストリと、手元で依存関係をインストールするnpm CLIの両方を指すことがあります。Yarn、pnpm、Bunも多くの場合、npmレジストリに公開されたパッケージを取得します。つまり、違いは「どこから取るか」よりも、「どう解決し、どう保存し、どう実行するか」にあります。</p>
+
+      <h2>npm</h2>
+      <p>npmはNode.jsに標準で付属するパッケージマネージャです。追加導入なしで使え、情報量が多く、CI、ホスティング、チュートリアル、ライブラリ側の説明でも最も前提にされやすい選択肢です。</p>
+      <h3>優位性</h3>
+      <ul>
+        <li>Node.jsを入れればすぐ使える。</li>
+        <li>ドキュメントやトラブルシュート情報が多い。</li>
+        <li>多くの環境で標準的にサポートされている。</li>
+        <li>小規模から中規模のプロジェクトでは十分に実用的。</li>
+      </ul>
+      <h3>注意点</h3>
+      <p>pnpmやBunと比べると、インストール速度やディスク効率で不利になることがあります。大規模なモノレポでは、より専用性の高いツールのほうが扱いやすい場面があります。</p>
+
+      <h2>Yarn</h2>
+      <p>Yarnは、npmの速度や依存解決の課題を補う目的で広まりました。現在のYarn Berry系では、Plug'n'Play、Zero-Installs、制約ルールなど、依存関係を強く管理するための機能が充実しています。</p>
+      <h3>優位性</h3>
+      <ul>
+        <li>依存関係を厳密に管理しやすい。</li>
+        <li>Plug'n'Playにより、従来の巨大な<code>node_modules</code>を使わない構成を選べる。</li>
+        <li>Zero-Installsのように、インストール待ちを減らす運用ができる。</li>
+        <li>大規模チームやモノレポで強い統制をかけやすい。</li>
+      </ul>
+      <h3>注意点</h3>
+      <p>npmやpnpmより思想が強く、設定も独特です。Plug'n'Playに対応していない古いツールや、暗黙に<code>node_modules</code>を期待するツールでは調整が必要になることがあります。</p>
+
+      <h2>pnpm</h2>
+      <p>pnpmは、依存パッケージをcontent-addressable storeに保存し、各プロジェクトの<code>node_modules</code>にはリンクを配置します。同じパッケージを何度もコピーしにくいため、速く、ディスク効率がよいのが特徴です。</p>
+      <h3>優位性</h3>
+      <ul>
+        <li>インストールが速い。</li>
+        <li>複数プロジェクトで同じ依存を共有しやすく、ディスク消費が少ない。</li>
+        <li>宣言していない依存に偶然アクセスする問題を見つけやすい。</li>
+        <li>workspace機能が使いやすく、モノレポとの相性がよい。</li>
+      </ul>
+      <h3>注意点</h3>
+      <p>依存関係に対して厳密なぶん、暗黙の依存に頼る古いライブラリやツールで問題が表面化することがあります。ただし、それはプロジェクトの依存関係を健全にするきっかけにもなります。</p>
+
+      <h2>Bun</h2>
+      <p>Bunは新しめのJavaScriptランタイムであり、パッケージマネージャ、スクリプト実行、テストなども含む統合ツールです。<code>bun install</code>は高速なインストールを重視しており、既存のNode.jsプロジェクトでも試せます。</p>
+      <h3>優位性</h3>
+      <ul>
+        <li>インストールやスクリプト実行が非常に速い。</li>
+        <li>ランタイム、パッケージ管理、テストなどをひとつのCLIで扱える。</li>
+        <li>新規プロジェクトでは開発体験を大きく簡略化できる可能性がある。</li>
+      </ul>
+      <h3>注意点</h3>
+      <p>既存のNode.js/npmエコシステムに対して完全に無難とは限りません。依存パッケージ、ネイティブ拡張、CI、本番環境との相性を確認してから採用するのが安全です。</p>
+
+      <h2>DenoとJSR</h2>
+      <p>Denoはnpm、JSR、TypeScript、権限管理などを統合した実行環境です。Deno前提で開発するなら魅力的ですが、既存のNode.jsプロジェクトのパッケージマネージャだけを置き換えるものというより、開発スタック全体の選択に近いです。</p>
+
+      <h2>比較表</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">ツール</th>
+            <th scope="col">強み</th>
+            <th scope="col">向いている場面</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>npm</td>
+            <td>標準、情報量、互換性</td>
+            <td>迷ったとき、小中規模、学習用、保守性重視</td>
+          </tr>
+          <tr>
+            <td>Yarn</td>
+            <td>厳密な依存管理、Plug'n'Play、Zero-Installs</td>
+            <td>大規模チーム、依存統制、特殊なモノレポ運用</td>
+          </tr>
+          <tr>
+            <td>pnpm</td>
+            <td>速度、ディスク効率、依存の健全性</td>
+            <td>新規Web開発、モノレポ、日常的な実務開発</td>
+          </tr>
+          <tr>
+            <td>Bun</td>
+            <td>高速、統合CLI、ランタイム込み</td>
+            <td>速度重視、新規開発、Bunランタイムも使いたい場合</td>
+          </tr>
+          <tr>
+            <td>Deno</td>
+            <td>TypeScript親和性、権限管理、npm/JSR対応</td>
+            <td>Deno前提の開発、セキュリティ境界を意識するツール開発</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>実務での選び方</h2>
+      <ul>
+        <li>教材やチュートリアルに沿うなら<code>npm</code>。</li>
+        <li>新規プロジェクトで快適さを重視するなら<code>pnpm</code>。</li>
+        <li>モノレポで依存関係を強く統制したいなら<code>pnpm</code>または<code>Yarn</code>。</li>
+        <li>Bunのランタイムやテストも使いたいなら<code>Bun</code>。</li>
+        <li>Denoの権限モデルやTypeScript体験に寄せるなら<code>Deno</code>。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>現在の第一候補は、無難さならnpm、総合的な開発体験ならpnpmです。Yarnは強い依存統制が必要な場面で有力、Bunは速度と統合体験を重視する新しい選択肢、Denoはパッケージ管理だけでなく実行環境ごと選ぶものとして考えると整理しやすいです。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://docs.npmjs.com/">npm Docs</a></li>
+          <li><a href="https://yarnpkg.com/">Yarn Docs</a></li>
+          <li><a href="https://pnpm.io/">pnpm Docs</a></li>
+          <li><a href="https://bun.com/docs">Bun Docs</a></li>
+          <li><a href="https://docs.deno.com/">Deno Docs</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="関連記事">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Temporal APIとは何か | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+      <nav class="nav" aria-label="主要ナビゲーション">
+        <a href="../ai-development/mcp-server.html">MCP</a>
+        <a href="../ai-development/rag.html">RAG</a>
+        <a href="../ai-development/ai-agent.html">AI Agent</a>
+        <a href="package-managers.html">Package Managers</a>
+        <a href="react-router-vs-tanstack-router.html">React Routers</a>
+        <a href="nodejs-versions.html">Node.js</a>
+        <a href="temporal-api.html">Temporal</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">JavaScript / 日付時刻</p>
+        <h1>Temporal APIとは何か</h1>
+        <p class="lead">Temporal APIは、JavaScriptの古い<code>Date</code> APIが抱えていた曖昧さを解消するための新しい日付時刻APIです。Node.js 26では標準で有効化され、時点、日付、時刻、タイムゾーン付き日時、期間を明確に分けて扱えます。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. Temporal APIとは何？</dt>
+          <dd>A. JavaScriptの新しい日付時刻APIです。従来の<code>Date</code>よりも、タイムゾーン、カレンダー、期間、日付だけ、時刻だけ、といった概念を明確に扱えるように設計されています。</dd>
+          <dt>Q. なぜ<code>Date</code>では足りないのか？</dt>
+          <dd>A. <code>Date</code>は内部的には単一のタイムスタンプですが、入出力ではローカルタイムゾーンが絡みやすく、日付だけを表したい場合やタイムゾーンを明示したい場合に間違いが起きやすいからです。</dd>
+          <dt>Q. Node.js 26で何が変わる？</dt>
+          <dd>A. Node.js 26ではTemporal APIが標準で有効化されます。これにより、ライブラリなしでより安全な日付時刻処理を試せるようになります。ただしNode.js 26自体はLTS化前のCurrentなので、本番利用は検証が必要です。</dd>
+        </dl>
+      </section>
+
+      <h2>Temporalが解決する問題</h2>
+      <p>JavaScriptの<code>Date</code>は、長年使われてきた一方で、設計上の難しさがあります。<code>Date</code>は「ある瞬間」をミリ秒のタイムスタンプとして持ちますが、文字列の解釈や表示では実行環境のローカルタイムゾーンが関わります。そのため、単なる誕生日、予約日、締切日、現地時刻、UTCの瞬間を同じ型で扱うことになり、バグの温床になります。</p>
+      <p>Temporalはこの問題を、用途ごとに型を分けることで解決しようとします。「絶対的な瞬間」と「カレンダー上の日付」と「タイムゾーン付きの日時」を別物として扱うため、コードを読む側にも意図が伝わりやすくなります。</p>
+
+      <h2>主要な型</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">型</th>
+            <th scope="col">表すもの</th>
+            <th scope="col">使いどころ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Temporal.Instant</code></td>
+            <td>タイムゾーンに依存しない絶対的な時点。</td>
+            <td>ログ時刻、作成日時、イベント発生時刻など。</td>
+          </tr>
+          <tr>
+            <td><code>Temporal.ZonedDateTime</code></td>
+            <td>日時とタイムゾーンを組み合わせた値。</td>
+            <td>東京の午前9時、ニューヨークの会議時刻など。</td>
+          </tr>
+          <tr>
+            <td><code>Temporal.PlainDateTime</code></td>
+            <td>タイムゾーンなしの日付と時刻。</td>
+            <td>タイムゾーン未確定の予定入力など。</td>
+          </tr>
+          <tr>
+            <td><code>Temporal.PlainDate</code></td>
+            <td>日付だけ。</td>
+            <td>誕生日、締切日、営業日、記念日など。</td>
+          </tr>
+          <tr>
+            <td><code>Temporal.PlainTime</code></td>
+            <td>時刻だけ。</td>
+            <td>毎日9:00開始、店舗営業時間など。</td>
+          </tr>
+          <tr>
+            <td><code>Temporal.Duration</code></td>
+            <td>期間や差分。</td>
+            <td>3日後、90分、1か月間など。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2><code>Date</code>との考え方の違い</h2>
+      <p><code>Date</code>では、たとえば「2026-05-19」という日付だけを扱いたい場合でも、実際には時刻とタイムゾーンが絡んだ値になりがちです。Temporalでは、日付だけなら<code>Temporal.PlainDate</code>を使います。これにより「この値はタイムゾーン変換されるべきではない」という意図が型に表れます。</p>
+      <p>逆に、サーバーに保存する作成日時やログ時刻のように、世界中で同じ瞬間を指したい場合は<code>Temporal.Instant</code>が向いています。ユーザーの地域で表示したいときだけ、タイムゾーンを指定して<code>ZonedDateTime</code>へ変換します。</p>
+
+      <h2>簡単な例</h2>
+      <pre class="figure"><code>// 日付だけを表す
+const deadline = Temporal.PlainDate.from("2026-05-19");
+
+// 絶対的な現在時刻
+const now = Temporal.Now.instant();
+
+// 東京時間の現在日時
+const tokyoNow = Temporal.Now.zonedDateTimeISO("Asia/Tokyo");
+
+// 3日後の日付
+const threeDaysLater = deadline.add({ days: 3 });
+</code></pre>
+      <p>このように、Temporalでは「何を表したいのか」を型名で選びます。日付計算も<code>add</code>や<code>subtract</code>のような明示的なメソッドで行えるため、ミリ秒計算に頼るより読みやすくなります。</p>
+
+      <h2>Temporalが特に効く場面</h2>
+      <ul>
+        <li>複数タイムゾーンをまたぐ予約、配送、会議スケジュール。</li>
+        <li>誕生日や締切日のように「日付だけ」が重要なデータ。</li>
+        <li>夏時間の切り替わりで時刻が存在しない、または重複する地域を扱う処理。</li>
+        <li>ログや監査証跡のように、世界中で同じ瞬間を正確に保存したい処理。</li>
+        <li>期間計算を<code>30 * 24 * 60 * 60 * 1000</code>のようなミリ秒計算から卒業したい場合。</li>
+      </ul>
+
+      <h2>注意点</h2>
+      <p>Temporalは強力ですが、<code>Date</code>を機械的に置き換えるだけではうまくいきません。まず「この値は瞬間なのか、日付なのか、タイムゾーン付き日時なのか」を決める必要があります。この設計判断がTemporalの肝です。</p>
+      <p>また、Node.js 26では標準で有効化されていますが、ブラウザや実行環境によって対応状況は異なります。フロントエンドで使う場合は、対象ブラウザの対応状況やpolyfillの必要性を確認する必要があります。</p>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>Temporal APIは、JavaScriptの日付時刻処理を「曖昧な<code>Date</code>ひとつ」から「用途別の明確な型」へ分解するためのAPIです。Node.js 26の大きな価値は、Temporalによってタイムゾーンや日付だけの処理を標準APIで安全に扱えるようになる点にあります。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://nodejs.org/en/blog/release/v26.0.0">Node.js 26.0.0 Release</a></li>
+          <li><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Temporal">MDN: Temporal</a></li>
+          <li><a href="https://tc39.es/proposal-temporal/docs/">TC39 Temporal Documentation</a></li>
+          <li><a href="https://tc39.es/proposal-temporal/docs/strings.html">TC39 Temporal: Strings and Persistence</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="関連記事">
+        <p><a href="../index.html">インデックスへ戻る</a> / 関連: <a href="nodejs-versions.html">Node.jsの安定版と前後バージョンの違い</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>

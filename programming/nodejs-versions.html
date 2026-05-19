@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Node.jsの安定版と前後バージョンの違い | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+      <nav class="nav" aria-label="主要ナビゲーション">
+        <a href="../ai-development/mcp-server.html">MCP</a>
+        <a href="../ai-development/rag.html">RAG</a>
+        <a href="../ai-development/ai-agent.html">AI Agent</a>
+        <a href="package-managers.html">Package Managers</a>
+        <a href="react-router-vs-tanstack-router.html">React Routers</a>
+        <a href="nodejs-versions.html">Node.js</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">Node.js / バージョン管理</p>
+        <h1>Node.jsの現在の安定版と前後バージョンの違い</h1>
+        <p class="lead">2026年5月19日時点では、本番運用で選ぶ安定版はNode.js 24 LTSです。最新のCurrentリリースはNode.js 26ですが、LTS化までは検証用・先行評価用として扱うのが安全です。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. 現在の安定バージョンは？</dt>
+          <dd>A. 2026年5月19日時点の本番向け安定版はNode.js 24 LTSです。公式サイトでは最新LTSとしてv24.15.0、最新リリースとしてv26.1.0が示されています。</dd>
+          <dt>Q. ひとつ前の安定版との差異は？</dt>
+          <dd>A. ひとつ前のLTS系はNode.js 22です。Node.js 24ではV8 13.6、npm 11、URLPatternのグローバル化、Permission Modelの改善、AsyncLocalStorageの実装変更、Undici 7などが入り、より新しいWeb APIと実行基盤に近づいています。</dd>
+          <dt>Q. 次バージョンは何が優れている？</dt>
+          <dd>A. Node.js 26 CurrentではTemporal APIが標準で有効化され、V8 14.6、Undici 8などが入っています。日付時刻処理や新しいJavaScript機能の面では優位ですが、LTS化前なので本番採用は慎重に検証する段階です。</dd>
+          <dt>Q. Node.jsの奇数バージョンは今後もLTSにならないのか？</dt>
+          <dd>A. これまでは奇数バージョンが短期Current、偶数バージョンがLTS候補という運用でした。ただしNode.js 27以降は年次リリースへ移行し、すべてのメジャーバージョンがCurrent期間を経てLTSへ進む方針に変わります。</dd>
+        </dl>
+      </section>
+
+      <h2>Node.jsのリリースの考え方</h2>
+      <p>Node.jsには、Current、Active LTS、Maintenance LTSという段階があります。新しいメジャーバージョンはまずCurrentとして提供され、一定期間の検証を経てLTSになります。本番アプリケーションでは、公式にもActive LTSまたはMaintenance LTSを使うことが推奨されています。</p>
+      <p>2026年5月19日時点では、Node.js 24がActive LTS、Node.js 22がMaintenance LTS、Node.js 26がCurrentです。Node.js 25はMaintenance扱いで、2026年6月1日にサポート終了予定の短命な奇数バージョンです。</p>
+
+      <h2>奇数・偶数リリース方針の変更</h2>
+      <p>従来のNode.jsでは、偶数メジャーバージョンがLTSへ進み、奇数メジャーバージョンは短期のCurrentとして使われたあとLTSにならず終了する、という運用でした。たとえばNode.js 23や25は、次の偶数バージョンへ移るまでの短期評価ラインとして扱われてきました。</p>
+      <p>ただし公式リリース説明では、Node.js 27以降は年次リリースへ移行し、各メジャーバージョンがCurrent期間を経てLTSへ進む方針が示されています。つまり「奇数だからLTSにならない」という覚え方は、Node.js 26までの世代には有効ですが、Node.js 27以降には当てはまりません。</p>
+      <p>実務上は、バージョン番号の奇数・偶数だけで判断するより、公式のRelease Scheduleでその時点のStatusがActive LTS、Maintenance LTS、Current、EOLのどれかを見るのが安全です。</p>
+
+      <h2>現在の安定版: Node.js 24 LTS</h2>
+      <p>現在の安定版として見るべき中心はNode.js 24 LTS、コードネームKryptonです。2025年5月6日に初回リリースされ、2025年10月28日にLTSへ入りました。Active LTSは2026年10月20日まで、その後Maintenanceに移り、EOLは2028年4月30日予定です。</p>
+      <h3>Node.js 24の主な特徴</h3>
+      <ul>
+        <li>V8 JavaScriptエンジンが13.6へ更新。</li>
+        <li>npm 11を同梱。</li>
+        <li><code>URLPattern</code>がグローバルで利用可能。</li>
+        <li>Permission Modelのフラグが<code>--experimental-permission</code>から<code>--permission</code>へ変更。</li>
+        <li><code>AsyncLocalStorage</code>が<code>AsyncContextFrame</code>を標準実装として使うようになった。</li>
+        <li>Undici 7によりHTTPクライアント基盤が更新。</li>
+        <li>テストランナーがサブテストの完了を自動で待つなど、テスト体験が改善。</li>
+      </ul>
+      <p>さらにv24.15.0では、<code>require(esm)</code>とmodule compile cacheがstable扱いになり、SQLite関連APIがrelease candidateになるなど、LTS内でも実用上の改善が進んでいます。</p>
+
+      <h2>前の安定版: Node.js 22 LTSとの差異</h2>
+      <p>Node.js 22 LTSはコードネームJodで、現在はMaintenance LTSです。Node.js 22自体も、WebSocketの標準有効化、<code>node --run</code>、<code>fs.glob</code>、同期ESMグラフの<code>require()</code>対応など、十分に近代的な機能を持っています。</p>
+      <p>Node.js 24との差分は、単一の巨大機能というより、実行基盤・Web API・セキュリティ境界・HTTP基盤の更新です。Node.js 22を使っているプロジェクトは即座に危険というわけではありませんが、新規開発や次の長期運用を考えるならNode.js 24へ寄せるほうが自然です。</p>
+
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">観点</th>
+            <th scope="col">Node.js 22 LTS</th>
+            <th scope="col">Node.js 24 LTS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ステータス</td>
+            <td>Maintenance LTS。EOLは2027年4月30日予定。</td>
+            <td>Active LTS。EOLは2028年4月30日予定。</td>
+          </tr>
+          <tr>
+            <td>JavaScriptエンジン</td>
+            <td>V8 12.4系で登場。</td>
+            <td>V8 13.6系で登場。新しいJavaScript機能を多く含む。</td>
+          </tr>
+          <tr>
+            <td>Web API</td>
+            <td>WebSocket clientが標準で有効化。</td>
+            <td><code>URLPattern</code>がグローバル化し、よりWeb標準APIに近づいた。</td>
+          </tr>
+          <tr>
+            <td>セキュリティ境界</td>
+            <td>Permission Modelはまだ実験的な印象が強い。</td>
+            <td><code>--permission</code>へ改名され、Permission Modelの安定化が進んだ。</td>
+          </tr>
+          <tr>
+            <td>運用判断</td>
+            <td>既存運用では継続可能だが、Maintenance期。</td>
+            <td>新規・更新の第一候補。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>次バージョン: Node.js 26 Currentの優位性</h2>
+      <p>Node.js 26は2026年5月5日にCurrentとしてリリースされ、2026年10月28日にLTS入りする予定です。2026年5月19日時点では最新リリースがv26.1.0ですが、本番向け安定版ではなく、次のLTS候補として評価する段階です。</p>
+      <h3>Node.js 26の主な優位性</h3>
+      <ul>
+        <li>Temporal APIが標準で有効化され、従来の<code>Date</code>より堅牢な日付時刻処理が可能になる。</li>
+        <li>V8 14.6により、より新しいJavaScript機能やエンジン改善を利用できる。</li>
+        <li>Undici 8により、Node.jsのHTTPクライアント基盤がさらに更新される。</li>
+        <li>v26.1.0では実験的な<code>node:ffi</code>、<code>crypto.randomUUIDv7()</code>、テストランナー改善などが追加されている。</li>
+      </ul>
+      <h3>注意点</h3>
+      <p>Node.js 26はCurrentなので、ライブラリ作者やアプリ開発者が互換性を確認するための期間にあります。古いAPIの削除やランタイム非推奨化も含まれるため、ネイティブアドオン、古いHTTP/stream API、ビルド環境に依存しているプロジェクトでは事前検証が必要です。</p>
+
+      <h2>実務での選び方</h2>
+      <ul>
+        <li>新規プロジェクト、本番運用、学習用途の標準はNode.js 24 LTS。</li>
+        <li>既存プロジェクトがNode.js 22 LTSなら、急ぎではなくてもNode.js 24への移行計画を作る。</li>
+        <li>Node.js 20以前はEOLまたはEOL済みなので、セキュリティ上は避ける。</li>
+        <li>Node.js 26は、次期LTSに備えた検証環境、ライブラリ互換性チェック、新機能評価に使う。</li>
+        <li>本番投入はNode.js 26がLTS化してから、依存ライブラリとCIを通して判断する。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>2026年5月19日時点では、安定版としてNode.js 24 LTSを選ぶのが最も堅実です。Node.js 22 LTSはまだ保守されていますがMaintenance期であり、Node.js 26 CurrentはTemporalやV8 14.6など次世代の利点がある一方、本番標準にするにはLTS化を待つのが安全です。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://nodejs.org/en/about/previous-releases">Node.js Releases</a></li>
+          <li><a href="https://github.com/nodejs/Release">Node.js Release Working Group</a></li>
+          <li><a href="https://nodejs.org/en/blog/release/v24.0.0">Node.js 24.0.0 Release</a></li>
+          <li><a href="https://nodejs.org/en/blog/release/v24.15.0">Node.js 24.15.0 LTS Release</a></li>
+          <li><a href="https://nodejs.org/en/blog/release/v22.0.0">Node.js 22.0.0 Release</a></li>
+          <li><a href="https://nodejs.org/en/blog/release/v26.0.0">Node.js 26.0.0 Release</a></li>
+          <li><a href="https://nodejs.org/en/blog/release/v26.1.0">Node.js 26.1.0 Release</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="関連記事">
+        <p><a href="../index.html">インデックスへ戻る</a> / 関連: <a href="package-managers.html">npm、Yarn、pnpmなどの違い</a> / <a href="temporal-api.html">Temporal APIとは何か</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>

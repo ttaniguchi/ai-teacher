@@ -270,4 +270,15 @@ code {
   .figure {
     padding: 18px;
   }
+
+  table.figure {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  th,
+  td {
+    min-width: 150px;
+  }
 }

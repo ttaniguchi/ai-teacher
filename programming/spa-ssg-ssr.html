@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reactで実現できるホスティング方式 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+      <nav class="nav" aria-label="主要ナビゲーション">
+        <a href="../ai-development/mcp-server.html">MCP</a>
+        <a href="../ai-development/rag.html">RAG</a>
+        <a href="../ai-development/ai-agent.html">AI Agent</a>
+        <a href="package-managers.html">Package Managers</a>
+        <a href="react-router-vs-tanstack-router.html">React Routers</a>
+        <a href="nodejs-versions.html">Node.js</a>
+        <a href="temporal-api.html">Temporal</a>
+        <a href="spa-ssg-ssr.html">SPA/SSG/SSR</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">React / ホスティング方式</p>
+        <h1>Reactで実現できるホスティング方式と長短</h1>
+        <p class="lead">Reactアプリの配信方法は、静的ホスティングだけではありません。SPA、SSG、ISR、SSR、サーバーレスSSR、Edge SSR、BFF/API統合、ハイブリッド構成などを、ページの性質ごとに選べます。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. ReactによるSPAとは？</dt>
+          <dd>A. 最初にHTMLとJavaScriptを配信し、その後の画面遷移や描画をブラウザ側で行う方式です。管理画面やログイン後アプリのように、SEOより操作性が重要な画面に向きます。</dd>
+          <dt>Q. Next.jsによるSSGとは？</dt>
+          <dd>A. ビルド時にページのHTMLを生成しておき、リクエスト時には静的ファイルとして返す方式です。ブログ、ドキュメント、LPのように更新頻度が低く高速配信したいページに向きます。</dd>
+          <dt>Q. サーバー側でのSSRとは？</dt>
+          <dd>A. リクエストごとにサーバーでHTMLを生成して返す方式です。ログイン状態、在庫、検索結果、ユーザーごとの表示など、リクエスト時点の情報が必要なページに向きます。</dd>
+          <dt>Q. Reactで取り得るホスティング方式はこの3つだけ？</dt>
+          <dd>A. いいえ。実務では、静的SPA、SSG、ISR、NodeサーバーSSR、サーバーレスSSR、Edge SSR、静的サイト+外部API、フルスタックNext.js、マイクロフロントエンド、埋め込みウィジェットなどのパターンがあります。</dd>
+        </dl>
+      </section>
+
+      <h2>比較の前提</h2>
+      <p>ここでは、ReactによるSPAを「主にClient-Side Renderingで動くアプリ」、Next.jsのSSGを「ビルド時に静的HTMLを作る方式」、SSRを「リクエストごとにサーバーでHTMLを作る方式」として比較します。</p>
+      <p>現代のNext.js App Routerでは、Server Components、Client Components、Static Rendering、Dynamic Rendering、Streamingなどが組み合わさります。そのため実務では、アプリ全体をひとつの方式で決めるより、ページやコンポーネントごとに適した方式を選ぶのが自然です。</p>
+
+      <h2>Reactで実現できる主なホスティングパターン</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">パターン</th>
+            <th scope="col">概要</th>
+            <th scope="col">長所</th>
+            <th scope="col">短所</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>静的SPA</td>
+            <td>ViteなどでビルドしたHTML/CSS/JSをCDNや静的ホスティングに置く。</td>
+            <td>安い、速い、構成が単純、フロントとAPIを分離しやすい。</td>
+            <td>初回表示とSEOが弱くなりやすい。認証やデータ取得設計を自前で組む範囲が広い。</td>
+          </tr>
+          <tr>
+            <td>SSG</td>
+            <td>ビルド時にHTMLを生成し、静的ファイルとして配信する。</td>
+            <td>表示が速い、CDNに乗せやすい、SEOに強い、サーバー負荷が小さい。</td>
+            <td>更新には再ビルドが必要。ユーザー別表示やリアルタイム情報に弱い。</td>
+          </tr>
+          <tr>
+            <td>ISR / 再生成つき静的配信</td>
+            <td>静的HTMLを使いながら、一定条件でページを再生成する。</td>
+            <td>SSGの速さと、一定の鮮度を両立しやすい。</td>
+            <td>キャッシュの整合性や再生成タイミングの理解が必要。ホスティング環境に依存しやすい。</td>
+          </tr>
+          <tr>
+            <td>NodeサーバーSSR</td>
+            <td>Node.jsサーバーでリクエストごとにHTMLを生成する。</td>
+            <td>最新データ、認証、ユーザー別表示に強い。制御しやすい。</td>
+            <td>サーバー運用、スケール、監視、キャッシュ設計が必要。</td>
+          </tr>
+          <tr>
+            <td>サーバーレスSSR</td>
+            <td>AWS LambdaやVercel Functionsのような関数でSSRする。</td>
+            <td>インフラ管理が軽い。アクセス量に応じて伸縮しやすい。</td>
+            <td>コールドスタート、実行時間制限、接続管理、ベンダー依存に注意。</td>
+          </tr>
+          <tr>
+            <td>Edge SSR</td>
+            <td>CDNエッジやEdge Runtimeでリクエスト近傍のサーバー描画を行う。</td>
+            <td>地理的に近い場所で応答でき、パーソナライズと低遅延を両立しやすい。</td>
+            <td>Node.js APIがすべて使えるわけではない。DB接続やネイティブ依存に制限が出やすい。</td>
+          </tr>
+          <tr>
+            <td>フルスタックNext.js</td>
+            <td>ルーティング、Server Components、API、SSR/SSG/ISRをNext.jsに寄せる。</td>
+            <td>ページごとに方式を混在でき、認証・データ取得・配信を一体で設計しやすい。</td>
+            <td>Next.jsの設計思想やホスティング環境への理解が必要。単純なSPAより複雑。</td>
+          </tr>
+          <tr>
+            <td>静的サイト + 外部API/BFF</td>
+            <td>Reactは静的配信し、データや認証は別APIやBFFが担当する。</td>
+            <td>責務分離しやすい。既存バックエンドや別チームのAPIと相性がよい。</td>
+            <td>初回表示やSEOはAPI取得待ちに左右される。BFFを別途運用する場合は構成が増える。</td>
+          </tr>
+          <tr>
+            <td>マイクロフロントエンド</td>
+            <td>複数のReactアプリを別々にビルド・配信し、画面上で統合する。</td>
+            <td>大規模組織でチームごとの独立リリースがしやすい。</td>
+            <td>共通依存、デザイン統一、認証、パフォーマンス、障害境界が難しい。</td>
+          </tr>
+          <tr>
+            <td>埋め込みウィジェット</td>
+            <td>Reactで作った小さなUIを外部サイトにscriptやiframeで埋め込む。</td>
+            <td>既存サイトに段階導入しやすい。フォーム、チャット、予約UIなどに向く。</td>
+            <td>CSS衝突、読み込み順、セキュリティ、親ページとの通信設計が必要。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>ReactによるSPA</h2>
+      <p>SPAはSingle Page Applicationの略です。初回アクセス時に最小限のHTMLとJavaScriptを受け取り、以後の画面遷移やデータ取得をブラウザ上のJavaScriptで行います。Vite + Reactのような構成は、この方式から始まることが多いです。</p>
+      <h3>メリット</h3>
+      <ul>
+        <li>画面遷移が速く、アプリらしい操作感を作りやすい。</li>
+        <li>静的ホスティングだけでも配信しやすい。</li>
+        <li>フロントエンドとAPIサーバーを分離しやすい。</li>
+        <li>ログイン後の管理画面、ダッシュボード、業務ツールに向いている。</li>
+      </ul>
+      <h3>デメリット</h3>
+      <ul>
+        <li>初回表示でJavaScriptの読み込みと実行を待つため、体感が遅くなることがある。</li>
+        <li>SEOやSNSシェア用メタ情報の扱いが難しくなりやすい。</li>
+        <li>データ取得、ルーティング、認証、エラー処理などを自分たちで設計する範囲が広い。</li>
+        <li>クライアントに多くのロジックが載るため、バンドルサイズや情報露出に注意が必要。</li>
+      </ul>
+
+      <h2>Next.jsによるSSG</h2>
+      <p>SSGはStatic Site Generationの略です。ビルド時にHTMLを生成しておき、ユーザーがアクセスしたときは静的ファイルとして返します。Next.jsでは、静的にできるページは自動的に静的レンダリングへ寄せられます。</p>
+      <h3>メリット</h3>
+      <ul>
+        <li>HTMLが事前生成されているため、初回表示が速い。</li>
+        <li>CDNで配信しやすく、サーバー負荷が小さい。</li>
+        <li>SEOやOGPに強い。</li>
+        <li>セキュリティ面でも、実行中のアプリサーバーを必要としない構成にしやすい。</li>
+      </ul>
+      <h3>デメリット</h3>
+      <ul>
+        <li>ビルド時点の情報になるため、リアルタイム性の高いデータには向かない。</li>
+        <li>ページ数が非常に多いとビルド時間が長くなる。</li>
+        <li>ユーザーごとに表示内容が違うページは静的化しにくい。</li>
+        <li>更新頻度が高い場合は、再ビルドやISRなどの設計が必要になる。</li>
+      </ul>
+
+      <h2>サーバー側でのSSR</h2>
+      <p>SSRはServer-Side Renderingの略です。ユーザーのリクエストごとにサーバーでReactを実行し、その時点のデータを反映したHTMLを返します。その後、ブラウザ側でHydrationが行われ、インタラクティブになります。</p>
+      <h3>メリット</h3>
+      <ul>
+        <li>リクエスト時点の最新データをHTMLに反映できる。</li>
+        <li>ユーザーごとの認証状態や権限に応じた表示を作りやすい。</li>
+        <li>初回HTMLにコンテンツが含まれるため、SEOや初期表示に強い。</li>
+        <li>APIキーやDBアクセスなど、サーバー側に閉じたい処理を扱いやすい。</li>
+      </ul>
+      <h3>デメリット</h3>
+      <ul>
+        <li>リクエストごとにサーバー処理が走るため、負荷とレスポンス時間に注意が必要。</li>
+        <li>キャッシュ戦略を考えないと、SSGよりスケールしにくい。</li>
+        <li>Hydrationのコストがあり、HTMLが早く届いても操作可能になるまで時間差が出ることがある。</li>
+        <li>サーバー環境、デプロイ、監視、障害対応の複雑さが増える。</li>
+      </ul>
+
+      <h2>比較表</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">方式</th>
+            <th scope="col">HTMLを作る場所</th>
+            <th scope="col">得意な用途</th>
+            <th scope="col">苦手な用途</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>React SPA</td>
+            <td>主にブラウザ</td>
+            <td>管理画面、ダッシュボード、ログイン後アプリ</td>
+            <td>SEO重視の公開ページ、初回表示速度が重要なページ</td>
+          </tr>
+          <tr>
+            <td>Next.js SSG</td>
+            <td>ビルド時</td>
+            <td>ブログ、ドキュメント、LP、変更頻度が低いページ</td>
+            <td>ユーザー別表示、リアルタイム性の高いページ</td>
+          </tr>
+          <tr>
+            <td>SSR</td>
+            <td>リクエストごとのサーバー</td>
+            <td>検索結果、EC、ログイン状態つきページ、最新データ表示</td>
+            <td>超高トラフィックでキャッシュできないページ、サーバーを持ちたくない構成</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>ホスティング先の例</h2>
+      <ul>
+        <li>静的SPA/SSG: Cloudflare Pages、Netlify、Vercel、S3 + CloudFront、Firebase Hosting、GitHub Pages。</li>
+        <li>SSR/フルスタックNext.js: Vercel、Netlify、Cloudflare Workers、AWS Amplify、Render、Fly.io、Railway、普通のVPSやコンテナ基盤。</li>
+        <li>API分離型: フロントは静的ホスティング、APIはAWS Lambda、Cloud Run、ECS、Heroku系PaaS、既存バックエンドなど。</li>
+        <li>社内業務アプリ: 社内ネットワーク上の静的サーバー、Docker、Kubernetes、認証プロキシ配下など。</li>
+      </ul>
+
+      <h2>選び方</h2>
+      <ul>
+        <li>ユーザー操作が中心でSEOが重要でないならSPA。</li>
+        <li>誰に見せてもほぼ同じ内容で、速さと安定配信を重視するならSSG。</li>
+        <li>リクエスト時点のデータやユーザーごとの表示が重要ならSSR。</li>
+        <li>公開ページはSSG、商品詳細はISRやSSR、管理画面はSPAのように混ぜてよい。</li>
+        <li>Next.jsではページごとにStatic/Dynamicを分けられるため、最初から一択にしない。</li>
+      </ul>
+
+      <h2>現代Next.jsでの補足</h2>
+      <p>Next.js App Routerでは、Server ComponentsとClient Componentsを組み合わせます。Server Componentはサーバーで実行され、Client Componentはブラウザでインタラクションを担当します。ただしClient Componentも初回表示のためにサーバーでHTMLプレビューが作られることがあり、「クライアントコンポーネントだから完全にCSRだけ」とは限りません。</p>
+      <p>そのため、実務では「SSGかSSRかSPAか」という大分類に加えて、どのデータをサーバーで取るか、どのUIをクライアントで動かすか、どこをキャッシュするかを設計する必要があります。</p>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>Reactのホスティング方式は、静的SPA、SSG、ISR、SSR、サーバーレス、Edge、フルスタック、API分離、埋め込みまで幅があります。公開コンテンツはSSG/ISR、ユーザー別の動的ページはSSR、ログイン後の操作中心画面はSPA、低遅延や地域性が重要ならEdgeを検討する、という使い分けが現実的です。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://react.dev/learn/build-a-react-app-from-scratch">React: Build a React app from Scratch</a></li>
+          <li><a href="https://nextjs.org/docs/app/building-your-application/rendering/server-components">Next.js: Server and Client Components</a></li>
+          <li><a href="https://nextjs.org/docs/13/app/building-your-application/rendering">Next.js: Rendering</a></li>
+          <li><a href="https://nextjs.im/docs/pages/building-your-application/rendering/">Next.js: Rendering Strategies</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="関連記事">
+        <p><a href="../index.html">インデックスへ戻る</a> / 関連: <a href="react-router-vs-tanstack-router.html">React RouterとTanStack Routerの違い</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
