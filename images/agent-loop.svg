@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="540" viewBox="0 0 980 540" role="img" aria-labelledby="title desc">
+  <title id="title">AI agent loop</title>
+  <desc id="desc">An AI agent observes, plans, acts with tools, checks results, and repeats until a goal is met.</desc>
+  <rect width="980" height="540" fill="#fffdf8"/>
+  <circle cx="490" cy="260" r="146" fill="#d8f3ef" stroke="#0f766e" stroke-width="3"/>
+  <text x="490" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#202124">AI Agent</text>
+  <text x="490" y="282" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#455a64">目標に向けて判断と実行を反復</text>
+  <rect x="398" y="44" width="184" height="74" rx="8" fill="#eef7ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="490" y="88" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">観察</text>
+  <rect x="708" y="216" width="184" height="74" rx="8" fill="#f8ede0" stroke="#b45309" stroke-width="2"/>
+  <text x="800" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">計画</text>
+  <rect x="398" y="414" width="184" height="74" rx="8" fill="#eef7ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="490" y="458" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">検証</text>
+  <rect x="88" y="216" width="184" height="74" rx="8" fill="#f8ede0" stroke="#b45309" stroke-width="2"/>
+  <text x="180" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">ツール実行</text>
+  <path d="M582 82 C710 108 782 160 800 211" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M800 290 C778 362 670 432 586 451" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M398 451 C290 428 202 352 181 295" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M181 216 C204 151 303 103 393 83" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="72" y="48" width="208" height="78" rx="8" fill="#f7f4ee" stroke="#ded8cc" stroke-width="2"/>
+  <text x="176" y="82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#202124">通常チャット</text>
+  <text x="176" y="108" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">主に一問一答</text>
+  <rect x="700" y="48" width="208" height="78" rx="8" fill="#f7f4ee" stroke="#ded8cc" stroke-width="2"/>
+  <text x="804" y="82" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#202124">Agent</text>
+  <text x="804" y="108" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">状態を見て次の行動を選ぶ</text>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#202124"/>
+    </marker>
+  </defs>
+</svg>

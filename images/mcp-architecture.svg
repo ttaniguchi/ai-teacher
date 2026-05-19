@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520" role="img" aria-labelledby="title desc">
+  <title id="title">MCP architecture</title>
+  <desc id="desc">LLM app connects to MCP servers, and each server exposes tools, resources, and prompts for external systems.</desc>
+  <rect width="980" height="520" fill="#fffdf8"/>
+  <rect x="48" y="70" width="250" height="120" rx="8" fill="#d8f3ef" stroke="#0f766e" stroke-width="3"/>
+  <text x="173" y="116" text-anchor="middle" font-family="Arial, sans-serif" font-size="23" font-weight="700" fill="#202124">LLMアプリ</text>
+  <text x="173" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#455a64">ChatGPT / IDE / Agent</text>
+  <rect x="372" y="54" width="250" height="152" rx="8" fill="#eef7ff" stroke="#2563eb" stroke-width="3"/>
+  <text x="497" y="103" text-anchor="middle" font-family="Arial, sans-serif" font-size="23" font-weight="700" fill="#202124">MCPサーバー</text>
+  <text x="497" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#455a64">ツール・リソース・プロンプトを公開</text>
+  <text x="497" y="164" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#455a64">認証・権限・データ変換を担当</text>
+  <rect x="698" y="36" width="226" height="72" rx="8" fill="#f8ede0" stroke="#b45309" stroke-width="2"/>
+  <text x="811" y="81" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">GitHub / Git</text>
+  <rect x="698" y="136" width="226" height="72" rx="8" fill="#f8ede0" stroke="#b45309" stroke-width="2"/>
+  <text x="811" y="181" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">DB / ファイル</text>
+  <rect x="698" y="236" width="226" height="72" rx="8" fill="#f8ede0" stroke="#b45309" stroke-width="2"/>
+  <text x="811" y="281" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">社内API / SaaS</text>
+  <path d="M298 130 H370" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M622 91 H694" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M622 130 C660 130 658 172 694 172" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M622 169 C660 169 658 272 694 272" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="335" y="112" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">MCP</text>
+  <text x="660" y="68" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">固有API</text>
+  <rect x="86" y="306" width="808" height="120" rx="8" fill="#f7f4ee" stroke="#ded8cc" stroke-width="2"/>
+  <text x="490" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#202124">なぜ「サーバー」なのか</text>
+  <text x="490" y="386" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#455a64">LLMアプリから外部能力を分離し、標準プロトコルで安全に呼び出す境界になるため</text>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#202124"/>
+    </marker>
+  </defs>
+</svg>

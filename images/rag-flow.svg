@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+  <title id="title">RAG flow</title>
+  <desc id="desc">Documents are indexed into embeddings, retrieved for a query, and grounded context is passed to the LLM.</desc>
+  <rect width="980" height="560" fill="#fffdf8"/>
+  <rect x="44" y="66" width="170" height="84" rx="8" fill="#f8ede0" stroke="#b45309" stroke-width="2"/>
+  <text x="129" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">文書群</text>
+  <text x="129" y="128" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">PDF / Wiki / DB</text>
+  <rect x="282" y="66" width="170" height="84" rx="8" fill="#eef7ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="367" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">分割・整形</text>
+  <text x="367" y="128" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">チャンク化</text>
+  <rect x="520" y="66" width="170" height="84" rx="8" fill="#eef7ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="605" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">埋め込み化</text>
+  <text x="605" y="128" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">ベクトル表現</text>
+  <rect x="758" y="66" width="170" height="84" rx="8" fill="#d8f3ef" stroke="#0f766e" stroke-width="2"/>
+  <text x="843" y="102" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">検索索引</text>
+  <text x="843" y="128" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">Vector / Keyword</text>
+  <path d="M214 108 H278" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M452 108 H516" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M690 108 H754" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="490" y1="196" x2="490" y2="220" stroke="#ded8cc" stroke-width="2"/>
+  <rect x="68" y="250" width="180" height="84" rx="8" fill="#f7f4ee" stroke="#ded8cc" stroke-width="2"/>
+  <text x="158" y="286" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">ユーザー質問</text>
+  <text x="158" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">意図・条件</text>
+  <rect x="320" y="250" width="180" height="84" rx="8" fill="#d8f3ef" stroke="#0f766e" stroke-width="2"/>
+  <text x="410" y="286" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">検索</text>
+  <text x="410" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">関連チャンク取得</text>
+  <rect x="572" y="250" width="180" height="84" rx="8" fill="#eef7ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="662" y="286" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">文脈注入</text>
+  <text x="662" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">プロンプトに添付</text>
+  <rect x="796" y="250" width="140" height="84" rx="8" fill="#f8ede0" stroke="#b45309" stroke-width="2"/>
+  <text x="866" y="286" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#202124">LLM回答</text>
+  <text x="866" y="312" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#5f6368">根拠付き生成</text>
+  <path d="M248 292 H316" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M500 292 H568" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M752 292 H792" fill="none" stroke="#202124" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M843 150 C843 210 455 202 420 247" fill="none" stroke="#0f766e" stroke-width="3" stroke-dasharray="8 8" marker-end="url(#arrowGreen)"/>
+  <rect x="104" y="414" width="772" height="86" rx="8" fill="#f7f4ee" stroke="#ded8cc" stroke-width="2"/>
+  <text x="490" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#202124">RAGの要点</text>
+  <text x="490" y="482" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#455a64">モデルを毎回再学習するのではなく、必要な外部知識を検索して回答時の文脈として渡す</text>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#202124"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#0f766e"/>
+    </marker>
+  </defs>
+</svg>
