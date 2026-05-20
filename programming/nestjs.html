@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NestJSの特徴と使い方 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">Node.js / サーバーサイド</p>
+        <h1>NestJSの特徴と使い方</h1>
+        <p class="lead">NestJSは、Node.jsで構造化されたサーバーサイドアプリケーションを作るためのフレームワークです。TypeScript、DI、モジュール、Controller、Serviceを前提に、ExpressやFastifyの上で保守しやすいAPIサーバーを組み立てられます。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. NestJSとは何ですか？</dt>
+          <dd>A. Node.js上で動くサーバーサイドフレームワークです。ExpressやFastifyを土台にしつつ、TypeScript、依存性注入、モジュール分割、デコレータによるルーティングを標準的な設計として提供します。</dd>
+          <dt>Q. 何が便利ですか？</dt>
+          <dd>A. ControllerとServiceを分け、Module単位で機能を整理できるため、中規模以上のAPIサーバーやチーム開発で構成が散らかりにくくなります。</dd>
+          <dt>Q. どうやって使い始めますか？</dt>
+          <dd>A. Nest CLIでプロジェクトを作成し、Controller、Service、Moduleを追加します。HTTPリクエストはControllerで受け、処理の本体はServiceへ置くのが基本です。</dd>
+        </dl>
+      </section>
+
+      <h2>NestJSの位置づけ</h2>
+      <p>NestJSは、Node.jsでバックエンドを作るときのアプリケーション構造を強く用意してくれるフレームワークです。ExpressだけでもAPIは作れますが、ファイル構成、依存関係、バリデーション、認証、例外処理などの設計は開発者側に任されがちです。NestJSはそこに、AngularやSpring Bootに近い構造化された開発体験を持ち込みます。</p>
+      <p>内部のHTTPサーバーとしては、標準ではExpressを使います。必要に応じてFastifyへ切り替えられるため、NestJSは「Expressの代替」というより、「ExpressやFastifyの上にアプリケーション設計の型を載せるもの」と捉えると理解しやすいです。</p>
+
+      <h2>主な特徴</h2>
+      <h3>TypeScript中心の設計</h3>
+      <p>NestJSはTypeScriptとの相性を前提に作られています。DTO、Service、Controller、Moduleに型を付けながら実装できるため、APIの入力や返却値、依存関係を明確にしやすくなります。</p>
+
+      <h3>Moduleによる分割</h3>
+      <p>機能ごとにModuleを作り、その中にControllerやServiceを登録します。たとえばユーザー管理なら<code>UsersModule</code>、認証なら<code>AuthModule</code>のように分けることで、アプリ全体の責務を追いやすくなります。</p>
+      <pre><code>@Module({
+  controllers: [UsersController],
+  providers: [UsersService],
+})
+export class UsersModule {}
+</code></pre>
+
+      <h3>ControllerとServiceの分離</h3>
+      <p>ControllerはHTTPリクエストの入口です。URL、HTTPメソッド、パラメータを受け取り、実際の処理はServiceへ委譲します。Serviceはビジネスロジックやデータ取得を担当します。</p>
+      <pre><code>@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
+  }
+}
+</code></pre>
+
+      <h3>依存性注入</h3>
+      <p><code>@Injectable()</code>を付けたクラスは、NestJSのDIコンテナからControllerなどへ注入できます。クラス同士を直接生成しないため、テスト時の差し替えや責務分離がしやすくなります。</p>
+      <pre><code>@Injectable()
+export class UsersService {
+  findAll() {
+    return [
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+    ];
+  }
+}
+</code></pre>
+
+      <h2>基本的な使い方</h2>
+      <p>まずNest CLIを使ってプロジェクトを作成します。</p>
+      <pre><code>npm i -g @nestjs/cli
+nest new my-app
+cd my-app
+npm run start:dev
+</code></pre>
+
+      <p>機能を追加するときは、CLIでModule、Controller、Serviceを生成できます。</p>
+      <pre><code>nest g module users
+nest g controller users
+nest g service users
+</code></pre>
+
+      <p>典型的な構成は次のようになります。</p>
+      <pre><code>src/
+  main.ts
+  app.module.ts
+  users/
+    users.module.ts
+    users.controller.ts
+    users.service.ts
+</code></pre>
+
+      <h2>最小のAPI例</h2>
+      <p>次の例では、<code>GET /users</code>へアクセスするとユーザー一覧が返ります。</p>
+      <pre><code>// users.service.ts
+@Injectable()
+export class UsersService {
+  findAll() {
+    return [
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+    ];
+  }
+}
+
+// users.controller.ts
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
+  }
+}
+</code></pre>
+
+      <h2>実務でよく使う機能</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">機能</th>
+            <th scope="col">役割</th>
+            <th scope="col">使いどころ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Pipe</td>
+            <td>入力値の変換やバリデーションを行う。</td>
+            <td>DTOと組み合わせて、リクエストボディやクエリを検証する。</td>
+          </tr>
+          <tr>
+            <td>Guard</td>
+            <td>リクエストを通すかどうかを判定する。</td>
+            <td>認証済みユーザーだけ通す、権限ごとに制御する。</td>
+          </tr>
+          <tr>
+            <td>Interceptor</td>
+            <td>処理の前後に共通処理を挟む。</td>
+            <td>レスポンス整形、ログ、計測、キャッシュなど。</td>
+          </tr>
+          <tr>
+            <td>Exception Filter</td>
+            <td>例外をHTTPレスポンスへ変換する。</td>
+            <td>エラー形式を統一する。</td>
+          </tr>
+          <tr>
+            <td>Middleware</td>
+            <td>ルート到達前に処理を実行する。</td>
+            <td>リクエストログ、ヘッダー処理、簡単な前処理。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>向いている場面と注意点</h2>
+      <p>NestJSは、中規模以上のAPIサーバー、チーム開発、長期運用するバックエンド、認証やDB連携を含む業務アプリに向いています。構成の型があるため、開発者が増えてもコードの置き場所や責務をそろえやすいからです。</p>
+      <p>一方で、小さなプロトタイプや数本のAPIだけなら、ExpressやFastifyを直接使うほうが軽く済むことがあります。NestJSはModule、DI、デコレータ、ライフサイクルなどを理解する必要があるため、最初の学習コストはやや高めです。</p>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>NestJSは、Node.jsで保守しやすいバックエンドを作るための構造化フレームワークです。Controllerでリクエストを受け、Serviceに処理を置き、Moduleで機能をまとめる、という基本形を覚えると全体像をつかみやすくなります。小規模用途では少し重いですが、APIが増えるプロジェクトでは設計の足場として有効です。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://nestjs.com/">NestJS公式サイト</a></li>
+          <li><a href="https://docs.nestjs.com/">NestJS Documentation</a></li>
+          <li><a href="https://docs.nestjs.com/controllers">NestJS Controllers</a></li>
+          <li><a href="https://docs.nestjs.com/providers">NestJS Providers</a></li>
+          <li><a href="https://docs.nestjs.com/modules">NestJS Modules</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
