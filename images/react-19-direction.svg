@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360" role="img" aria-labelledby="title desc">
+  <title id="title">React 19の設計方向</title>
+  <desc id="desc">React 19で、イベント処理、非同期更新、フォーム、リソース管理がReactのレンダリングモデルに近づくことを示す図。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#115e59"/>
+    </marker>
+  </defs>
+  <rect width="960" height="360" rx="18" fill="#fffdf8"/>
+  <rect x="32" y="44" width="210" height="92" rx="12" fill="#ece6db" stroke="#ded8cc"/>
+  <text x="137" y="80" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="700" fill="#202124">React 18までで</text>
+  <text x="137" y="108" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#5f6368">手で組み立てがち</text>
+  <rect x="32" y="196" width="210" height="92" rx="12" fill="#ece6db" stroke="#ded8cc"/>
+  <text x="137" y="232" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="700" fill="#202124">React 19から</text>
+  <text x="137" y="260" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#5f6368">Reactのモデルへ寄せる</text>
+
+  <rect x="330" y="34" width="250" height="112" rx="12" fill="#ffffff" stroke="#ded8cc"/>
+  <text x="455" y="67" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="700" fill="#202124">送信処理</text>
+  <text x="455" y="96" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#5f6368">onSubmit、loading、error、</text>
+  <text x="455" y="120" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#5f6368">resetを個別に管理</text>
+
+  <rect x="330" y="194" width="250" height="112" rx="12" fill="#d8f3ef" stroke="#b7d7d2"/>
+  <text x="455" y="227" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="700" fill="#202124">Actionsとフォーム</text>
+  <text x="455" y="256" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#315f5a">useActionState、useFormStatus、</text>
+  <text x="455" y="280" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#315f5a">useOptimisticで一貫化</text>
+
+  <rect x="680" y="34" width="250" height="112" rx="12" fill="#ffffff" stroke="#ded8cc"/>
+  <text x="805" y="67" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="700" fill="#202124">HTMLの副作用</text>
+  <text x="805" y="96" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#5f6368">head、stylesheet、script、</text>
+  <text x="805" y="120" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#5f6368">preloadを外側で調整</text>
+
+  <rect x="680" y="194" width="250" height="112" rx="12" fill="#d8f3ef" stroke="#b7d7d2"/>
+  <text x="805" y="227" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="700" fill="#202124">コンポーネント内で宣言</text>
+  <text x="805" y="256" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#315f5a">metadata、stylesheet、script、</text>
+  <text x="805" y="280" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#315f5a">preloadをReactが調停</text>
+
+  <line x1="252" y1="90" x2="318" y2="90" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="252" y1="242" x2="318" y2="242" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="590" y1="90" x2="668" y2="90" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="590" y1="242" x2="668" y2="242" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M455 154 V184" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M805 154 V184" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+</svg>

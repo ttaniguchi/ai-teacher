@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>React 19で何が変わったか | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">React / バージョン移行</p>
+        <h1>React 19で何が変わったか</h1>
+        <p class="lead">React 19は、単なる便利Hookの追加ではなく、フォーム送信、非同期更新、楽観的UI、リソース読み込み、Server ComponentsをReactのレンダリングモデルに寄せるリリースです。実務では「イベントハンドラで全部手作業」から「Action、Transition、Suspense、フォーム、head管理をReactに任せる」方向へ設計を変えるのが要点です。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. React 19で一番大きく変わったことは？</dt>
+          <dd>A. 非同期の「操作」をActionとして扱い、pending、エラー、楽観的更新、フォーム送信をReactの仕組みに乗せやすくなったことです。<code>useActionState</code>、<code>useFormStatus</code>、<code>useOptimistic</code>が中心です。</dd>
+          <dt>Q. 実務で書き方を変えるべきところは？</dt>
+          <dd>A. フォームは<code>onSubmit</code>で手作業する前に<code>&lt;form action&gt;</code>とActionを検討します。送信中状態は個別の<code>isLoading</code>乱立より<code>useActionState</code>や<code>useFormStatus</code>へ寄せ、即時反映は<code>useOptimistic</code>で表現します。</dd>
+          <dt>Q. 既存アプリはすぐ全面的に書き換えるべき？</dt>
+          <dd>A. いいえ。まずReact 18.3で警告を確認し、削除APIや型変更を直し、フォームやミューテーションの多い画面から段階的にReact 19の書き方へ寄せるのが現実的です。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/react-19-direction.svg" alt="React 19でイベント処理とHTMLリソース管理がReactのモデルに寄っていく図">
+        <figcaption>React 19の方向性は、非同期操作とHTMLリソースをコンポーネントの宣言へ近づけ、Reactが調停できる範囲を広げることです。</figcaption>
+      </figure>
+
+      <h2>まず押さえる全体像</h2>
+      <p>React 19は2024年12月5日に安定版として公開されました。2026年5月時点の公式ドキュメントはReact 19.2を表示していますが、19系の設計上の大きな転換は安定版React 19で入ったものです。</p>
+      <p>実務上の読み方は、「ReactがUIだけでなく、UIに付随する非同期操作とドキュメント資源も理解するようになった」です。従来は、フォーム送信、送信中フラグ、エラー表示、楽観的更新、メタタグ、stylesheet、script、preloadをそれぞれ別の層で調整しがちでした。React 19では、それらをコンポーネントから宣言し、Reactがレンダリング、Suspense、SSR、Hydrationと合わせて扱える範囲が増えています。</p>
+
+      <h2>新機能の要点</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">領域</th>
+            <th scope="col">主な変更</th>
+            <th scope="col">実務での意味</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Actions</td>
+            <td><code>startTransition</code>内の非同期関数をActionとして扱う慣習が入り、フォームActionも追加された。</td>
+            <td>送信処理をイベントハンドラの副作用ではなく、UI状態を返す操作として設計する。</td>
+          </tr>
+          <tr>
+            <td>フォーム</td>
+            <td><code>&lt;form action={fn}&gt;</code>、<code>useActionState</code>、<code>useFormStatus</code>が使える。</td>
+            <td>送信中、結果、バリデーションエラー、フォームリセットをReactに寄せる。</td>
+          </tr>
+          <tr>
+            <td>楽観的UI</td>
+            <td><code>useOptimistic</code>で、通信完了前の見かけ上の状態を表せる。</td>
+            <td>「成功したように見せて、失敗時に戻す」体験を標準の考え方で書く。</td>
+          </tr>
+          <tr>
+            <td>リソース読み取り</td>
+            <td><code>use</code>でPromiseやContextをrender中に読む。PromiseではSuspenseと連動する。</td>
+            <td>データ取得はSuspense対応ライブラリやフレームワークと合わせ、レンダリング境界を設計する。</td>
+          </tr>
+          <tr>
+            <td>ref</td>
+            <td>関数コンポーネントで<code>ref</code>を通常のpropとして受け取れる。</td>
+            <td>新規コンポーネントでは<code>forwardRef</code>前提を減らせる。</td>
+          </tr>
+          <tr>
+            <td>Context</td>
+            <td><code>&lt;SomeContext value={...}&gt;</code>をProviderとして使える。</td>
+            <td>新しいコードは<code>.Provider</code>より簡潔な形へ寄せられる。</td>
+          </tr>
+          <tr>
+            <td>Document Metadata</td>
+            <td><code>&lt;title&gt;</code>、<code>&lt;meta&gt;</code>、一部の<code>&lt;link&gt;</code>をコンポーネント内で宣言できる。</td>
+            <td>ルートやページ単位のメタ情報をコンポーネント近くに置ける。</td>
+          </tr>
+          <tr>
+            <td>stylesheet / script / preload</td>
+            <td>stylesheetの優先度、async scriptの重複排除、<code>preload</code>などのAPIが強化された。</td>
+            <td>CSSや外部スクリプトを、必要なコンポーネントの近くで宣言しやすくなる。</td>
+          </tr>
+          <tr>
+            <td>Server Components</td>
+            <td>React Server ComponentsとServer Actionsが19系の安定機能として扱われる。</td>
+            <td>対応フレームワーク上では、クライアントへ送るJSを減らす設計をより本格的に検討できる。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>新しいセオリー1: フォームはAction中心に考える</h2>
+      <p>React 18以前の実務では、フォーム送信は<code>onSubmit</code>、<code>preventDefault</code>、<code>isSubmitting</code>、<code>error</code>、<code>reset</code>を手でつなぐことが多くありました。React 19では、まずActionとして書けないかを考えます。</p>
+      <pre class="figure"><code>import { useActionState } from "react";
+
+type FormState = {
+  message: string;
+  fieldErrors: Record&lt;string, string&gt;;
+};
+
+async function saveProfile(
+  _previousState: FormState,
+  formData: FormData,
+): Promise&lt;FormState&gt; {
+  const displayName = String(formData.get("displayName") ?? "").trim();
+
+  if (!displayName) {
+    return {
+      message: "",
+      fieldErrors: { displayName: "表示名を入力してください。" },
+    };
+  }
+
+  await updateProfile({ displayName });
+  return { message: "保存しました。", fieldErrors: {} };
+}
+
+export function ProfileForm() {
+  const [state, formAction, isPending] = useActionState(saveProfile, {
+    message: "",
+    fieldErrors: {},
+  });
+
+  return (
+    &lt;form action={formAction}&gt;
+      &lt;input name="displayName" /&gt;
+      &lt;button disabled={isPending}&gt;保存&lt;/button&gt;
+      {state.fieldErrors.displayName &amp;&amp; &lt;p&gt;{state.fieldErrors.displayName}&lt;/p&gt;}
+      {state.message &amp;&amp; &lt;p&gt;{state.message}&lt;/p&gt;}
+    &lt;/form&gt;
+  );
+}
+</code></pre>
+      <p>ここでの設計ポイントは、想定内の失敗を例外ではなく状態として返すことです。入力エラー、権限不足、在庫不足のように画面に表示したい失敗はActionの戻り値にします。一方で、想定外の例外はError Boundaryに流すほうが、監視や復旧の責務を分けやすくなります。</p>
+
+      <h2>新しいセオリー2: pendingは近い場所で読む</h2>
+      <p>デザインシステムや共通Buttonでは、親から<code>isPending</code>をバケツリレーするより、フォーム内で<code>useFormStatus</code>を読む設計が合う場面があります。React 19では、フォーム自体が状態の文脈を持つと考えると整理しやすいです。</p>
+      <pre class="figure"><code>import { useFormStatus } from "react-dom";
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    &lt;button type="submit" disabled={pending}&gt;
+      {pending ? "送信中..." : "送信"}
+    &lt;/button&gt;
+  );
+}
+</code></pre>
+      <p>この形にすると、フォームの中に置かれた送信ボタンが、親コンポーネントの実装詳細を知らずにpendingを扱えます。共通UI部品では特に効きます。</p>
+
+      <h2>新しいセオリー3: 楽観的更新は専用の状態として扱う</h2>
+      <p>クリック直後にUIを先に変える処理は、これまでも<code>useState</code>で書けました。ただし、通信失敗時の戻し方や連打時の整合性が散らかりやすい領域でした。React 19の<code>useOptimistic</code>は、「確定状態」と「処理中だけ見せる状態」を分けるためのAPIです。</p>
+      <p>実務では、いいね、カート数量、並び替え、コメント投稿など、ユーザーが即時反応を期待する操作で検討します。ただし、決済、権限変更、不可逆な削除のように失敗時の心理的コストが高い操作では、楽観的に見せすぎない判断も必要です。</p>
+
+      <h2>新しいセオリー4: render中に読む資源はSuspense境界と一緒に設計する</h2>
+      <p><code>use</code>は、PromiseやContextをrender中に読むAPIです。Promiseを読む場合、解決するまでSuspenseします。これにより、データ読み込みと表示待ちの境界をコンポーネントツリーで表しやすくなります。</p>
+      <p>ただし、Client Componentのrender中で毎回新しいPromiseを作る設計は避けます。公式ドキュメントも、キャッシュされていないPromiseをrender中に作る使い方には警告すると説明しています。実務では、Suspense対応のデータ取得ライブラリ、フレームワークのloader、Server Componentsなど、キャッシュと境界を持つ仕組みと合わせて使うのが基本です。</p>
+
+      <h2>新しいセオリー5: headや外部リソースをコンポーネントに近づける</h2>
+      <p>React 19では、<code>&lt;title&gt;</code>や<code>&lt;meta&gt;</code>をコンポーネント内に書けます。また、stylesheetやasync scriptの扱いも強化され、重複排除や読み込み順の調停をReactが支援します。</p>
+      <p>これにより、「このページに必要なメタ情報」「このコンポーネントに必要なCSS」「このウィジェットに必要な外部script」を、利用箇所の近くに置く設計が取りやすくなります。ただし、ルーティング全体でメタ情報の上書き規則が必要なアプリでは、フレームワークやメタデータ管理ライブラリの抽象が引き続き有効です。</p>
+
+      <h2>移行時に直すべき古い書き方</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">古い書き方</th>
+            <th scope="col">React 19での扱い</th>
+            <th scope="col">移行方針</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>ReactDOM.render</code></td>
+            <td>削除</td>
+            <td><code>createRoot</code>へ移行する。</td>
+          </tr>
+          <tr>
+            <td><code>ReactDOM.hydrate</code></td>
+            <td>削除</td>
+            <td><code>hydrateRoot</code>へ移行する。</td>
+          </tr>
+          <tr>
+            <td><code>unmountComponentAtNode</code></td>
+            <td>削除</td>
+            <td><code>root.unmount()</code>へ移行する。</td>
+          </tr>
+          <tr>
+            <td><code>findDOMNode</code></td>
+            <td>削除</td>
+            <td>DOM refへ移行する。古いUIライブラリが使っていないか確認する。</td>
+          </tr>
+          <tr>
+            <td>関数コンポーネントの<code>propTypes</code>と<code>defaultProps</code></td>
+            <td>実質的に使えない</td>
+            <td>TypeScriptやESデフォルト引数へ寄せる。</td>
+          </tr>
+          <tr>
+            <td>string refs、Legacy Context</td>
+            <td>削除</td>
+            <td>callback ref、<code>createContext</code>へ移行する。</td>
+          </tr>
+          <tr>
+            <td><code>react-dom/test-utils</code>由来の<code>act</code></td>
+            <td>削除・非推奨</td>
+            <td><code>act</code>は<code>react</code>からimportする。</td>
+          </tr>
+          <tr>
+            <td><code>react-test-renderer</code></td>
+            <td>非推奨</td>
+            <td>React Testing Libraryなど、ユーザー操作に近いテストへ移行する。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>TypeScriptで気をつけること</h2>
+      <p>React 19では型も整理されています。特にref callbackは、cleanup関数を返せるようになったため、暗黙returnでDOMインスタンスを返す書き方が問題になります。</p>
+      <pre class="figure"><code>// 避ける: 代入式の結果を暗黙に返してしまう
+&lt;div ref={current =&gt; (instance = current)} /&gt;
+
+// よい: 何も返さないことを明示する
+&lt;div ref={current =&gt; { instance = current; }} /&gt;
+</code></pre>
+      <p>また、<code>useRef</code>は型上、引数が必要になりました。曖昧な<code>useRef()</code>ではなく、<code>useRef(null)</code>や<code>useRef(undefined)</code>のように初期値を明示します。<code>ReactElement</code>のpropsも、デフォルトが<code>any</code>から<code>unknown</code>寄りになっているため、要素の中身を覗くテストやユーティリティは見直し対象です。</p>
+
+      <h2>実務での移行順序</h2>
+      <ol>
+        <li>まずReact 18.3へ上げ、React 19で問題になる非推奨APIの警告を確認する。</li>
+        <li>公式codemodで<code>ReactDOM.render</code>、string refs、<code>act</code> import、<code>useFormState</code>などを機械的に直す。</li>
+        <li>依存ライブラリが<code>findDOMNode</code>、React内部API、古いtest rendererに依存していないか確認する。</li>
+        <li>TypeScriptの型パッケージをReact 19系へ更新し、ref callbackと<code>useRef</code>まわりを直す。</li>
+        <li>フォームやミューテーションの多い画面から、<code>useActionState</code>、<code>useFormStatus</code>、<code>useOptimistic</code>へ段階的に移す。</li>
+        <li>SSRやSSGを使うアプリでは、Hydration差分、Document Metadata、stylesheet、preloadの扱いを確認する。</li>
+        <li>対応フレームワークを使っている場合だけ、Server ComponentsやServer Actionsの設計を採用する。React単体でフルスタック機能が自動的に生えるわけではない。</li>
+      </ol>
+
+      <h2>設計の方向性</h2>
+      <p>React 19以降の方向性は、「UIは純粋関数、通信は外側」という単純な分離から少し進みます。もちろん副作用を無秩序にrenderへ入れるわけではありません。むしろ、ユーザー操作をActionとして名前づけ、pending、成功、失敗、楽観表示、復旧をReactが理解できる形に置く、という方向です。</p>
+      <p>そのため、これからの設計では次の判断が重要になります。</p>
+      <ul>
+        <li>入力エラーは例外ではなくActionの戻り値にする。</li>
+        <li>送信中状態は個別のbooleanを増やす前に、Actionやフォームの状態として読めないか考える。</li>
+        <li>データ読み込みは、Suspense境界、キャッシュ、Server Components、ルーターのloaderのどこで責務を持つか決める。</li>
+        <li>DOMへ逃げる処理は<code>findDOMNode</code>ではなくrefで明示する。</li>
+        <li>ページ単位のメタ情報やリソースは、グローバルな副作用ではなくコンポーネントから宣言できないか検討する。</li>
+        <li>Server Componentsはフレームワーク選定とセットで考える。クライアント状態を何でもサーバーへ移せばよい、という話ではない。</li>
+      </ul>
+
+      <h2>よくある誤解</h2>
+      <h3>React 19にすると状態管理ライブラリは不要になる？</h3>
+      <p>不要にはなりません。React 19が強くしたのは、主にフォーム送信やミューテーション周辺の非同期UIです。クライアント全体の共有状態、正規化キャッシュ、URL状態、複雑なドメイン状態は、引き続き用途に応じて設計します。</p>
+      <h3><code>use</code>があるなら、どこでもfetchしてよい？</h3>
+      <p>よくありません。Client Componentのrender中で新しいPromiseを作ると警告対象です。キャッシュされたPromiseやSuspense対応の仕組みと合わせて使います。</p>
+      <h3>Server ComponentsはReactだけで完結する？</h3>
+      <p>完結しません。React 19ではServer Componentsが安定機能として扱われますが、実際に使うには対応フレームワークやバンドラ統合が必要です。フレームワーク実装側の下位APIは19.x内でもsemver安定ではないと公式に説明されています。</p>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>React 19に乗り換えたら、フォーム送信とミューテーションをActionとして設計し、pendingや楽観的更新をReactのAPIに寄せるのが最も大きな行動変化です。同時に、古いReact DOM API、<code>findDOMNode</code>、関数コンポーネントの<code>defaultProps</code>、古いテスト手法を整理し、Server Componentsやリソース管理はフレームワークとの境界を意識して採用します。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://react.dev/blog/2024/12/05/react-19">React公式: React v19</a></li>
+          <li><a href="https://react.dev/blog/2024/04/25/react-19-upgrade-guide">React公式: React 19 Upgrade Guide</a></li>
+          <li><a href="https://react.dev/reference/react/useActionState">React公式: useActionState</a></li>
+          <li><a href="https://react.dev/reference/react-dom">React公式: React DOM APIs</a></li>
+          <li><a href="use-action-state.html">関連ノート: useActionStateについて</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
