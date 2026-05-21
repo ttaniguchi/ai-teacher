@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>useActionStateについて | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">React / Actions</p>
+        <h1>useActionStateについて</h1>
+        <p class="lead"><code>useActionState</code>は、フォーム送信やボタンクリックなどで実行するActionの結果を、Reactの状態として扱うためのHookです。非同期処理、送信中状態、直前の結果、エラー表示をひとまとまりに整理できます。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. <code>useActionState</code>とは何？</dt>
+          <dd>A. Actionを実行し、その戻り値をコンポーネントの状態として保持するReact Hookです。送信中かどうかを表す<code>isPending</code>も一緒に受け取れます。</dd>
+          <dt>Q. <code>useState</code>や<code>useReducer</code>と何が違う？</dt>
+          <dd>A. <code>useState</code>は値を直接更新し、<code>useReducer</code>は純粋な状態遷移を表すのに向いています。<code>useActionState</code>は、サーバー送信などの副作用を含む処理を実行し、その結果で状態を更新する場面に向いています。</dd>
+          <dt>Q. フォーム専用のHookなの？</dt>
+          <dd>A. フォームと相性がよいですが、フォーム専用ではありません。手動で呼ぶ場合は<code>startTransition</code>で包むか、<code>&lt;form action&gt;</code>のようなAction propに渡して使います。</dd>
+        </dl>
+      </section>
+
+      <h2>基本の形</h2>
+      <p><code>useActionState</code>は、Action関数、初期状態、必要に応じて<code>permalink</code>を受け取り、現在の状態、Actionを呼び出す関数、処理中フラグを返します。</p>
+      <pre class="figure"><code>import { useActionState } from "react";
+
+const [state, dispatchAction, isPending] = useActionState(
+  reducerAction,
+  initialState,
+);
+</code></pre>
+      <p>Action関数は、前回の状態を第1引数として受け取ります。第2引数以降には、<code>dispatchAction</code>に渡した値や、フォーム送信時の<code>FormData</code>が入ります。</p>
+
+      <h2>何を解決するHookか</h2>
+      <p>Reactアプリでは、送信処理の周辺に似た状態管理がよく出てきます。たとえば「送信中か」「成功したか」「バリデーションエラーは何か」「前回の入力結果をどう表示するか」といった状態です。</p>
+      <p><code>useActionState</code>を使うと、送信処理そのものをActionとして書き、その戻り値をUI表示用の状態にできます。これにより、非同期処理と結果表示の関係がコンポーネントの中で追いやすくなります。</p>
+
+      <h2>フォームでの例</h2>
+      <p>フォームの<code>action</code> propに<code>dispatchAction</code>を渡すと、Reactが送信をActionとして扱います。この場合、React側でTransitionとして扱われるため、手動で<code>startTransition</code>を書く必要はありません。</p>
+      <pre class="figure"><code>import { useActionState } from "react";
+
+type FormState = {
+  message: string;
+  error: string | null;
+};
+
+async function submitName(
+  _previousState: FormState,
+  formData: FormData,
+): Promise&lt;FormState&gt; {
+  const name = String(formData.get("name") ?? "").trim();
+
+  if (!name) {
+    return { message: "", error: "名前を入力してください。" };
+  }
+
+  await saveName(name);
+  return { message: `${name}を保存しました。`, error: null };
+}
+
+export function NameForm() {
+  const [state, formAction, isPending] = useActionState(submitName, {
+    message: "",
+    error: null,
+  });
+
+  return (
+    &lt;form action={formAction}&gt;
+      &lt;input name="name" /&gt;
+      &lt;button disabled={isPending}&gt;
+        {isPending ? "保存中..." : "保存"}
+      &lt;/button&gt;
+      {state.error &amp;&amp; &lt;p&gt;{state.error}&lt;/p&gt;}
+      {state.message &amp;&amp; &lt;p&gt;{state.message}&lt;/p&gt;}
+    &lt;/form&gt;
+  );
+}
+</code></pre>
+      <p>ポイントは、Actionが「成功・失敗を含む表示用の状態」を返していることです。想定内のバリデーションエラーはthrowせず、状態として返すとUIに出しやすくなります。</p>
+
+      <h2>手動で呼ぶ場合</h2>
+      <p>ボタンの<code>onClick</code>などから直接<code>dispatchAction</code>を呼びたい場合は、<code>startTransition</code>で包みます。これを忘れると、<code>isPending</code>が期待通りに更新されないことがあります。</p>
+      <pre class="figure"><code>import { startTransition, useActionState } from "react";
+
+function LikeButton({ postId }: { postId: string }) {
+  const [, like, isPending] = useActionState(likePost, null);
+
+  function handleClick() {
+    startTransition(() =&gt; {
+      like({ postId });
+    });
+  }
+
+  return (
+    &lt;button disabled={isPending} onClick={handleClick}&gt;
+      {isPending ? "反映中..." : "いいね"}
+    &lt;/button&gt;
+  );
+}
+</code></pre>
+
+      <h2><code>useReducer</code>との違い</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">観点</th>
+            <th scope="col"><code>useReducer</code></th>
+            <th scope="col"><code>useActionState</code></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>主な用途</td>
+            <td>ローカル状態の遷移を整理する。</td>
+            <td>副作用を伴うActionの結果を状態にする。</td>
+          </tr>
+          <tr>
+            <td>関数の性質</td>
+            <td>基本的に純粋なreducerとして書く。</td>
+            <td>非同期処理やサーバー送信を含められる。</td>
+          </tr>
+          <tr>
+            <td>pending状態</td>
+            <td>自分で管理する。</td>
+            <td><code>isPending</code>として受け取れる。</td>
+          </tr>
+          <tr>
+            <td>フォーム連携</td>
+            <td>手動で<code>onSubmit</code>を書くことが多い。</td>
+            <td><code>&lt;form action={formAction}&gt;</code>と自然に組み合わせられる。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>エラー処理の考え方</h2>
+      <p>入力ミスや在庫不足のように、UIで通常表示したいエラーはActionの戻り値として返します。一方、想定外の例外はthrowすると、Reactは近くのError Boundaryへ流します。</p>
+      <p>つまり、<code>useActionState</code>では「ユーザーに見せる業務上の失敗」と「アプリとしての例外」を分けて扱うと読みやすくなります。</p>
+
+      <h2>Async Reactとの関係</h2>
+      <p><code>useActionState</code>は、ReactがAction、Transition、Suspense、Error Boundaryなどで非同期UIを扱いやすくする流れの中にあるAPIです。送信中の状態を<code>isPending</code>で扱い、Actionの結果を状態にし、必要ならError Boundaryへ例外を渡せます。</p>
+      <p>そのため、単なるフォーム便利Hookというより、「非同期の操作をReactのレンダリングモデルに乗せるためのHook」と捉えると理解しやすいです。</p>
+
+      <h2>よくある注意点</h2>
+      <ul>
+        <li>Action関数の第1引数は前回の状態です。フォームの<code>FormData</code>は第2引数になります。</li>
+        <li>手動で<code>dispatchAction</code>を呼ぶ場合は、基本的に<code>startTransition</code>で包みます。</li>
+        <li>複数回呼び出すと、ReactはActionを順番に処理します。連打時の体験が重要な場合は<code>useOptimistic</code>との併用も検討します。</li>
+        <li>戻り値の型は初期状態と揃えます。TypeScriptでは状態の型を明示すると読みやすくなります。</li>
+        <li>Server Functionsと組み合わせる場合、状態や引数はシリアライズ可能な値にします。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p><code>useActionState</code>は、非同期Actionの「実行」「結果」「送信中状態」をReactの状態としてまとめて扱うHookです。フォーム送信と特に相性がよく、想定内のエラーは状態として返し、想定外の例外はError Boundaryに任せる、という整理ができます。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://react.dev/reference/react/useActionState">React: useActionState</a></li>
+          <li><a href="https://react.dev/reference/react-dom/components/form">React DOM: &lt;form&gt;</a></li>
+          <li><a href="https://react.dev/reference/react/startTransition">React: startTransition</a></li>
+          <li><a href="https://react.dev/reference/react/useOptimistic">React: useOptimistic</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
