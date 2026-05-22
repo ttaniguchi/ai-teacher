@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TypeScript 5→6→7で起きるインパクト | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">TypeScript / バージョン移行</p>
+        <h1>TypeScript 5→6→7で起きる（起きるであろう）インパクト</h1>
+        <p class="lead">TypeScript 5.x は「型システムと言語機能を伸ばす時代」、6.0 は「7.0 ネイティブ実装へ渡す橋渡し」、7.0 は「Go 実装による性能革命とエコシステムの現代化」です。コードの書き方そのものより、設定・ビルド・エディタ体験・レガシー互換の整理が主戦場になります。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. 3世代を一言ずつで言うと？</dt>
+          <dd>A. <strong>TS5</strong>＝言語機能と型推論の拡張。<strong>TS6</strong>＝7.0 向けの設定整理と deprecations の橋渡し。<strong>TS7</strong>＝Go ネイティブ実装による約10倍の高速化と、並列型チェック前提の設計。</dd>
+          <dt>Q. 実務で一番インパクトが大きいのは？</dt>
+          <dd>A. TS5 では型推論の改善や <code>isolatedDeclarations</code> などライブラリ作者向けの変化。TS6/7 では <code>tsconfig.json</code> のデフォルト変更（<code>strict</code>、<code>types</code>、<code>rootDir</code> など）と、レガシー設定・モジュール解決の廃止が最大です。</dd>
+          <dt>Q. いつ移行を始めるべき？</dt>
+          <dd>A. まず TS6 で <code>ignoreDeprecations</code> なしに通る状態を作る。性能が課題なら <code>@typescript/native-preview</code>（<code>tsgo</code>）で TS7 を並行検証。typescript-eslint など API 依存ツールは TS7.1 以降の安定 API を待つ選択肢もあります。</dd>
+          <dt>Q. tsgo は今使える？「7を待つ」話は何？</dt>
+          <dd>A. <strong>型チェックだけ</strong>なら tsgo は今から使える（ベータ）。<strong>eslint・jest・カスタム transformer など <code>import typescript</code> するツール</strong>は TS7.0 では API が未安定のため TS6 を残し、TS7.1 以降を待つ、という二段構えが現実的です。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/typescript-version-roadmap.svg" alt="TypeScript 5から6、7への移行ロードマップ">
+        <figcaption>TS5 は機能拡張、TS6 は移行準備、TS7 はネイティブ実装による性能と並列化が中心です。</figcaption>
+      </figure>
+
+      <h2>全体像：設計思想の転換</h2>
+      <p>Microsoft は TS6 を「JavaScript 実装（内部コードネーム Strada）の最終系」、TS7 を「Go ネイティブ実装（Corsa）」と位置づけています。型チェックの<strong>意味論（semantics）は維持</strong>しつつ、以下の前提でエコシステムを整理します。</p>
+      <ul>
+        <li>ランタイムはほぼ evergreen。ES5 向け出力の需要は消滅に近い。</li>
+        <li>新規プロジェクトのモジュール形式は ESM + バンドラーが主流。</li>
+        <li><code>tsconfig.json</code> は事実上の標準。暗黙推論より明示設定を優先。</li>
+        <li>型の厳密さ（<code>strict</code>）への需要は増加。</li>
+        <li>大規模コードベースでは<strong>ビルド性能が最優先課題</strong>。性能と両立しないオプションは廃止方向。</li>
+      </ul>
+      <p>つまり TS5→7 は「新しい型構文を覚える」より、「プロジェクト設定とツールチェーンを現代化する」移行です。</p>
+
+      <h2>TypeScript 5.x（5.0〜5.9）：言語機能と型推論の拡張期</h2>
+      <p>TS5 系は JS 実装のまま、ECMAScript 追随と型システムの改善を積み上げた世代です。破壊的変更は比較的少なく、<strong>書き方の選択肢が増える</strong>方向が中心です。</p>
+
+      <h3>5.0：標準準拠とライブラリ作者向け機能</h3>
+      <ul>
+        <li><strong>Decorators</strong>：Stage 3 ECMAScript 準拠のデコレータ。クラス・メソッドの横断関心事を標準構文で書ける。</li>
+        <li><strong><code>const</code> type parameters</strong>：推論結果をリテラル型として固定。設定オブジェクトや tuple 推論の精度向上。</li>
+        <li><strong><code>moduleResolution: "bundler"</code></strong>：Vite 等のバンドラー前提の解決戦略。</li>
+        <li><strong><code>verbatimModuleSyntax</code></strong>：型 import/export を実行時に確実に消す。ツリーシェイキングと整合。</li>
+        <li><strong><code>satisfies</code></strong>：型を満たしつつ推論結果を保持（4.9 から継続）。</li>
+      </ul>
+
+      <h3>5.1〜5.4：日常 DX の改善</h3>
+      <ul>
+        <li>JSX の型チェック分離、getter/setter の型独立性、JSDoc タグ拡張（5.1）。</li>
+        <li><code>using</code> 宣言（Explicit Resource Management）、デコレータ metadata（5.2）。</li>
+        <li><code>import type</code> の side-effect import 整理、<code>switch (true)</code> の narrowing（5.3）。</li>
+        <li><code>NoInfer&lt;T&gt;</code>、<code>Object.groupBy</code> / <code>Map.groupBy</code> 型（5.4）。</li>
+      </ul>
+
+      <h3>5.5〜5.9：型推論の深化とビルド向け機能</h3>
+      <ul>
+        <li><strong>推論される type predicate</strong>（5.5）：<code>filter</code> 後の配列型が自動で絞り込まれる。</li>
+        <li><strong><code>isolatedDeclarations</code></strong>（5.5）：宣言ファイル emit をファイル単位で独立可能に。TS7 の並列ビルドと相性が良い。</li>
+        <li>正規表現の構文チェック、常に nullish/truthy な条件の検出（5.5〜5.6）。</li>
+        <li>相対 import の拡張子書き換え（<code>--rewriteRelativeImportExtensions</code>、5.7）。</li>
+        <li><strong>deferred imports</strong>、最小 <code>tsconfig</code>（5.9）。</li>
+      </ul>
+
+      <h3>TS5 世代の実務インパクト</h3>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">対象</th>
+            <th scope="col">影響</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>アプリ開発者</td>
+            <td>新構文の任意採用。<code>satisfies</code>、推論 predicate、Decorators などで型安全な書き方が増える。</td>
+          </tr>
+          <tr>
+            <td>ライブラリ作者</td>
+            <td><code>isolatedDeclarations</code>、<code>const type parameters</code>、declaration emit の品質要求が上がる。</td>
+          </tr>
+          <tr>
+            <td>設定</td>
+            <td><code>moduleResolution: bundler</code> への移行が進む。破壊的変更は限定的。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>TypeScript 6.0：7.0 への橋渡しリリース</h2>
+      <p>TS6 は「最後の JS 実装メジャーリリース」です。新機能もありますが、本質は<strong>7.0 で hard error になるものを先に警告</strong>し、移行時間を確保することです。</p>
+
+      <h3>6.0 の新機能（7.0 以外の価値）</h3>
+      <ul>
+        <li><strong>this-less 関数の推論改善</strong>：メソッド短縮構文でも arrow 関数と同等の推論。バグ検出が増える場合あり。</li>
+        <li><strong><code>#/</code> subpath imports</strong>：Node.js の <code>imports: { "#/*": "./dist/*" }</code> に対応。</li>
+        <li><strong><code>--stableTypeOrdering</code></strong>：7.0 の決定論的型順序と揃える診断用フラグ（最大25%遅くなる）。</li>
+        <li><strong>Temporal / RegExp.escape / Map.getOrInsert</strong> など ECMAScript 2025 追随。</li>
+        <li><strong><code>lib: ["DOM"]</code> に iterable が統合</strong>：<code>dom.iterable</code> 不要に。</li>
+      </ul>
+
+      <h3>デフォルト値の変更（影響大）</h3>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">オプション</th>
+            <th scope="col">5.9 まで</th>
+            <th scope="col">6.0 以降</th>
+            <th scope="col">実務での症状</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>strict</code></td>
+            <td><code>false</code></td>
+            <td><code>true</code></td>
+            <td>新規プロジェクトで strict エラーが増える</td>
+          </tr>
+          <tr>
+            <td><code>module</code></td>
+            <td><code>commonjs</code> 等</td>
+            <td><code>esnext</code></td>
+            <td>emit 形式が変わる</td>
+          </tr>
+          <tr>
+            <td><code>target</code></td>
+            <td>固定世代</td>
+            <td>最新安定 ES（現状 <code>es2025</code>）</td>
+            <td>出力 JS の世代が上がる</td>
+          </tr>
+          <tr>
+            <td><code>types</code></td>
+            <td><code>@types/*</code> 全自動</td>
+            <td><code>[]</code>（空）</td>
+            <td><code>process</code>、<code>describe</code> 等が見つからない。ビルド20〜50%改善の可能性</td>
+          </tr>
+          <tr>
+            <td><code>rootDir</code></td>
+            <td>入力ファイルから推論</td>
+            <td><code>tsconfig.json</code> のディレクトリ</td>
+            <td><code>dist/src/index.js</code> のような出力ずれ</td>
+          </tr>
+          <tr>
+            <td><code>noUncheckedSideEffectImports</code></td>
+            <td><code>false</code></td>
+            <td><code>true</code></td>
+            <td>副作用のみ import の typo 検出</td>
+          </tr>
+          <tr>
+            <td><code>libReplacement</code></td>
+            <td><code>true</code></td>
+            <td><code>false</code></td>
+            <td>watch 時の不要な解決が減り性能改善</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6.0 で deprecated（7.0 で hard error）</h3>
+      <ul>
+        <li><code>target: es5</code>、<code>downlevelIteration</code></li>
+        <li><code>moduleResolution: node/node10/classic</code> → <code>nodenext</code> または <code>bundler</code></li>
+        <li><code>module: amd/umd/systemjs/none</code> → <code>esnext</code> / <code>preserve</code> + バンドラー</li>
+        <li><code>baseUrl</code> → <code>paths</code> にプレフィックスを明示</li>
+        <li><code>esModuleInterop: false</code>、<code>allowSyntheticDefaultImports: false</code></li>
+        <li><code>alwaysStrict: false</code>、<code>outFile</code></li>
+        <li><code>module Foo {}</code> 名前空間構文 → <code>namespace Foo {}</code></li>
+        <li>import <code>asserts</code> → <code>with</code>（import attributes）</li>
+        <li><code>/// &lt;reference no-default-lib="true" /&gt;</code></li>
+        <li><code>tsconfig.json</code> があるのに CLI でファイル指定 → エラー（<code>--ignoreConfig</code> で回避）</li>
+      </ul>
+      <p>移行猶予：<code>"ignoreDeprecations": "6.0"</code> を設定すると警告を抑制できますが、<strong>TS7 では使えません</strong>。自動修正には <a href="https://github.com/andrewbranch/ts5to6">ts5to6</a> コデモッドもあります。</p>
+
+      <h2>TypeScript 7.0：Go ネイティブ実装（Corsa）</h2>
+      <p>TS7 はコンパイラ本体を Go に移植したリリースです。ゼロから書き直しではなく、既存実装の<strong>メソッドical port</strong>で、型チェックロジックは TS6 と構造的に同一とされています。</p>
+
+      <h3>性能とアーキテクチャ</h3>
+      <ul>
+        <li><strong>約10倍の高速化</strong>：VS Code 規模で 77.8s → 7.5s など（公式ベンチマーク）。</li>
+        <li><strong>エディタ起動</strong>：プロジェクトロード 9.6s → 1.2s 程度。</li>
+        <li><strong>メモリ使用量</strong>：おおよそ半減。</li>
+        <li><strong>並列型チェック</strong>：<code>--checkers</code>（デフォルト4）、プロジェクト参照は <code>--builders</code>。</li>
+        <li><strong>決定論的型順序</strong>：<code>stableTypeOrdering</code> が常時 ON。並列化に伴う union 順序の非決定論を排除。</li>
+        <li><strong>LSP ベース</strong>：Language Server Protocol 上のエディタ体験。</li>
+      </ul>
+
+      <h3>導入方法（2026年5月時点）</h3>
+      <pre class="figure"><code># ベータプレビュー（安定版は typescript パッケージ名に統合予定）
+npm install -D @typescript/native-preview@beta
+npx tsgo --version
+
+# VS Code 拡張: TypeScript Native Preview
+# TS6 と並行: npm install -D typescript@npm:@typescript/typescript6</code></pre>
+      <p>安定版 TS7 の <code>tsc</code> は <code>typescript</code> パッケージ名に戻る予定。現状は <code>tsgo</code> と <code>tsc6</code> で共存検証する設計です。</p>
+
+      <h2>tsgo とは何か — 「7を待つ」話の整理</h2>
+      <p><code>tsgo</code> は TypeScript 7（Go ネイティブ実装）の CLI エントリポイントです。ベータ期間中は <code>@typescript/native-preview</code> パッケージに入り、安定版 TS7 リリース後は <code>typescript</code> パッケージの <code>tsc</code> に統合される予定です。つまり <strong>tsgo ≒ 将来の tsc（TS7 版）</strong> と考えてよいです。</p>
+
+      <h3>今すぐ使えるもの / 待つもの</h3>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">用途</th>
+            <th scope="col">tsgo（TS7）で今できる？</th>
+            <th scope="col">備考</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>tsc --noEmit</code> 型チェック</td>
+            <td>◎ ベータから可能</td>
+            <td>大規模リポジトリでも実用例あり。CI の shadow check に向く</td>
+          </tr>
+          <tr>
+            <td>VS Code エディタ体験</td>
+            <td>◎ Native Preview 拡張</td>
+            <td>補完・定義ジャンプ・ホバー等。LSP ベース</td>
+          </tr>
+          <tr>
+            <td><code>tsc</code> による emit（.js / .d.ts 出力）</td>
+            <td>◎ 概ね可能</td>
+            <td>JS からの .d.ts emit は parity 作業中</td>
+          </tr>
+          <tr>
+            <td><code>--watch</code></td>
+            <td>△ 改善中</td>
+            <td>ベータ時点では増分 recheck が未完成。安定版前に改善予定</td>
+          </tr>
+          <tr>
+            <td><code>import typescript</code> するツール</td>
+            <td>✗ TS7.0 では不可</td>
+            <td>typescript-eslint、ts-jest、ts-node、カスタム transformer、言語サービス plugin 等</td>
+          </tr>
+          <tr>
+            <td>Programmatic Compiler API</td>
+            <td>✗ TS7.1 以降</td>
+            <td>Microsoft 公式：安定 API は 7.0 から数か月後の 7.1 以降</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>聞いた「7を待って正式利用」は、おそらく<strong>エコシステム全体を TS7 に乗せ替える</strong>話です。型チェックだけなら tsgo を今から試せますが、<code>typescript</code> パッケージを peer dependency に持つ周辺ツールは <strong>TS7.1 の安定 Compiler API</strong> まで TS6 を残す、という二段構えが現実的です。</p>
+
+      <h3>Microsoft 推奨の共存パターン</h3>
+      <p>TS7 Beta 公式ブログでは、移行期間中は次の構成を想定しています。</p>
+      <ul>
+        <li><strong>型チェック・ビルド</strong>：<code>@typescript/native-preview</code> の <code>tsgo</code>（将来は <code>typescript</code> の <code>tsc</code>）</li>
+        <li><strong>API 依存ツール</strong>：<code>typescript@npm:@typescript/typescript6</code> で TS6 を alias インストールし、<code>tsc6</code> や <code>import typescript</code> を維持</li>
+      </ul>
+      <pre class="figure"><code># package.json 例（npm alias）
+{
+  "devDependencies": {
+    "typescript": "npm:@typescript/typescript6@^6.0.0",
+    "@typescript/native-preview": "beta"
+  },
+  "scripts": {
+    "typecheck": "tsgo --noEmit",
+    "typecheck:legacy": "tsc6 --noEmit"
+  }
+}</code></pre>
+      <p>pnpm なら <code>pnpm.overrides</code> で <code>typescript</code> を 6.x に固定しつつ、ルートに <code>@typescript/native-preview</code> を devDependency として足す、という運用も PostHog 等の大規模リポジトリで採用されています（shadow type-checker パターン）。</p>
+
+      <h3>shadow type-checker パターン（今すぐ tsgo を活かす）</h3>
+      <p>「全部 TS7 に乗せ替えられないが、CI の型チェックだけ速くしたい」場合の定番です。</p>
+      <ol>
+        <li>本番ゲートは従来どおり <code>tsc --noEmit</code>（TS6）を維持</li>
+        <li>並行して <code>tsgo --noEmit</code> を CI に追加（最初は <code>continue-on-error: true</code> でも可）</li>
+        <li>差分が出たら型注釈を足す等で両方 green に揃える</li>
+        <li>安定したら tsgo を本番ゲートに昇格、TS6 は API 依存ツール用に残す</li>
+      </ol>
+      <p>tsgo は tsc6 と意味論を揃えている設計ですが、並列型チェックや union 順序の違いで稀に差分が出ることもあります。公式の <code>--stableTypeOrdering</code>（TS6）や明示的な型注釈で揃えるのが定石です。</p>
+
+      <h3>typescript-eslint はなぜ待つ？</h3>
+      <p>typescript-eslint は内部で <code>typescript</code> パッケージの Program API（AST 走査・型情報取得）に依存しています。TS7 の Go 実装は CLI / LSP は完成度が高い一方、<strong>JavaScript から呼べる Compiler API は TS7.1 以降</strong>と Microsoft が明言しています。さらに Go/WASM 経由で AST・型情報を JS 側に渡す設計も typescript-eslint 側で検討中です。</p>
+      <p>実務的には：</p>
+      <ul>
+        <li><strong>今</strong>：eslint は TS6 の typescript-eslint のまま。型チェックだけ tsgo</li>
+        <li><strong>TS7.0 安定</strong>：<code>typescript</code> パッケージが tsgo ベースの <code>tsc</code> になるが、eslint 系は alias で TS6 維持が必要な場合が多い</li>
+        <li><strong>TS7.1+</strong>：Compiler API 安定後、typescript-eslint が tsgo 対応 → ようやく「全部 TS7」に近づく</li>
+      </ul>
+
+      <h3>tsgo コマンドの要点</h3>
+      <ul>
+        <li><code>tsgo --version</code> — バージョン確認</li>
+        <li><code>tsgo --noEmit</code> — 型チェックのみ（tsc 互換）</li>
+        <li><code>--checkers N</code> — 並列型チェッカー数（デフォルト 4）。メモリとトレードオフ</li>
+        <li><code>--builders N</code> — プロジェクト参照の並列ビルド数</li>
+        <li><code>--singleThreaded</code> — デバッグ・比較用に単一スレッド強制</li>
+      </ul>
+      <p>TS6 の <code>tsc</code> と同じ <code>tsconfig.json</code> を読みます。TS6 で <code>ignoreDeprecations</code> なしに通る設定が、tsgo でも前提になります。</p>
+
+      <h3>TS7 固有の追加・変更インパクト</h3>
+      <ul>
+        <li><strong>6.0 の deprecations がすべて hard error</strong>：<code>ignoreDeprecations</code> 不可。</li>
+        <li><strong>JavaScript サポートの整理</strong>：Closure 互換 JSDoc の特殊扱いを縮小。<code>.ts</code> と分析を揃える方向。
+          <ul>
+            <li><code>@enum</code>、postfix <code>!</code>、Closure 風関数型など非推奨</li>
+            <li>型位置に値を書けない → <code>typeof</code> を使う</li>
+          </ul>
+        </li>
+        <li><strong>Programmatic API</strong>：TS7.0 時点では未安定。<strong>typescript-eslint・ts-jest 等は TS7.1 以降の安定 API を待つ</strong>。型チェックだけなら tsgo は今から使える。</li>
+        <li><strong>watch モード</strong>：ベータ時点では増分 recheck が未完成。安定版前に改善予定。</li>
+        <li><strong>宣言ファイル emit</strong>：JS ファイルからの .d.ts は parity 作業中。</li>
+      </ul>
+
+      <h2>世代別インパクトまとめ</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">観点</th>
+            <th scope="col">TS 5.x</th>
+            <th scope="col">TS 6.0</th>
+            <th scope="col">TS 7.0</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>主目的</td>
+            <td>言語機能・型推論の拡張</td>
+            <td>7.0 への移行準備</td>
+            <td>ネイティブ性能・並列化</td>
+          </tr>
+          <tr>
+            <td>コード変更</td>
+            <td>任意採用が多い</td>
+            <td>推論差分でエラー増の可能性</td>
+            <td>TS6 対応が前提。JS プロジェクトは JSDoc 見直し</td>
+          </tr>
+          <tr>
+            <td>設定変更</td>
+            <td>小〜中</td>
+            <td>大（defaults + deprecations）</td>
+            <td>6.0 設定がそのまま必須</td>
+          </tr>
+          <tr>
+            <td>ビルド時間</td>
+            <td>漸進的改善</td>
+            <td><code>types: []</code> で20〜50%改善例</td>
+            <td>約10倍高速化</td>
+          </tr>
+          <tr>
+            <td>ツール連携</td>
+            <td>問題少</td>
+            <td>codemod 利用可</td>
+            <td>API 依存ツールは段階的移行</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>推奨移行ステップ</h2>
+      <ol>
+        <li><strong>TS 5.9 最新</strong>に上げ、strict 系オプションを明示する。</li>
+        <li><strong>TS 6.0</strong>へ。<code>types</code> と <code>rootDir</code> を先に直す（最多トラブル源）。</li>
+        <li>deprecation 警告を <code>ignoreDeprecations</code> なしで解消。</li>
+        <li>CI で <code>tsgo --noEmit</code> を shadow 実行 → 問題なければ本番ゲートへ。API 依存ツールは TS7.1 まで TS6 alias を維持。</li>
+      </ol>
+
+      <h2>よくある誤解</h2>
+      <ul>
+        <li><strong>「TS7 で型システムが変わる」</strong> → 基本は同じ。変わるのは主に性能・並列化・レガシー廃止。</li>
+        <li><strong>「TS6 はスキップできる」</strong> → 7.0 の breaking changes は 6.0 で予告されたもの。6.0 を飛ばすと一気に修正量が増える。</li>
+        <li><strong>「stableTypeOrdering は常時使うべき」</strong> → 6.0 では 6↔7 diff 診断用。7.0 では常時 ON で選択不可。</li>
+        <li><strong>「types: ["*"] で全部戻せば OK」</strong> → 動くが性能メリットを捨てる。必要な <code>@types</code> だけ列挙するのが推奨。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>TS5 は「書ける・推論される」が伸びた世代。TS6 は「現代の JS エコシステム前提に設定を揃える」橋渡し。TS7 は「同じ TypeScript を10倍速く」する世代です。<strong>tsgo</strong> は TS7 の CLI で、型チェックだけなら今から使えるが、eslint 等の Compiler API 依存は TS7.1 まで TS6 を残す二段構えが現実的。アプリ開発者は TS6 の <code>tsconfig</code> 変更が最優先です。</p>
+      </section>
+
+      <nav class="related" aria-label="関連記事">
+        <h2>関連</h2>
+        <ul>
+          <li><a href="../index.html">トップへ戻る</a></li>
+          <li><a href="nodejs-versions.html">Node.jsの現在の安定版と前後バージョンの違い</a></li>
+          <li><a href="temporal-api.html">Temporal APIとは何か</a></li>
+          <li><a href="package-managers.html">npm、Yarn、pnpmなどの違いと優位性</a></li>
+        </ul>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>出典: <a href="https://devblogs.microsoft.com/typescript/announcing-typescript-6-0/">TypeScript 6.0 発表</a>、<a href="https://devblogs.microsoft.com/typescript/announcing-typescript-7-0-beta/">TypeScript 7.0 Beta 発表</a>、<a href="https://devblogs.microsoft.com/typescript/typescript-native-port/">TypeScript Native Port</a>（2026年5月時点）</p>
+  </footer>
+</body>
+</html>

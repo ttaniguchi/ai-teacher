@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" role="img" aria-labelledby="title desc">
+  <title id="title">TypeScript 5→6→7 の移行ロードマップ</title>
+  <desc id="desc">TS5は言語機能の拡張、TS6は7.0への橋渡しと設定の整理、TS7はGoネイティブ実装による高速化を示すタイムライン</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect width="960" height="320" fill="#f8fafc"/>
+  <line x1="80" y1="170" x2="880" y2="170" stroke="#cbd5e1" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="60" y="60" width="240" height="140" rx="16" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="180" y="95" text-anchor="middle" font-family="system-ui,sans-serif" font-size="22" font-weight="700" fill="#1e3a8a">TypeScript 5.x</text>
+  <text x="180" y="125" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#1e40af">言語機能の拡張</text>
+  <text x="180" y="150" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#334155">Decorators / satisfies</text>
+  <text x="180" y="170" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#334155">型推論の強化 / isolatedDeclarations</text>
+  <rect x="360" y="60" width="240" height="140" rx="16" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="480" y="95" text-anchor="middle" font-family="system-ui,sans-serif" font-size="22" font-weight="700" fill="#92400e">TypeScript 6.0</text>
+  <text x="480" y="125" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#b45309">7.0 への橋渡し</text>
+  <text x="480" y="150" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#334155">defaults / deprecations</text>
+  <text x="480" y="170" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#334155">stableTypeOrdering / ignoreDeprecations</text>
+  <rect x="660" y="60" width="240" height="140" rx="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="780" y="95" text-anchor="middle" font-family="system-ui,sans-serif" font-size="22" font-weight="700" fill="#166534">TypeScript 7.0</text>
+  <text x="780" y="125" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#15803d">Go ネイティブ実装</text>
+  <text x="780" y="150" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#334155">約10倍の高速化</text>
+  <text x="780" y="170" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#334155">並列型チェック / LSP</text>
+  <text x="480" y="250" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" fill="#475569">JS 実装（Strada）→ ネイティブ実装（Corsa）</text>
+  <text x="480" y="278" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#64748b">型チェックの意味論は維持しつつ、エコシステムと性能前提を現代化</text>
+</svg>
