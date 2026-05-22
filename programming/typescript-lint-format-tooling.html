@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TypeScriptの静的解析と自動整形ツールの現在地 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">TypeScript / コーディング基盤</p>
+        <h1>TypeScriptの静的解析と自動整形ツールの現在地</h1>
+        <p class="lead">TypeScript / JavaScript の規約基盤は、今も「ESLint + typescript-eslint + Prettier」が最も広い互換性を持つ標準解です。一方で、後継候補は Rust や Go 系の高速実装へ進み、Biome と Oxlint が「速く、少ない設定で、CI とエディタを統一する」方向へ進化しています。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. 現在もっとも支持されている基盤は何ですか？</dt>
+          <dd>A. 互換性・プラグイン・採用実績まで含めると、まだ <strong>ESLint + typescript-eslint + Prettier</strong> が最も堅い標準です。React、Next.js、Node.js、テスト、アクセシビリティ、import ルールなど周辺エコシステムが強いからです。</dd>
+          <dt>Q. Prettier や Biome の後継はどう進化していますか？</dt>
+          <dd>A. Prettier は「整形専用」の安定ツールとして残り、Biome は Rome の公式フォークとして「formatter + linter + import 整理」をまとめる方向に進化しました。Oxlint は Oxc コンパイラ基盤の高速 linter として、ESLint 互換ルールや type-aware linting を広げています。</dd>
+          <dt>Q. 新規プロジェクトでは何を選ぶべきですか？</dt>
+          <dd>A. 迷うなら <strong>ESLint + typescript-eslint + Prettier</strong>。速度と設定の少なさを優先する小〜中規模プロジェクトなら <strong>Biome</strong>。大規模 monorepo や CI 高速化では <strong>Oxlint + 必要部分だけ ESLint</strong> の段階移行が現実的です。</dd>
+        </dl>
+      </section>
+
+      <h2>結論：標準はまだ ESLint 系、進化の中心は高速統合ツール</h2>
+      <p>「最も支持されている」を、npm ダウンロード数だけではなく、フレームワーク統合、プラグイン資産、既存プロジェクトの採用、移行リスクの低さとして見るなら、2026年5月時点の標準解はまだ ESLint 系です。TypeScript では <code>typescript-eslint</code> が ESLint の flat config 前提で推奨設定を提供し、型情報を使う lint の入口にもなっています。</p>
+      <p>ただし、開発体験の流れは明確に変わっています。昔は「TypeScript は <code>tsc</code>、lint は ESLint、format は Prettier、import 整理は別プラグイン」のように役割分担していました。現在は Biome や Oxlint のように、パーサ・解析・診断・自動修正を単一の高速基盤に寄せる方向が強くなっています。</p>
+
+      <h2>主要ツールの役割</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">ツール</th>
+            <th scope="col">主な役割</th>
+            <th scope="col">強み</th>
+            <th scope="col">注意点</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ESLint</strong></td>
+            <td>JavaScript / TypeScript の lint 基盤</td>
+            <td>プラグイン資産が圧倒的。React、アクセシビリティ、import、テストなどのルールを組み合わせやすい。</td>
+            <td>設定が複雑になりやすい。大規模 CI では速度が課題になりやすい。</td>
+          </tr>
+          <tr>
+            <td><strong>typescript-eslint</strong></td>
+            <td>ESLint で TypeScript を理解するための parser / plugin / config</td>
+            <td>型情報を使うルールを扱える。ESLint flat config の公式的な導線がある。</td>
+            <td>型情報を使う lint は便利だが遅くなりやすい。<code>tsconfig</code> 設計の影響を受ける。</td>
+          </tr>
+          <tr>
+            <td><strong>Prettier</strong></td>
+            <td>自動整形専用</td>
+            <td>意見の強い formatter として安定。多言語・エディタ統合が強い。</td>
+            <td>lint ではない。コード品質やバグ検出は ESLint 等に任せる。</td>
+          </tr>
+          <tr>
+            <td><strong>Biome</strong></td>
+            <td>formatter + linter + import 整理</td>
+            <td>速い。設定が少ない。Prettier / ESLint の一部用途を1つにまとめられる。</td>
+            <td>ESLint の全プラグインを置き換えるものではない。フレームワーク固有ルールが必要なら併用判断が必要。</td>
+          </tr>
+          <tr>
+            <td><strong>Oxlint</strong></td>
+            <td>Oxc 基盤の高速 linter</td>
+            <td>ESLint 互換ルールを広く取り込み、大規模 CI の高速化に向く。type-aware linting と複数ファイル解析も進む。</td>
+            <td>既存 ESLint プラグインの特殊挙動に依存する場合は段階移行が現実的。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>後継ツールは何を置き換えようとしているのか</h2>
+      <h3>Prettier は「なくなる」より「専用ツールとして残る」</h3>
+      <p>Prettier は今も「opinionated code formatter」として、多くの言語とエディタに対応する整形専用ツールです。強みは、整形の議論を減らすことに徹している点です。後継ツールが登場しても、既存プロジェクトでは Prettier を維持する価値は高いままです。</p>
+
+      <h3>Biome は Rome の思想を現実的に引き継いだ統合ツール</h3>
+      <p>Biome は Rome の公式フォークで、Rome の「Web toolchain を1つにまとめる」思想を引き継いでいます。現在の実用上の中心は formatter、linter、import 整理です。Biome の linter は推奨ルールを備え、整形に関する指摘は linter ではなく formatter に分離する設計です。これにより、規約の責務が分かりやすくなります。</p>
+
+      <h3>Oxlint は「ESLint の高速互換レイヤー」に近づいている</h3>
+      <p>Oxlint は Oxc コンパイラスタック上の JavaScript / TypeScript linter です。目標は単なる軽量 linter ではなく、ESLint core ルール、TypeScript ルール、React や Jest などの主要プラグイン領域を広くカバーし、大規模リポジトリでも高速に動かすことです。特に CI 時間が問題になっている組織では、ESLint を全面置換する前に、Oxlint を先に走らせ、重複ルールを ESLint 側で無効化する段階移行が取りやすいです。</p>
+
+      <h2>選定の実務目安</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">状況</th>
+            <th scope="col">推奨構成</th>
+            <th scope="col">理由</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>一般的な React / Next.js / Node.js プロジェクト</td>
+            <td><code>ESLint + typescript-eslint + Prettier</code></td>
+            <td>互換性が最も高く、既存のフレームワーク設定やプラグイン資産を使いやすい。</td>
+          </tr>
+          <tr>
+            <td>新規の小〜中規模 TypeScript プロジェクト</td>
+            <td><code>Biome</code> から開始</td>
+            <td>整形と基本 lint を少ない設定で始められる。必要になったら ESLint を追加できる。</td>
+          </tr>
+          <tr>
+            <td>大規模 monorepo / CI が遅い</td>
+            <td><code>Oxlint + ESLint</code> の段階移行</td>
+            <td>高速なルールを Oxlint に寄せ、ESLint は未対応または特殊なルールだけ残せる。</td>
+          </tr>
+          <tr>
+            <td>チームで規約議論を減らしたい</td>
+            <td><code>Prettier</code> または <code>Biome formatter</code></td>
+            <td>整形は formatter に任せ、レビューでは設計・仕様・安全性を見るほうが効率的。</td>
+          </tr>
+          <tr>
+            <td>型に基づくバグ検出を重視</td>
+            <td><code>tsc --noEmit</code> + typed lint</td>
+            <td>formatter や構文 lint では検出できない Promise、nullable、型境界の問題を拾える。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>導入時の考え方</h2>
+      <p>重要なのは「全部入りの流行ツールを入れる」ことではなく、規約の責務を分けることです。</p>
+      <ul>
+        <li><strong>型チェック</strong>：<code>tsc --noEmit</code>。型の正しさは TypeScript 本体に任せる。</li>
+        <li><strong>静的解析</strong>：ESLint / typescript-eslint / Oxlint / Biome linter。バグ、危険な書き方、チーム規約を扱う。</li>
+        <li><strong>自動整形</strong>：Prettier / Biome formatter / Oxfmt。スタイル議論を機械に寄せる。</li>
+        <li><strong>CI</strong>：まず高速なチェックを先に走らせ、重い type-aware lint は必要範囲に絞る。</li>
+      </ul>
+      <p>この分離を守ると、将来 ESLint から Oxlint へ移す、Prettier から Biome formatter へ移す、といった変更も小さくできます。</p>
+
+      <h2>よくある誤解</h2>
+      <ul>
+        <li><strong>「Biome を入れれば ESLint は不要」</strong>とは限りません。基本的な lint と整形は置き換えやすいですが、フレームワーク固有ルールや社内ルール、特殊な ESLint plugin に依存している場合は併用が現実的です。</li>
+        <li><strong>「Prettier と ESLint は競合する」</strong>というより、役割が違います。Prettier は整形、ESLint は静的解析です。整形ルールを ESLint に持たせすぎないほうが保守しやすいです。</li>
+        <li><strong>「速い linter は浅い」</strong>とは限りません。Oxlint は type-aware linting や multi-file analysis を進めています。ただし、すべての ESLint plugin 挙動が完全互換という前提ではなく、移行時にはルール差分を確認します。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>2026年5月時点では、もっとも安全な標準解は <strong>ESLint + typescript-eslint + Prettier</strong> です。後継の本命は用途で分かれ、<strong>Biome</strong> は「少ない設定で formatter と基本 lint を統合する」方向、<strong>Oxlint</strong> は「ESLint 資産を高速なコンパイラ基盤へ移す」方向に進化しています。新規は Biome から始めてもよいですが、既存・大規模・フレームワーク依存が強い場合は ESLint 系を残しながら段階移行するのが堅実です。</p>
+      </section>
+
+      <nav class="related" aria-label="関連記事">
+        <h2>関連</h2>
+        <ul>
+          <li><a href="../index.html">トップへ戻る</a></li>
+          <li><a href="typescript-5-6-7.html">TypeScript 5→6→7で起きるインパクト</a></li>
+          <li><a href="package-managers.html">npm、Yarn、pnpmなどの違いと優位性</a></li>
+          <li><a href="nodejs-versions.html">Node.jsの現在の安定版と前後バージョンの違い</a></li>
+        </ul>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>出典: <a href="https://eslint.org/docs/latest/use/configure/configuration-files">ESLint configuration files</a>、<a href="https://typescript-eslint.io/getting-started/">typescript-eslint Getting Started</a>、<a href="https://prettier.io/">Prettier</a>、<a href="https://biomejs.dev/blog/announcing-biome/">Announcing Biome</a>、<a href="https://biomejs.dev/linter/">Biome Linter</a>、<a href="https://biomejs.dev/formatter/">Biome Formatter</a>、<a href="https://oxc.rs/docs/guide/usage/linter">Oxlint</a>（2026年5月時点）</p>
+  </footer>
+</body>
+</html>
