@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 360" role="img" aria-labelledby="title desc">
+  <title id="title">Remotionの動画生成フロー</title>
+  <desc id="desc">Reactコンポーネントからフレーム画像を生成し、音声と合わせて動画ファイルへエンコードする流れ</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#115e59"/>
+    </marker>
+    <style>
+      .bg { fill: #fffdf8; }
+      .box { fill: #f7f4ee; stroke: #b9d4cf; stroke-width: 2; rx: 12; }
+      .accent { fill: #d8f3ef; stroke: #0f766e; stroke-width: 2; rx: 12; }
+      .text { fill: #202124; font: 700 22px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .small { fill: #5f6368; font: 15px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .line { stroke: #115e59; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .frame { fill: #ffffff; stroke: #ded8cc; stroke-width: 2; rx: 8; }
+      .frameText { fill: #0f766e; font: 700 18px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="920" height="360"/>
+
+  <rect class="box" x="36" y="72" width="170" height="120"/>
+  <text class="text" x="121" y="116" text-anchor="middle">React</text>
+  <text class="small" x="121" y="146" text-anchor="middle">Component</text>
+  <text class="small" x="121" y="170" text-anchor="middle">props / state / CSS</text>
+
+  <path class="line" d="M 214 132 H 292"/>
+
+  <rect class="accent" x="306" y="54" width="198" height="156"/>
+  <text class="text" x="405" y="96" text-anchor="middle">Remotion</text>
+  <text class="small" x="405" y="126" text-anchor="middle">frame番号を渡す</text>
+  <text class="small" x="405" y="150" text-anchor="middle">Composition設定</text>
+  <text class="small" x="405" y="174" text-anchor="middle">width / fps / duration</text>
+
+  <path class="line" d="M 512 132 H 588"/>
+
+  <g transform="translate(606 72)">
+    <rect class="frame" x="0" y="34" width="78" height="62"/>
+    <rect class="frame" x="18" y="18" width="78" height="62"/>
+    <rect class="frame" x="36" y="2" width="78" height="62"/>
+    <text class="frameText" x="75" y="42" text-anchor="middle">0</text>
+    <text class="small" x="75" y="118" text-anchor="middle">frames</text>
+  </g>
+
+  <path class="line" d="M 738 132 H 812"/>
+
+  <rect class="box" x="826" y="72" width="58" height="120"/>
+  <text class="text" x="855" y="118" text-anchor="middle">MP4</text>
+  <text class="small" x="855" y="150" text-anchor="middle">WebM</text>
+  <text class="small" x="855" y="174" text-anchor="middle">GIF</text>
+
+  <path class="line" d="M 405 218 C 405 272 585 292 855 214"/>
+  <text class="small" x="535" y="282" text-anchor="middle">FFmpegなどで画像列と音声をエンコード</text>
+
+  <text class="small" x="460" y="330" text-anchor="middle">プレビューはブラウザ、最終レンダリングはCLI / Node API / Lambda / Cloud Runなどで実行できる</text>
+</svg>

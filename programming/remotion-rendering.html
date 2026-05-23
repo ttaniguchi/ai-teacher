@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Remotionは動画生成にどんな仕組みを使っているのか | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">React / 動画生成</p>
+        <h1>Remotionは動画生成にどんな仕組みを使っているのか</h1>
+        <p class="lead">Remotionは、Reactコンポーネントを「時間ごとの画面」として実行し、各フレームを画像として描画してから、動画ファイルへエンコードする仕組みです。Reactで動画を直接書き出すというより、ブラウザの描画エンジンとエンコーダを組み合わせて、Reactの見た目を連番フレームへ変換します。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. Reactで作られているRemotionは、動画生成にどんな仕組みを使っているの？</dt>
+          <dd>A. Reactコンポーネントに現在のフレーム番号を渡し、その時点の画面をChromiumなどのブラウザで描画します。生成されたフレーム画像を、音声と合わせてFFmpegなどでMP4、WebM、GIFなどへエンコードします。</dd>
+          <dt>Q. 普通のReactアプリとの一番大きな違いは？</dt>
+          <dd>A. 通常のReactアプリはユーザー操作や状態変化に応じて画面を更新しますが、Remotionでは<code>frame = 0, 1, 2...</code>のように時間をフレーム番号として固定し、同じ入力なら同じ1枚が描けるようにします。</dd>
+          <dt>Q. ブラウザだけで完結するの？</dt>
+          <dd>A. プレビューはブラウザで行えます。最終的な動画レンダリングはCLI、Node.js API、AWS Lambda、Google Cloud Run、クライアントサイドレンダリングなど複数の方法があり、用途に応じて実行場所を選びます。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/remotion-rendering-flow.svg" alt="ReactコンポーネントからRemotionがフレーム画像を生成し、エンコードして動画にする流れ">
+        <figcaption>Remotionの中心は、Reactをフレーム単位で評価し、画像列を実動画ファイルへ変換するパイプラインです。</figcaption>
+      </figure>
+
+      <h2>基本モデル: 動画は「フレーム番号の関数」</h2>
+      <p>Remotionの考え方はシンプルです。Reactコンポーネントに「今は何フレーム目か」を渡し、そのフレームで表示されるべきDOM、CSS、画像、動画、音声を決めます。公式ドキュメントでも、Remotionはフレーム番号と空のキャンバスを渡し、Reactで好きなものを描くという発想で説明されています。</p>
+      <p>たとえば30fpsの5秒動画なら、合計150フレームです。Remotionは<code>0</code>から<code>149</code>までのフレームを順番または並列に描画し、それぞれを1枚の静止画として扱います。アニメーションは、<code>useCurrentFrame()</code>で得たフレーム番号をもとに、位置、透明度、色、サイズなどを計算して作ります。</p>
+
+      <h2>Compositionが動画の設計図になる</h2>
+      <p>Remotionでは、動画として書き出せる単位を<code>&lt;Composition&gt;</code>で登録します。Compositionには、Reactコンポーネントだけでなく、幅、高さ、fps、総フレーム数といった動画メタデータを持たせます。</p>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">情報</th>
+            <th scope="col">役割</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>component</code></td>
+            <td>各フレームで描画されるReactコンポーネント。</td>
+          </tr>
+          <tr>
+            <td><code>width</code> / <code>height</code></td>
+            <td>出力動画の解像度。例: 1920x1080。</td>
+          </tr>
+          <tr>
+            <td><code>fps</code></td>
+            <td>1秒あたりのフレーム数。時間計算の基準になる。</td>
+          </tr>
+          <tr>
+            <td><code>durationInFrames</code></td>
+            <td>動画全体の長さをフレーム数で表す。</td>
+          </tr>
+          <tr>
+            <td><code>inputProps</code></td>
+            <td>名前、商品情報、字幕データなど、動画を動的に変える入力。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>レンダリング時に起きていること</h2>
+      <p>ローカルCLIやサーバーサイドレンダリングでは、Remotionプロジェクトをブラウザで読める形にバンドルし、Headless Chromiumなどを起動して、各フレームを描画します。公式の<code>@remotion/renderer</code>には、Compositionを選ぶ<code>selectComposition()</code>、動画や音声を生成する<code>renderMedia()</code>、フレーム画像を作る<code>renderFrames()</code>、画像列を動画にまとめる<code>stitchFramesToVideo()</code>などのAPIがあります。</p>
+      <p>最終的には、フレーム画像、音声、コーデック設定、ビットレート、CRFなどを使って動画へエンコードします。公式APIの説明にも、<code>codec</code>、<code>audioCodec</code>、<code>videoBitrate</code>、<code>crf</code>、<code>imageFormat</code>など、FFmpegの考え方に近い設定が並びます。</p>
+
+      <h2>処理の流れ</h2>
+      <ol>
+        <li>Reactで動画用コンポーネントを書く。</li>
+        <li><code>&lt;Composition&gt;</code>で解像度、fps、長さ、対象コンポーネントを登録する。</li>
+        <li>StudioやPlayerでブラウザ上プレビューする。</li>
+        <li>レンダリング時にRemotionがプロジェクトをバンドルし、対象Compositionを選ぶ。</li>
+        <li>Chromiumなどで各フレームを描画し、JPEGやPNGなどの画像として取り出す。</li>
+        <li>音声や動画素材を必要なタイミングに合わせる。</li>
+        <li>FFmpegなどで画像列と音声をエンコードし、MP4などの成果物にする。</li>
+      </ol>
+
+      <h2>Reactらしさが効くところ</h2>
+      <p>Remotionの強みは、動画編集のタイムラインをGUIで操作する代わりに、Reactのコンポーネント設計、props、条件分岐、配列のmap、CSS、外部APIデータをそのまま動画生成へ使える点です。たとえば、ユーザー名、売上データ、字幕、商品画像などを<code>inputProps</code>として渡せば、同じCompositionから大量のパーソナライズ動画を生成できます。</p>
+      <p>一方で、動画として安定して書き出すには、通常のWebアプリよりも「同じフレーム番号なら同じ見た目になる」ことが重要です。ランダム値、現在時刻、未完了の非同期読み込み、外部フォント、動画素材の読み込み遅延は、レンダリング結果のぶれや失敗につながるため、Remotionの待機APIや素材管理の作法に合わせて扱います。</p>
+
+      <h2>レンダリング場所の選択肢</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">方法</th>
+            <th scope="col">向いている用途</th>
+            <th scope="col">特徴</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Remotion Studio / CLI</td>
+            <td>ローカル制作、検証、少量の書き出し。</td>
+            <td>手元で確認しながら作れる。CLIでは<code>npx remotion render</code>で書き出せる。</td>
+          </tr>
+          <tr>
+            <td>Node.js SSR API</td>
+            <td>自前サーバーでの自動生成。</td>
+            <td><code>@remotion/renderer</code>を使い、アプリのバックエンド処理に組み込める。</td>
+          </tr>
+          <tr>
+            <td>AWS Lambda</td>
+            <td>大量生成、並列化、短時間のバースト処理。</td>
+            <td>フレーム範囲を分散してレンダリングしやすい。S3などクラウド資源と組み合わせる。</td>
+          </tr>
+          <tr>
+            <td>Cloud Run</td>
+            <td>コンテナ実行基盤でのレンダリング。</td>
+            <td>Remotion公式ではCloud Run対応も用意されているが、2026年5月時点ではドキュメント上でalpha版と説明されている。</td>
+          </tr>
+          <tr>
+            <td>Client-side rendering</td>
+            <td>ブラウザ内での書き出し体験。</td>
+            <td><code>@remotion/web-renderer</code>を使う選択肢。ブラウザ対応や性能制約を考慮する。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>よくある誤解</h2>
+      <h3>Reactが動画コーデックを直接作っているわけではない</h3>
+      <p>Reactはあくまで各時点の見た目を宣言するための層です。実際の描画にはブラウザエンジンが関わり、最終的な動画ファイル化にはエンコード処理が関わります。</p>
+
+      <h3>リアルタイム再生と最終レンダリングは別物</h3>
+      <p>StudioやPlayerで滑らかに見えることと、最終動画を指定コーデックで安定して書き出せることは同じではありません。最終レンダリングでは、全フレームの描画、素材の解決、音声の同期、エンコード品質が重要になります。</p>
+
+      <h3>CSSアニメーション任せではなく、フレーム基準で考える</h3>
+      <p>Remotionでは、動画の時間をフレーム番号で扱うのが基本です。CSSアニメーションも使えますが、再現性やフレーム単位の制御を重視するなら、<code>useCurrentFrame()</code>と<code>interpolate()</code>などで値を計算するほうが理解しやすいです。</p>
+
+      <section class="note">
+        <h2>要点</h2>
+        <ul>
+          <li>RemotionはReactコンポーネントをフレーム単位で描画し、画像列を作る。</li>
+          <li>Compositionが、コンポーネント、解像度、fps、長さをまとめる動画の設計図になる。</li>
+          <li>レンダリングではChromiumなどのブラウザ描画と、FFmpegなどのエンコード処理を組み合わせる。</li>
+          <li>Reactのpropsやデータ取得を使えるため、大量の動的動画生成に向いている。</li>
+          <li>安定した書き出しには、フレーム番号に対して決定的な表示になるよう設計することが重要。</li>
+        </ul>
+      </section>
+
+      <h2>参考資料</h2>
+      <ul>
+        <li><a href="https://www.remotion.dev/docs/the-fundamentals">Remotion Docs: The fundamentals</a></li>
+        <li><a href="https://www.remotion.dev/docs/render">Remotion Docs: Render your video</a></li>
+        <li><a href="https://www.remotion.dev/docs/renderer/render-media">Remotion Docs: renderMedia()</a></li>
+        <li><a href="https://www.remotion.dev/docs/player">Remotion Docs: @remotion/player</a></li>
+        <li><a href="https://www.remotion.dev/docs/lambda">Remotion Docs: @remotion/lambda</a></li>
+      </ul>
+
+      <nav class="related" aria-label="関連ページ">
+        <a href="../index.html">トップページへ戻る</a>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>Reactで画面を作る知識を、動画生成のフレーム単位の考え方へ接続するためのメモです。</p>
+  </footer>
+</body>
+</html>
