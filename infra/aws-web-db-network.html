@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AWSでWebサーバーとDBサーバーを分離する実践的なネットワーク構成 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">AWS / VPC / ネットワーク設計</p>
+        <h1>AWSでWebサーバーとDBサーバーを分離する実践的なネットワーク構成</h1>
+        <p class="lead">WebサーバーとDBサーバーをAWSに置くときは、VPC、Subnet、Route Table、Internet Gateway、NAT Gateway、Security Group、RDSのDB Subnet Groupを組み合わせて、入口・アプリ層・DB層を分けるのが基本です。ここではサービス呼称を思い出しやすいように、正式名と実務での役割を対応づけて整理します。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. AWSでWebサーバーとDBサーバーを置くときの基本構成は？</dt>
+          <dd>A. 1つのVPCを作り、2つ以上のAvailability ZoneにPublic Subnet、Private Subnet、DB Subnetを分けます。外部公開はApplication Load Balancerだけにし、WebサーバーはPrivate Subnet、DBはRDSのDB Subnet Groupに置きます。</dd>
+          <dt>Q. 「ネットワーク周り」でまず覚えるAWSの呼称は？</dt>
+          <dd>A. Amazon VPC、Subnet、Route Table、Internet Gateway、NAT Gateway、Security Group、Network ACL、Application Load Balancer、Target Group、Amazon RDS、DB Subnet Group、VPC Endpointです。</dd>
+          <dt>Q. DBサーバーはPublic Subnetに置いてよい？</dt>
+          <dd>A. 通常は置きません。DBはPrivateまたはIsolatedなDB Subnetに置き、Security GroupでWebサーバーのSecurity GroupからのDBポートだけを許可します。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/aws-web-db-network.svg" alt="AWSでWebサーバーとDBサーバーを分離するVPC構成図">
+        <figcaption>ALBだけを外部公開し、WebサーバーとDBをPrivate側に置く三層構成。Route TableとSecurity Groupで通信経路を絞る。</figcaption>
+      </figure>
+
+      <h2>全体像</h2>
+      <p>実践的な最小構成は「外から見える入口」と「アプリを動かす場所」と「データを持つ場所」を分けることです。入口はPublic Subnet上のApplication Load Balancer、WebアプリはPrivate Subnet上のEC2やECS、DBはAmazon RDSをDB Subnet Groupに配置します。</p>
+      <p>Public Subnetとは、関連づいたRoute TableにInternet GatewayへのデフォルトルートがあるSubnetです。Private Subnetは、直接Internet Gatewayへ出さず、必要な外向き通信だけNAT GatewayやVPC Endpointへ流します。DB Subnetはさらに閉じた層として扱い、アプリ層からのDB接続だけを許可します。</p>
+
+      <h2>構成要素とサービス呼称</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">呼称</th>
+            <th scope="col">何をするものか</th>
+            <th scope="col">実務での覚え方</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Amazon VPC</td>
+            <td>AWS上に作る論理的な専用ネットワーク。CIDR、Subnet、Route Table、Security Groupなどの土台になる。</td>
+            <td>クラウド内の自分用ネットワーク。まずここを作る。</td>
+          </tr>
+          <tr>
+            <td>Subnet</td>
+            <td>VPCのIP範囲を分割した領域。1つのSubnetは1つのAvailability Zoneに属する。</td>
+            <td>AZごとの置き場所。Public、Private、DB用に分ける。</td>
+          </tr>
+          <tr>
+            <td>Availability Zone</td>
+            <td>リージョン内の独立したデータセンター群。障害分離の単位。</td>
+            <td>最低2つ使うと冗長化の基本形になる。</td>
+          </tr>
+          <tr>
+            <td>Route Table</td>
+            <td>Subnetから出る通信の行き先を決めるルートの集合。宛先CIDRとターゲットを持つ。</td>
+            <td>「このSubnetの外向き通信はどこへ行くか」を決める表。</td>
+          </tr>
+          <tr>
+            <td>Internet Gateway</td>
+            <td>VPCをインターネットへ接続するVPCコンポーネント。Public Subnetのデフォルトルート先になる。</td>
+            <td><code>igw-...</code>。Public Subnetの出口兼入口。</td>
+          </tr>
+          <tr>
+            <td>NAT Gateway</td>
+            <td>Private Subnetのリソースがインターネット等へ外向き通信するためのマネージドNAT。</td>
+            <td>Privateから外へ出るための片方向寄りの出口。外からの新規接続は受けない。</td>
+          </tr>
+          <tr>
+            <td>Security Group</td>
+            <td>EC2、ALB、RDSなどに付けるステートフルな仮想ファイアウォール。</td>
+            <td>インスタンスやサービス単位の許可リスト。SGからSGへの許可が実務で重要。</td>
+          </tr>
+          <tr>
+            <td>Network ACL</td>
+            <td>Subnet単位のステートレスな許可・拒否ルール。</td>
+            <td>Subnetの境界に置く粗いフィルタ。まずはSecurity Group中心で考える。</td>
+          </tr>
+          <tr>
+            <td>Application Load Balancer</td>
+            <td>HTTP/HTTPS向けのロードバランサー。ListenerとRuleでTarget Groupへ振り分ける。</td>
+            <td>ALB。Web公開の正面玄関。EC2へ直接公開しないための入口。</td>
+          </tr>
+          <tr>
+            <td>Target Group</td>
+            <td>ALBが転送する宛先の集合。EC2、IP、Lambdaなどを登録し、Health Checkも持つ。</td>
+            <td>ALBの転送先リスト。Webサーバーの生存確認もここ。</td>
+          </tr>
+          <tr>
+            <td>Amazon RDS</td>
+            <td>マネージドなリレーショナルDB。Multi-AZ、バックアップ、パッチ適用などを任せやすい。</td>
+            <td>自前DBサーバーをEC2で持つより、まずRDSを選ぶ。</td>
+          </tr>
+          <tr>
+            <td>DB Subnet Group</td>
+            <td>RDSを配置できるSubnetの集合。通常は複数AZのPrivate Subnetを指定する。</td>
+            <td>RDS用の配置候補Subnetセット。DB本体そのものではない。</td>
+          </tr>
+          <tr>
+            <td>VPC Endpoint</td>
+            <td>S3、ECR、Systems ManagerなどのAWSサービスへ、インターネットを経由せず接続する入口。</td>
+            <td>NAT Gatewayを通さずAWS APIへ行く閉域ルート。コストとセキュリティの両面で効く。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>通信経路の基本</h2>
+      <h3>ユーザーからWebまで</h3>
+      <p>ユーザーはRoute 53で名前解決し、必要に応じてCloudFrontとAWS WAFを通り、Application Load Balancerへ到達します。ALBはPublic Subnetに配置し、HTTPSのListenerで受け、Target Groupに登録されたPrivate Subnet内のWebサーバーへ転送します。</p>
+
+      <h3>WebからDBまで</h3>
+      <p>WebサーバーはRDSのエンドポイントへ接続します。DB側のSecurity Groupは、送信元をWebサーバーのSecurity Groupに限定し、MySQLならTCP 3306、PostgreSQLならTCP 5432など、必要なDBポートだけを許可します。IPアドレス直書きより、Security Group参照のほうがサーバー増減に強いです。</p>
+
+      <h3>Webから外部サービスまで</h3>
+      <p>Private Subnet内のWebサーバーがパッケージ取得や外部API呼び出しを行う場合、Route Tableで<code>0.0.0.0/0</code>をNAT Gatewayへ向けます。NAT Gateway自体はPublic Subnetに置き、NAT GatewayからInternet Gatewayへ出ます。S3、ECR、SSMなどAWSサービスへの通信は、VPC Endpointを使うとインターネット経由を減らせます。</p>
+
+      <h2>SubnetとRoute Tableの分け方</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">Subnet種別</th>
+            <th scope="col">配置するもの</th>
+            <th scope="col">代表的なRoute Table</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Public Subnet</td>
+            <td>Application Load Balancer、NAT Gateway、踏み台を置くならBastion Host</td>
+            <td><code>0.0.0.0/0 -> Internet Gateway</code></td>
+          </tr>
+          <tr>
+            <td>Private Subnet</td>
+            <td>EC2 Web/Appサーバー、ECS Service、内部向けアプリ</td>
+            <td><code>0.0.0.0/0 -> NAT Gateway</code>、必要に応じてVPC Endpoint</td>
+          </tr>
+          <tr>
+            <td>DB Subnet</td>
+            <td>Amazon RDS、AuroraのDBインスタンスやクラスター</td>
+            <td>原則local route中心。インターネットへのデフォルトルートを持たせない設計が多い。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Security Group設計の実例</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">Security Group</th>
+            <th scope="col">Inbound</th>
+            <th scope="col">Outbound</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ALB用SG</td>
+            <td><code>0.0.0.0/0</code> またはCloudFront管理プレフィックスリストからTCP 443。HTTPを使うならTCP 80も。</td>
+            <td>Web用SG宛てにアプリポート、例: TCP 80、8080、3000。</td>
+          </tr>
+          <tr>
+            <td>Web用SG</td>
+            <td>ALB用SGからアプリポートだけ許可。SSHは原則直接開けず、SSM Session Managerなどを使う。</td>
+            <td>DB用SGへDBポート、外部APIへHTTPS、必要なAWSサービスへVPC EndpointまたはNAT経由。</td>
+          </tr>
+          <tr>
+            <td>DB用SG</td>
+            <td>Web用SGからDBポートだけ許可。管理者端末や全インターネットからのDB接続は避ける。</td>
+            <td>通常は最小限。RDS運用上必要な通信はAWS側が管理する。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>実務でよくある構成パターン</h2>
+      <h3>小さめのWebアプリ</h3>
+      <p>Route 53、ACM、ALB、EC2 Auto Scaling Group、RDS Multi-AZで始める構成です。EC2はPrivate Subnetに置き、ALBだけをPublicに出します。アプリのデプロイや管理にはSystems Managerを使うと、SSH用の公開口を減らせます。</p>
+
+      <h3>コンテナ構成</h3>
+      <p>EC2の代わりにAmazon ECSを使い、ALBのTarget GroupにECSタスクを登録します。Fargateを使う場合も、タスクはPrivate Subnetに置くのが一般的です。ECRからイメージを取得するために、NAT GatewayかECR向けVPC Endpointを考えます。</p>
+
+      <h3>DBをさらに強く守る構成</h3>
+      <p>RDSをPublicly accessibleにせず、DB Subnet GroupにはPrivateなSubnetを指定します。管理用接続が必要な場合も、ローカル端末からDBへ直通させるのではなく、VPN、Client VPN、Systems Managerのポートフォワード、踏み台などを検討します。</p>
+
+      <h2>よくある誤解</h2>
+      <ul>
+        <li>Public Subnetに置いたEC2が必ず公開されるわけではありません。Public IP、Route Table、Security Groupが揃って初めて外から到達できます。</li>
+        <li>Private Subnetに置いただけで完全に安全になるわけではありません。Security Group、IAM、OSやミドルウェアの更新、ログ監視も必要です。</li>
+        <li>NAT Gatewayは外部公開用の入口ではありません。Private Subnetから外へ出るための出口です。</li>
+        <li>Network ACLはSecurity Groupの代替ではありません。SGはステートフル、NACLはステートレスで、使いどころが違います。</li>
+        <li>DB Subnet Groupはファイアウォールではありません。RDSの配置先Subnetを指定する仕組みで、通信制御は主にSecurity Groupで行います。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>覚える軸は「VPCがネットワーク全体、Subnetが置き場所、Route Tableが経路、Security Groupが通信許可」です。実践構成では、ALBだけをPublic Subnetに置き、WebサーバーはPrivate Subnet、DBはRDSのDB Subnet Groupに置きます。外向き通信はNAT GatewayやVPC Endpoint、DB接続はWeb用Security GroupからDB用Security Groupへの必要ポートだけ、という形にすると、AWSらしい基本構成になります。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html">AWS Documentation: Enable internet access for a VPC using an internet gateway</a></li>
+          <li><a href="https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Route_Tables.html">AWS Documentation: Configure route tables</a></li>
+          <li><a href="https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html">AWS Documentation: NAT gateways</a></li>
+          <li><a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html">AWS Documentation: Control subnet traffic with network access control lists</a></li>
+          <li><a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html">AWS Documentation: Target groups for your Application Load Balancers</a></li>
+          <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_VPC.WorkingWithRDSInstanceinaVPC.html">AWS Documentation: Working with a DB instance in a VPC</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>

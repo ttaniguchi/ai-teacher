@@ -14,6 +14,7 @@
         <a href="#ai">AI関連</a>
         <a href="#app-development">アプリ開発</a>
         <a href="#javascript">JavaScript基盤</a>
+        <a href="#infrastructure">インフラ</a>
       </nav>
     </div>
   </header>
@@ -22,7 +23,7 @@
     <section class="hero">
       <p class="eyebrow">知識整理</p>
       <h1>技術的な疑問を、あとから読み返せる形で残す</h1>
-      <p class="lead">このサイトは、質問への回答をHTMLとして蓄積していくためのインデックスです。記事が増えても探しやすいよう、AI関連、アプリ開発、JavaScript基盤に分けて整理しています。</p>
+      <p class="lead">このサイトは、質問への回答をHTMLとして蓄積していくためのインデックスです。記事が増えても探しやすいよう、AI関連、アプリ開発、JavaScript基盤、インフラに分けて整理しています。</p>
     </section>
 
     <section class="category-nav" aria-label="カテゴリ一覧">
@@ -37,6 +38,10 @@
       <a href="#javascript">
         <strong>JavaScript基盤</strong>
         <span>Node.js、NestJS、Temporal、パッケージ管理</span>
+      </a>
+      <a href="#infrastructure">
+        <strong>インフラ</strong>
+        <span>AWS、VPC、Web/DB構成</span>
       </a>
     </section>
 
@@ -165,6 +170,21 @@
           <h3>静的解析と自動整形ツールの現在地</h3>
           <p>ESLint、typescript-eslint、Prettier、Biome、Oxlintの役割と、後継ツールの進化を整理します。</p>
           <span class="meta">比較表あり</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="category-section" id="infrastructure" aria-labelledby="infrastructure-heading">
+      <div class="category-heading">
+        <p class="eyebrow">インフラ</p>
+        <h2 id="infrastructure-heading">AWSとネットワーク設計</h2>
+      </div>
+      <div class="article-list">
+        <a class="article-card" href="infra/aws-web-db-network.html">
+          <p class="eyebrow">AWS / VPC</p>
+          <h3>AWSでWebサーバーとDBサーバーを分離する実践的なネットワーク構成</h3>
+          <p>VPC、Subnet、Route Table、ALB、NAT Gateway、Security Group、RDSなどの呼称と役割を整理します。</p>
+          <span class="meta">公式情報確認済み · 図解あり</span>
         </a>
       </div>
     </section>
