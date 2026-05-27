@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Turborepoを用いたモノレポの構成例 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">JavaScript / モノレポ</p>
+        <h1>Turborepoを用いたモノレポの構成例</h1>
+        <p class="lead">Turborepoは「複数パッケージのビルド・テスト・lintを、依存関係順に並列実行し、結果をキャッシュする」ためのオーケストレータです。2026年時点の実務では、pnpm workspaceでパッケージを束ね、appsにNext.jsやHono、packagesにUI・DB・共有設定を置く構成がよく使われます。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. Turborepoモノレポの基本形は？</dt>
+          <dd>A. ルートに<code>turbo.json</code>とワークスペース定義（<code>pnpm-workspace.yaml</code>など）を置き、<code>apps/</code>に実行単位（Web、API）、<code>packages/</code>に共有ライブラリ（UI、DB、型、設定）を分ける形が定番です。</dd>
+          <dt>Q. トレンド寄りのライブラリ構成例は？</dt>
+          <dd>A. pnpm + TypeScript + Next.js（App Router）+ React 19 + Hono + Prisma + TanStack Query + Zod + Biome + Vitest + Playwright + Tailwind CSS v4、といった組み合わせがよく選ばれます。APIの型共有は tRPC か、OpenAPI / Zod スキーマ共有のどちらかです。</dd>
+          <dt>Q. Turborepoとpnpmは何が違う？</dt>
+          <dd>A. pnpmは依存のインストールとworkspaceリンク、Turborepoは<code>build</code>や<code>test</code>などのタスク実行・キャッシュ・並列化を担当します。役割が違うので、多くのプロジェクトで両方を併用します。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/turborepo-monorepo.svg" alt="apps、packages、turbo.jsonの役割分担を示す構成図">
+        <figcaption>apps がプロダクト、packages が再利用部品、Turbo がタスクの実行順とキャッシュを管理します。</figcaption>
+      </figure>
+
+      <h2>ディレクトリ構成の例</h2>
+      <p>フルスタックWebプロダクトを想定した、よく見るレイアウトです。規模が小さいうちは<code>apps/api</code>を省略し、Next.jsのRoute HandlerやServer Actionsだけで始めることも多いです。</p>
+      <pre><code>acme/
+├── apps/
+│   ├── web/                 # Next.js（フロント + BFF）
+│   ├── api/                 # Hono（独立API、必要なら）
+│   └── docs/                # Astro / VitePress（任意）
+├── packages/
+│   ├── ui/                  # 共有Reactコンポーネント
+│   ├── database/            # Prisma schema + client
+│   ├── api-types/           # Zodスキーマ / 共有DTO
+│   ├── typescript-config/   # 共通 tsconfig
+│   └── biome-config/        # 共通 Biome 設定
+├── turbo.json
+├── pnpm-workspace.yaml
+├── package.json
+└── biome.json</code></pre>
+
+      <h2>トレンド寄りの技術スタック例</h2>
+      <p>「今から新規で組む」前提の一例です。プロダクト要件で必ずしも全部は要りません。</p>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">層</th>
+            <th scope="col">よく選ばれる選択肢</th>
+            <th scope="col">packages への置き方</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>パッケージ管理</td>
+            <td>pnpm workspace</td>
+            <td>ルートのみ</td>
+          </tr>
+          <tr>
+            <td>タスク実行</td>
+            <td>Turborepo 2.x</td>
+            <td><code>turbo.json</code></td>
+          </tr>
+          <tr>
+            <td>フロント</td>
+            <td>Next.js 15 + React 19（App Router）</td>
+            <td><code>apps/web</code></td>
+          </tr>
+          <tr>
+            <td>API</td>
+            <td>Hono（Node / Bun）または Next Route Handlers</td>
+            <td><code>apps/api</code> または web 内</td>
+          </tr>
+          <tr>
+            <td>DB</td>
+            <td>Prisma + PostgreSQL</td>
+            <td><code>packages/database</code></td>
+          </tr>
+          <tr>
+            <td>バリデーション</td>
+            <td>Zod</td>
+            <td><code>packages/api-types</code></td>
+          </tr>
+          <tr>
+            <td>クライアント状態</td>
+            <td>TanStack Query v5</td>
+            <td><code>apps/web</code>（必要なら小さな hooks パッケージ）</td>
+          </tr>
+          <tr>
+            <td>スタイル</td>
+            <td>Tailwind CSS v4</td>
+            <td><code>packages/ui</code> と web で共有</td>
+          </tr>
+          <tr>
+            <td>Lint / Format</td>
+            <td>Biome</td>
+            <td><code>packages/biome-config</code></td>
+          </tr>
+          <tr>
+            <td>テスト</td>
+            <td>Vitest（単体）+ Playwright（E2E）</td>
+            <td>各 app / package</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>ルート設定の最小例</h2>
+      <h3>pnpm-workspace.yaml</h3>
+      <pre><code>packages:
+  - "apps/*"
+  - "packages/*"</code></pre>
+
+      <h3>turbo.json（タスクの依存とキャッシュ）</h3>
+      <pre><code>{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    }
+  }
+}</code></pre>
+      <p><code>dependsOn: ["^build"]</code>は「依存している workspace パッケージの build が先に終わる」という意味です。UIパッケージをビルドしてから web アプリをビルドする、といった順序を Turbo が自動で組み立てます。</p>
+
+      <h3>ルート package.json（スクリプトの入口）</h3>
+      <pre><code>{
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  },
+  "packageManager": "pnpm@10.0.0"
+}</code></pre>
+
+      <h2>packages の切り方</h2>
+      <h3>packages/ui</h3>
+      <p>ボタン、フォーム、レイアウトなど、複数アプリで使う React コンポーネントを置きます。ビルドは tsup や Vite library mode がよく使われます。Storybook を同パッケージまたは<code>apps/storybook</code>に置くチームもあります。</p>
+
+      <h3>packages/database</h3>
+      <p>Prisma の schema と生成された Client をエクスポートします。マイグレーションはこのパッケージのスクリプトに集約し、<code>apps/web</code>や<code>apps/api</code>は<code>@acme/database</code>を import するだけにすると、スキーマ変更の影響範囲が追いやすくなります。</p>
+
+      <h3>packages/api-types</h3>
+      <p>APIの入出力を Zod で定義し、サーバーとクライアントの両方から参照します。tRPC を使う場合は router 定義をここか<code>packages/api</code>にまとめ、web から型安全に呼び出す構成もあります。</p>
+
+      <h3>packages/typescript-config / biome-config</h3>
+      <p>各 app の<code>tsconfig.json</code>や<code>biome.json</code>は、共有設定を extends するだけにします。モノレポでは「設定のコピペ」が最初の負債になりやすいので、早めにパッケージ化しておくと楽です。</p>
+
+      <h2>apps/web の package.json 例</h2>
+      <pre><code>{
+  "name": "@acme/web",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "lint": "biome check .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@acme/ui": "workspace:*",
+    "@acme/database": "workspace:*",
+    "@acme/api-types": "workspace:*",
+    "@tanstack/react-query": "^5.0.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}</code></pre>
+      <p><code>workspace:*</code>は pnpm がモノレポ内のローカルパッケージをリンクする記法です。バージョンを手で揃えなくてよいのが利点です。</p>
+
+      <h2>タスクの流れ（開発時のイメージ）</h2>
+      <ol>
+        <li><code>pnpm install</code>で全 workspace の依存を解決する。</li>
+        <li><code>pnpm dev</code>（実体は<code>turbo dev</code>）で、変更のあったアプリとその依存パッケージだけ dev サーバーを起動する。</li>
+        <li>UIを<code>packages/ui</code>で直すと、web のホットリロード経由で反映される（パッケージのビルド方式次第）。</li>
+        <li>CIでは<code>turbo build lint test</code>を走らせ、キャッシュヒットしたパッケージはスキップする。</li>
+      </ol>
+
+      <h2>よくある設計判断</h2>
+      <ul>
+        <li><strong>APIを別 app にするか</strong>: チーム分離やデプロイ単位が必要なら Hono を<code>apps/api</code>に。小さく始めるなら Next の Server Actions / Route Handlers だけで十分なことが多い。</li>
+        <li><strong>tRPC vs REST + Zod</strong>: 同一モノレポで型共有が効くなら tRPC。外部公開APIやモバイルクライアントが別なら OpenAPI 生成や REST の方が無難。</li>
+        <li><strong>UIパッケージのビルド</strong>: 開発中は TypeScript のソースをそのまま参照（transpilePackages）し、公開用ライブラリにするときだけ dist を出す、という段階的なやり方が現実的。</li>
+        <li><strong>Biome vs ESLint</strong>: 新規なら Biome 一本化が増えている。既存ルール資産が大きいなら ESLint + Prettier をルートパッケージで共有。</li>
+      </ul>
+
+      <h2>このリポジトリ内の関連ノート</h2>
+      <ul>
+        <li><a href="package-managers.html">npm、Yarn、pnpmの違い</a> — workspace とモノレポのパッケージマネージャ選定</li>
+        <li><a href="typescript-lint-format-tooling.html">静的解析と自動整形ツール</a> — Biome をルートで共有する話</li>
+        <li><a href="react-19-changes.html">React 19の変更点</a> — web アプリ側の前提</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>Turborepoモノレポは「apps = 動かすもの」「packages = 共有するもの」「turbo = タスクの順序とキャッシュ」で覚えると整理しやすいです。トレンド寄りの新規構成なら pnpm + Next.js + React 19 + Prisma + Zod + Biome + Vitest を軸に、APIとUIの境界だけプロダクトに合わせて足すのが現実的です。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://turbo.build/repo/docs">Turborepo Docs</a></li>
+          <li><a href="https://pnpm.io/workspaces">pnpm Workspaces</a></li>
+          <li><a href="https://nextjs.org/docs/app">Next.js App Router</a></li>
+          <li><a href="https://hono.dev/">Hono</a></li>
+          <li><a href="https://www.prisma.io/docs">Prisma Docs</a></li>
+          <li><a href="https://biomejs.dev/">Biome</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
