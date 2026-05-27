@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AWSデータベースのプロダクト運用トレンドと冗長化の長短 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">AWS / RDS / Aurora / 運用設計</p>
+        <h1>AWSデータベースのプロダクト運用トレンドと冗長化の長短</h1>
+        <p class="lead">2026年5月時点の実務では、「RDSを1台立てる」だけでは本番の標準にならず、同一リージョン内のMulti-AZ、必要に応じたAurora、リージョン横断は要件がはっきりしたときだけ、という段階設計が主流です。コスト・可用性・運用負荷・移行しやすさを、企業プロダクトの規模別に整理します。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. いまプロダクト運用で「普通」に選ばれる構成は？</dt>
+          <dd>A. 本番は同一リージョンの<strong>Multi-AZ</strong>（RDSまたはAurora）を前提にし、接続は<strong>RDS Proxy</strong>やアプリ側プール、バックアップ・監視・秘密情報ローテーションをセットで入れる。開発・検証だけSingle-AZ。リージョン跨ぎはDR要件やグローバル読取が明確なときに<strong>Aurora Global Database</strong>などを検討する。</dd>
+          <dt>Q. RDSシングル（Single-AZ）とMulti-AZの差は？</dt>
+          <dd>A. Single-AZはコスト最小だがAZ障害で長時間止まる。Multi-AZ DBインスタンスは別AZのスタンバイへ同期レプリケーションし自動フェイルオーバーするため、AZ単位の障害に耐える。本番の「標準」はMulti-AZ側。</dd>
+          <dt>Q. AuroraはいつRDSより有利？</dt>
+          <dd>A. 読み取りが多い、ストレージ成長が読めない、フェイルオーバーを短くしたい、クラスタ単位でReaderを増やしたい、または変動負荷にAurora Serverless v2を合わせたいとき。小規模で負荷が平坦ならRDS Multi-AZのままでも十分なことが多い。</dd>
+          <dt>Q. リージョンを跨ぐ冗長化は「常にやるべき」？</dt>
+          <dd>A. いいえ。コスト・複雑さ・整合性モデル（多くは非同期）のトレードオフが大きい。RTO/RPO、規制、ユーザー分布が理由になって初めて採用するのが一般的。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/aws-database-operations.svg" alt="Single-AZ RDSからMulti-AZ、Aurora、Aurora Global Databaseへ段階的に可用性が上がる概念図">
+        <figcaption>可用性を上げるほどコストと設計の複雑さも増える。右端まで最初から入れないのが実務的な進め方。</figcaption>
+      </figure>
+
+      <h2>いまの運用トレンド（プロダクト視点）</h2>
+      <p>企業のWebプロダクト（SaaS、業務システム、ECなど規模は問わない）では、次の方針がよく見られます。</p>
+      <ul>
+        <li><strong>本番のデフォルトは高可用性構成</strong>：Single-AZは開発・検証・一時環境向け。本番DBはMulti-AZ DBインスタンス、Multi-AZ DBクラスタ、またはAuroraクラスタ（複数AZ）が前提。</li>
+        <li><strong>マネージドのまま運用負荷を下げる</strong>：OSパッチやストレージ拡張の一部をAWSに任せ、チームはスキーマ変更・性能・バックアップ検証・アクセス制御に集中する。</li>
+        <li><strong>接続層の分離</strong>：RDS Proxyで接続プールとフェイルオーバー時の接続維持を改善するケースが増えている（Lambdaやコンテナのスパイク接続にも有効）。</li>
+        <li><strong>可観測性の標準装備</strong>：Performance Insights、Enhanced Monitoring、CloudWatchアラーム、スロークエリログ、レプリケーション遅延の監視を本番セットに含める。</li>
+        <li><strong>コスト最適化は「構成の見直し」から</strong>：Reserved Instances、Savings Plans、インスタンスサイズ適正化、dev/stagingのSingle-AZ化、不要なReader削減。エンジン延長サポート料金の回避（バージョンアップ）も優先度が高い。</li>
+        <li><strong>IaCと変更手順の定型化</strong>：Terraform / CloudFormation / CDKで構成をコード化し、メンテナンスウィンドウ・Blue/Green Deployments（対応エンジン）でエンジン更新やパラメータ変更のリスクを下げる。</li>
+        <li><strong>Serverlessは万能ではなく変動負荷向け</strong>：Aurora Serverless v2はACUの範囲で細かくスケールし、対応バージョンでは0 ACUまで縮退できる。一方、最小ACU、接続数、バッファキャッシュ、Global Database利用時の下限などを設計する必要がある。</li>
+        <li><strong>リージョン跨ぎは要件駆動</strong>：「とりあえず二重化」ではなく、DR（災害復旧）、近接リード、規制上のデータ所在地など明確な理由があるときだけ。</li>
+      </ul>
+
+      <h2>選択肢の比較（コスト・可用性・運用）</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">構成</th>
+            <th scope="col">可用性のイメージ</th>
+            <th scope="col">コスト</th>
+            <th scope="col">運用・複雑さ</th>
+            <th scope="col">向いている場面</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>RDS Single-AZ</td>
+            <td>AZ障害で停止しやすい。計画メンテは停止または短い影響。</td>
+            <td>最安（インスタンス1台分＋ストレージ）</td>
+            <td>最も単純</td>
+            <td>開発・検証、非クリティカル、コスト最優先のPoC</td>
+          </tr>
+          <tr>
+            <td>RDS Multi-AZ（スタンバイ）</td>
+            <td>同一リージョン内のAZ障害に耐える。自動フェイルオーバー（おおむね数分以内のイメージ）。</td>
+            <td>スタンバイ分のDBインスタンス、ストレージ、同期複製に応じて増える</td>
+            <td>低〜中。AWSがフェイルオーバーを面倒見る</td>
+            <td>中小〜中規模の本番MySQL/PostgreSQLなどの<strong>標準解</strong></td>
+          </tr>
+          <tr>
+            <td>RDS Multi-AZ DBクラスタ</td>
+            <td>スタンバイが読み取り可能。フェイルオーバーがより短い場合がある。</td>
+            <td>3台構成なので標準Multi-AZより高め</td>
+            <td>中。読み取り経路の設計が必要</td>
+            <td>同一リージョンで読みも足したいがAuroraまで行かない場合</td>
+          </tr>
+          <tr>
+            <td>Read Replica（同一リージョン）</td>
+            <td>プライマリ障害時は<strong>自動昇格しない</strong>（別途フェイルオーバー設計が必要）。</td>
+            <td>レプリカ分のインスタンス＋転送</td>
+            <td>中。遅延・ルーティングをアプリで扱う</td>
+            <td>レポート、分析、読み取り負荷分散（HAの代替ではない）</td>
+          </tr>
+          <tr>
+            <td>Amazon Aurora（クラスタ）</td>
+            <td>ストレージが6コピー（3 AZ）。Writer障害時はReader昇格で短い切替がしやすい。</td>
+            <td>小規模ではRDSより高く見えやすいが、I/OやReader構成次第で妥当化しやすい</td>
+            <td>中。Aurora固有の運用知識が必要</td>
+            <td>成長見込みが大きい、読み取り多、フェイルオーバー短縮、PostgreSQL/MySQL互換で新規構築</td>
+          </tr>
+          <tr>
+            <td>Aurora Serverless v2</td>
+            <td>クラスタと同系。負荷に応じてACUスケール。</td>
+            <td>変動負荷向け。常時高負荷ならProvisionedの方が読みやすいことがある</td>
+            <td>中。最小/最大ACU、接続数、スケール速度を決める必要がある</td>
+            <td>昼夜差・季節差が大きい、スパイクがあるが常時大きいインスタンスは無駄</td>
+          </tr>
+          <tr>
+            <td>クロスリージョン Read Replica / 手動DR</td>
+            <td>リージョン障害時に別リージョンへ切替（RPOはレプリケーション遅延分）。</td>
+            <td>レプリカ＋ネットワーク＋切替運用コスト</td>
+            <td>高。DNS・接続先・データ整合の手順が必要</td>
+            <td>RDSのままDRだけ欲しい、グローバル書き込みは不要</td>
+          </tr>
+          <tr>
+            <td>Aurora Global Database</td>
+            <td>プライマリリージョン＋読み取り専用セカンダリ（複数リージョン）。典型的なレプリケーション遅延は1秒未満級だが<strong>グローバル強整合ではない</strong>。</td>
+            <td>高（各リージョンのクラスタ＋レプリケーション）</td>
+            <td>高。DR訓練、昇格手順、読み取りルーティングが必要</td>
+            <td>リージョン障害へのDR、海外ユーザー向けローカルリード</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>規模別の現実的な選び方</h2>
+
+      <h3>小規模プロダクト（初期〜数十万ユーザー級の目安）</h3>
+      <p>まずは<strong>RDS Multi-AZ（PostgreSQLまたはMySQL）</strong>で十分なことが多いです。VPC内Private Subnet、Security Group、自動バックアップ（保持期間はビジネス要件で7〜35日など）、PITR有効化がセット。読み取りがボトルネックになってからRead Replicaを足す、という順序がコスト効率がよいです。</p>
+
+      <h3>中規模（読み取り・書き込みともに伸びる）</h3>
+      <p>新規なら<strong>Aurora</strong>を検討するタイミングが増えます。Readerを水平に足しやすく、ストレージの上限を意識しにくい点がメリット。アプリはReaderエンドポイント（読み取り専用）とWriterエンドポイントを分ける設計にします。接続数が増えるならRDS Proxyを挟みます。</p>
+
+      <h3>大規模・グローバル</h3>
+      <p>同一リージョン内はAuroraクラスタ＋複数Reader＋Proxyが基本形になりやすいです。リージョン跨ぎは<strong>Aurora Global Database</strong>でDRとグローバルリードを担うパターンが定番ですが、「両リージョンで同時に書き込みたい」「どこから読んでも強整合」といった要件は別問題です。2026年時点では<strong>Aurora DSQL</strong>のような分散SQLがそのニッチを狙う選択肢として登場していますが、既存RDS/Auroraの置き換えではなく、制約を満たす新規システムで慎重に検証する位置づけです。</p>
+
+      <h2>リージョン跨ぎで押さえる誤解</h2>
+      <ul>
+        <li><strong>Multi-AZ ≠ リージョン冗長</strong>：Multi-AZは同一リージョン内のAZ分散。リージョン全体の障害には効かない。</li>
+        <li><strong>Read ReplicaはHAではない</strong>：読み取りスケール用。プライマリ障害時の自動切替はMulti-AZやAuroraのフェイルオーバー機構と役割が違う。</li>
+        <li><strong>Multi-AZ DBクラスタはAuroraではない</strong>：RDSの3台構成で、2台のReaderをフェイルオーバー先兼読み取り先にできる。Auroraクラスタとはストレージ構造も運用特性も違う。</li>
+        <li><strong>Global Databaseはアクティブ・アクティブ書き込みではない</strong>：書き込みは基本プライマリリージョン集中。セカンダリは読み取りとDR向け。Write forwardingを使っても、書き込みはプライマリへ転送される設計。</li>
+        <li><strong>RPO/RTOを先に決める</strong>：「二重化した」だけでは復旧時間とデータ損失許容が定まらない。バックアップ復元だけのDRと、Global Database＋昇格手順のDRでは到達点が違う。</li>
+      </ul>
+
+      <h2>コストを抑える実務テクニック</h2>
+      <ul>
+        <li>本番だけMulti-AZ。staging/devはSingle-AZ（データはマスキングまたは縮小）。</li>
+        <li>安定稼働が見えたら<strong>Reserved Instances</strong>やSavings Plans。Single-AZ用とMulti-AZ用は別購入で、デプロイ種別を間違えると割引が効かない。</li>
+        <li>Performance Insightsで過剰スペックを削る。I/O最適化ストレージやAuroraの料金体系はワークロード依存。</li>
+        <li>古いメジャーバージョンの<strong>RDS Extended Support料金</strong>はMulti-AZのスタンバイにも適用される。アップグレード計画をRI購入より先に。</li>
+        <li>リージョン跨ぎは常時二重本番にせず、DR時のみスケールする設計（セカンダリを小さく保つ等）も検討対象。</li>
+      </ul>
+
+      <h2>可用性を上げるときの「セット商品」</h2>
+      <p>DBエンジンだけMulti-AZにしても、アプリが接続し直せない・バックアップを復元したことがない、では運用品質は上がりません。プロダクト運用レベルでは次をまとめて設計します。</p>
+      <ul>
+        <li>自動バックアップ＋スナップショット＋定期的な<strong>リストア訓練</strong></li>
+        <li>メンテナンスウィンドウと変更管理（Blue/Green Deployments、マイグレーション手順）</li>
+        <li>Secrets Manager等での認証情報ローテーション</li>
+        <li>暗号化（保存時・転送時）、最小権限のDBユーザ、監査ログ</li>
+        <li>フェイルオーバー時の接続（Proxy、DNS TTL、リトライ設計）</li>
+        <li>関連ネットワーク構成（<a href="aws-web-db-network.html">Web/DB分離のVPC設計</a>）</li>
+      </ul>
+
+      <h2>意思決定の早見表</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">状況</th>
+            <th scope="col">第一候補</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>新規本番、PostgreSQL/MySQL、まず安定させたい</td>
+            <td>RDS Multi-AZ</td>
+          </tr>
+          <tr>
+            <td>読み取り負荷が先にボトルネック</td>
+            <td>Read Replica または Aurora Reader</td>
+          </tr>
+          <tr>
+            <td>フェイルオーバー短縮・ストレージ成長・Reader追加が頻繁</td>
+            <td>Aurora クラスタ</td>
+          </tr>
+          <tr>
+            <td>負荷が大きく変動（夜間アイドルなど）</td>
+            <td>Aurora Serverless v2 を検討</td>
+          </tr>
+          <tr>
+            <td>リージョン障害でも数分〜数十分で復旧したい</td>
+            <td>Aurora Global Database ＋ DR手順書</td>
+          </tr>
+          <tr>
+            <td>コスト最優先・障害許容</td>
+            <td>Single-AZ ＋ バックアップからの復旧（本番非推奨が多い）</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>2020年代後半のプロダクト運用では、本番の「標準」は<strong>同一リージョンのMulti-AZ（RDSまたはAurora）</strong>です。Single-AZは開発向け、リージョン跨ぎはDRやグローバルリードの要件があるときだけ、と段階を踏むのがコストと複雑さのバランスがよいです。Auroraは可用性・読み取り拡張・運用のしやすさで有利になりやすい一方、小規模・平坦負荷ならRDS Multi-AZのままで十分なケースも多いです。最後に、構成だけでなくバックアップ検証・接続の切替・監視・バージョン管理をセットにして初めて「運用レベル」になります。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html">AWS Documentation: Multi-AZ deployments for Amazon RDS</a></li>
+          <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/multi-az-db-clusters-concepts.html">AWS Documentation: Multi-AZ DB cluster deployments for Amazon RDS</a></li>
+          <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.AuroraHighAvailability.html">AWS Documentation: High availability for Amazon Aurora</a></li>
+          <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.how-it-works.html">AWS Documentation: How Aurora Serverless v2 works</a></li>
+          <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html">AWS Documentation: Using Amazon Aurora Global Database</a></li>
+          <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/blue-green-deployments-overview.html">AWS Documentation: Amazon RDS Blue/Green Deployments</a></li>
+          <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/extended-support-charges.html">AWS Documentation: Amazon RDS Extended Support charges</a></li>
+          <li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html">AWS Documentation: Amazon RDS Proxy</a></li>
+          <li><a href="https://aws.amazon.com/about-aws/whats-new/2026/05/amazon-rds-ena-express-multiAZ/">AWS What's New: Amazon RDS ENA Express for Multi-AZ replication (2026)</a></li>
+          <li><a href="aws-web-db-network.html">関連記事: AWSでWebサーバーとDBサーバーを分離するネットワーク構成</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="720" viewBox="0 0 1120 720" role="img" aria-labelledby="title desc">
+  <title id="title">AWS database operation choices</title>
+  <desc id="desc">A staged architecture from Single-AZ RDS to RDS Multi-AZ, Aurora, and cross-Region disaster recovery.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f4f4f"/>
+    </marker>
+    <style>
+      .bg { fill: #fffdf8; }
+      .lane { fill: #ffffff; stroke: #ded8cc; stroke-width: 2; }
+      .dev { fill: #f3f4f6; stroke: #6b7280; }
+      .prod { fill: #e8f5ff; stroke: #3b82f6; }
+      .aurora { fill: #ecfeff; stroke: #0f766e; stroke-width: 2.5; }
+      .global { fill: #fff2e1; stroke: #d97706; }
+      .label { font: 700 22px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; fill: #202124; }
+      .small { font: 600 17px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; fill: #202124; }
+      .tiny { font: 500 14px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; fill: #4b5563; }
+      .path { fill: none; stroke: #2f4f4f; stroke-width: 3; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1120" height="720" rx="18"/>
+  <text class="label" x="560" y="42" text-anchor="middle">AWS database operation choices</text>
+  <text class="tiny" x="560" y="68" text-anchor="middle">Raise availability only when product requirements justify the cost and operational complexity.</text>
+
+  <rect class="lane dev" x="40" y="100" width="220" height="520" rx="16"/>
+  <text class="small" x="150" y="138" text-anchor="middle">Dev / PoC</text>
+  <rect class="lane" x="70" y="170" width="160" height="120" rx="12"/>
+  <text class="small" x="150" y="220" text-anchor="middle">RDS</text>
+  <text class="tiny" x="150" y="246" text-anchor="middle">Single-AZ</text>
+  <text class="tiny" x="150" y="268" text-anchor="middle">Lowest cost</text>
+
+  <rect class="lane prod" x="290" y="100" width="240" height="520" rx="16"/>
+  <text class="small" x="410" y="138" text-anchor="middle">Standard production</text>
+  <rect class="lane" x="320" y="170" width="180" height="140" rx="12"/>
+  <text class="small" x="410" y="222" text-anchor="middle">RDS Multi-AZ</text>
+  <text class="tiny" x="410" y="248" text-anchor="middle">Same Region</text>
+  <text class="tiny" x="410" y="270" text-anchor="middle">Automatic failover</text>
+  <rect class="lane" x="320" y="340" width="180" height="120" rx="12"/>
+  <text class="small" x="410" y="392" text-anchor="middle">Readable standby</text>
+  <text class="tiny" x="410" y="418" text-anchor="middle">Multi-AZ cluster</text>
+  <text class="tiny" x="410" y="440" text-anchor="middle">or read replica</text>
+
+  <rect class="lane aurora" x="560" y="100" width="250" height="520" rx="16"/>
+  <text class="small" x="685" y="138" text-anchor="middle">Scale / growth</text>
+  <rect class="lane" x="590" y="170" width="190" height="150" rx="12"/>
+  <text class="small" x="685" y="222" text-anchor="middle">Aurora cluster</text>
+  <text class="tiny" x="685" y="248" text-anchor="middle">Writer + readers</text>
+  <text class="tiny" x="685" y="270" text-anchor="middle">6 storage copies</text>
+  <text class="tiny" x="685" y="292" text-anchor="middle">Fast failover</text>
+  <rect class="lane" x="590" y="350" width="190" height="110" rx="12"/>
+  <text class="small" x="685" y="400" text-anchor="middle">Serverless v2</text>
+  <text class="tiny" x="685" y="426" text-anchor="middle">Variable workload</text>
+
+  <rect class="lane global" x="840" y="100" width="240" height="520" rx="16"/>
+  <text class="small" x="960" y="138" text-anchor="middle">Cross-Region</text>
+  <rect class="lane" x="870" y="170" width="180" height="150" rx="12"/>
+  <text class="small" x="960" y="220" text-anchor="middle">Aurora Global</text>
+  <text class="tiny" x="960" y="246" text-anchor="middle">Database</text>
+  <text class="tiny" x="960" y="272" text-anchor="middle">DR / global reads</text>
+  <text class="tiny" x="960" y="294" text-anchor="middle">Async replication</text>
+  <rect class="lane" x="870" y="350" width="180" height="110" rx="12"/>
+  <text class="small" x="960" y="400" text-anchor="middle">Runbook</text>
+  <text class="tiny" x="960" y="426" text-anchor="middle">RTO/RPO drills</text>
+
+  <path class="path" d="M 260 230 H 290"/>
+  <path class="path" d="M 530 250 H 560"/>
+  <path class="path" d="M 810 250 H 840"/>
+
+  <text class="tiny" x="560" y="660" text-anchor="middle">Private subnets, backups, monitoring, credentials, and failover drills are part of production readiness.</text>
+</svg>
