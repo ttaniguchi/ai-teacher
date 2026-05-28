@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ルーターのWi-Fiセキュリティ設定の違い | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">ネットワーク / Wi-Fi / ルーター設定</p>
+        <h1>ルーターのWi-Fiセキュリティ設定の違い</h1>
+        <p class="lead">家庭用ルーターのWi-Fiセキュリティは、基本的に「WPA3が使えるか」「古い端末も接続したいか」「企業向け認証を使うか」で選びます。家庭ではWPA3-パーソナル、または互換性重視ならWPA3-パーソナル+WPA2-PSK[AES]が第一候補です。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. 家庭用ならどれを選べばよい？</dt>
+          <dd>A. 新しめのスマホ・PCだけなら<code>WPA3-パーソナル</code>。古い端末も混ざるなら<code>WPA3-パーソナル+WPA2-PSK[AES]</code>。WPA3で接続できない端末がある場合は<code>WPA2-PSK[AES]</code>を選びます。</dd>
+          <dt>Q. 避けたほうがよい設定は？</dt>
+          <dd>A. <code>WPA2-PSK[AES]+WPA-PSK[TKIP]</code>のように<code>WPA</code>や<code>TKIP</code>を含む設定は避けます。古い機器向けの互換設定で、現在の家庭用Wi-Fiでは弱い設定です。</dd>
+          <dt>Q. エンタープライズは家庭で使う？</dt>
+          <dd>A. 通常は使いません。RADIUSサーバーなどでユーザーごとに認証する企業・学校向けの方式です。家庭では「パーソナル」または「PSK」を選べば十分です。</dd>
+        </dl>
+      </section>
+
+      <h2>選択肢の意味</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">設定名</th>
+            <th scope="col">意味</th>
+            <th scope="col">家庭でのおすすめ度</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>開く</td>
+            <td>暗号化もパスワード認証もないオープンWi-Fi。通信内容や接続者の管理が弱く、家庭用の常用には向きません。</td>
+            <td>使わない</td>
+          </tr>
+          <tr>
+            <td>WPA3-パーソナル</td>
+            <td>家庭・小規模向けの新しい方式。WPA2-PSKの代わりにSAEという認証方式を使い、パスワード推測攻撃に強くなっています。</td>
+            <td>対応端末だけなら最有力</td>
+          </tr>
+          <tr>
+            <td>WPA3-パーソナル+WPA2-PSK[AES]</td>
+            <td>WPA3対応端末はWPA3で、古い端末はWPA2-PSK[AES]で接続できる混在モードです。セキュリティと互換性のバランスがよい設定です。</td>
+            <td>迷ったときの第一候補</td>
+          </tr>
+          <tr>
+            <td>WPA2-PSK[AES]</td>
+            <td>家庭用で長く使われてきた標準的な方式。共通パスワード、つまりPSKを使い、暗号化にはAES系の方式を使います。</td>
+            <td>WPA3非対応端末がある場合に有力</td>
+          </tr>
+          <tr>
+            <td>WPA2-PSK[AES]+WPA-PSK[TKIP]</td>
+            <td>WPA2/AESに加えて、古いWPA/TKIP端末も接続できる互換モードです。TKIPは古い暗号方式なので、接続できる端末は増えても安全性は下がります。</td>
+            <td>避ける</td>
+          </tr>
+          <tr>
+            <td>WPA2-エンタープライズ</td>
+            <td>WPA2を使い、RADIUSサーバーなどでユーザーごとに認証する企業向け方式です。家庭用の共通パスワード方式とは運用が違います。</td>
+            <td>家庭では通常不要</td>
+          </tr>
+          <tr>
+            <td>WPA/WPA2-エンタープライズ</td>
+            <td>WPA2 Enterpriseに古いWPA Enterprise互換を加えた企業向け混在モードです。古い方式を許すため、現在の新規設定では選びにくいです。</td>
+            <td>家庭では不要、企業でも慎重に</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>名前の読み解き方</h2>
+      <h3>WPA、WPA2、WPA3</h3>
+      <p>WPAは古い世代、WPA2は長く使われてきた世代、WPA3はより新しい世代です。基本的には数字が新しいほど設計も新しく、家庭用ではWPA3を使えるならWPA3を優先します。</p>
+
+      <h3>パーソナル、PSK、エンタープライズ</h3>
+      <p>パーソナルは家庭・小規模向けです。PSKはPre-Shared Keyの略で、ルーターと端末が同じWi-Fiパスワードを共有する方式です。エンタープライズは、会社や学校のようにユーザーごとにID・証明書・RADIUSサーバーなどで認証する方式です。</p>
+
+      <h3>AESとTKIP</h3>
+      <p>AESはWPA2以降で通常選ぶべき暗号方式です。TKIPは古いWPA時代の互換用で、現在は弱い設定として扱われます。設定名に<code>TKIP</code>が入っていたら、古い端末をどうしてもつなぐための例外設定だと考えると分かりやすいです。</p>
+
+      <h2>実際の選び方</h2>
+      <ol>
+        <li>まず<code>WPA3-パーソナル</code>を試す。</li>
+        <li>一部の端末が接続できなければ<code>WPA3-パーソナル+WPA2-PSK[AES]</code>にする。</li>
+        <li>それでも古い端末がつながらなければ<code>WPA2-PSK[AES]</code>にする。</li>
+        <li><code>WPA</code>や<code>TKIP</code>を含む設定は、どうしても必要な古い端末専用のSSIDを分ける場合だけ検討する。</li>
+      </ol>
+      <p>セキュリティ方式を強くしても、Wi-Fiパスワードが短い・推測しやすいと効果が落ちます。方式の選択と同じくらい、十分に長く、使い回していないパスワードにすることが大切です。</p>
+
+      <h2>よくある誤解</h2>
+      <ul>
+        <li>「WPA2なら全部同じ」ではありません。<code>WPA2-PSK[AES]</code>と<code>WPA2-PSK[AES]+WPA-PSK[TKIP]</code>では、後者が古い互換方式を許します。</li>
+        <li>「WPA3にすれば全端末が安全に高速化する」わけではありません。WPA3非対応端末は接続できないことがあり、混在モードでは端末ごとにWPA3またはWPA2で接続します。</li>
+        <li>「エンタープライズのほうが名前が強そうだから家庭でもよい」わけではありません。認証サーバーを前提にした運用方式なので、家庭用ルーター単体では通常使いません。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>家庭用のおすすめ順は、<code>WPA3-パーソナル</code>、<code>WPA3-パーソナル+WPA2-PSK[AES]</code>、<code>WPA2-PSK[AES]</code>です。<code>WPA</code>や<code>TKIP</code>を含む設定は古い端末向けの互換モードなので、通常は避けます。会社や学校のようにユーザーごとに認証する仕組みがない限り、エンタープライズ設定も選びません。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://support.apple.com/en-us/102766">Apple Support: Recommended settings for Wi-Fi routers and access points</a></li>
+          <li><a href="https://www.wi-fi.org/news-events/newsroom/wi-fi-alliance-introduces-wi-fi-certified-wpa3-security">Wi-Fi Alliance: Wi-Fi Alliance introduces Wi-Fi CERTIFIED WPA3 security</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
