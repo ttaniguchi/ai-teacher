@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Honoの概要と使い方 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">JavaScript / Webフレームワーク</p>
+        <h1>Honoの概要と使い方</h1>
+        <p class="lead">Honoは、Web標準のRequest/Responseを軸にした軽量なTypeScript向けWebフレームワークです。Cloudflare Workers、Deno、Bun、Node.js、各種サーバーレス環境など複数の実行環境で、ほぼ同じアプリケーションコードを動かせる点が大きな特徴です。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. Honoってどんなフレームワークですか？</dt>
+          <dd>A. Expressに近い書き味でAPIや小さなWebアプリを作れる、軽量・高速・TypeScript中心のWebフレームワークです。Web標準APIを使うため、Node.js専用ではなくEdgeやサーバーレスにも載せやすい設計です。</dd>
+          <dt>Q. 何が得意ですか？</dt>
+          <dd>A. 小さなAPI、BFF、Webhook、プロキシ、Edgeアプリ、モノレポ内の軽量バックエンドに向いています。ルーティング、ミドルウェア、バリデーション、RPC的な型共有を少ないコードで始められます。</dd>
+          <dt>Q. NestJSやExpressと比べると？</dt>
+          <dd>A. NestJSほど大きな設計の型はありませんが、そのぶん軽く始められます。Expressより現代的なTypeScript体験とマルチランタイム対応を意識しており、FastifyよりWeb標準とEdge適性に寄せた選択肢です。</dd>
+        </dl>
+      </section>
+
+      <h2>Honoの位置づけ</h2>
+      <p>Honoは、HTTPリクエストを受けてレスポンスを返すためのWebアプリケーションフレームワークです。画面全体を構築するメタフレームワークではなく、基本的にはAPIサーバー、BFF、Webhook受信、プロキシ、Edge上の小さな処理を書くための道具と考えると理解しやすいです。</p>
+      <p>特徴的なのは、Web標準の<code>Request</code>、<code>Response</code>、<code>fetch</code>に寄せていることです。Node.jsの<code>req</code>/<code>res</code>に強く依存しないため、Cloudflare Workers、Deno、Bun、Vercel、Netlify、AWS Lambda、Node.jsなど、複数の環境へ展開しやすくなっています。</p>
+
+      <h2>主な特徴</h2>
+      <h3>軽量で始めやすい</h3>
+      <p>Honoの基本形は、<code>new Hono()</code>でアプリを作り、<code>app.get()</code>や<code>app.post()</code>でルートを登録するだけです。Expressに近い感覚で読めるため、Node.jsのAPI開発に慣れている人なら導入の心理的負担は小さめです。</p>
+
+      <h3>Web標準ベースでマルチランタイム</h3>
+      <p>同じルーティングやミドルウェアのコードを、実行環境ごとのエントリーポイントに載せ替えやすいのがHonoの強みです。特にEdge Runtimeやサーバーレスでは、依存が小さく起動が軽いこと、Web標準APIに沿っていることが効きます。</p>
+
+      <h3>TypeScriptとの相性がよい</h3>
+      <p>ルートパラメータ、Context、バリデーション、Hono Clientを使ったRPC風の型共有など、TypeScriptでAPI境界を扱いやすくする仕組みがあります。Zodなどのバリデーションライブラリと組み合わせる構成もよく使われます。</p>
+
+      <h3>ミドルウェアとヘルパーが揃っている</h3>
+      <p>CORS、JWT、Basic/Bearer認証、ログ、ETag、セキュリティヘッダー、Cookie、Streamingなどのミドルウェアやヘルパーが用意されています。必要なものを足していく、小さく組み立てるタイプのフレームワークです。</p>
+
+      <h2>基本的な使い方</h2>
+      <p>新規プロジェクトは、公式の<code>create-hono</code>で作成できます。テンプレート選択でNode.js、Cloudflare Workers、Bun、Denoなどの実行環境を選びます。</p>
+      <pre><code>npm create hono@latest my-app
+cd my-app
+npm install
+npm run dev
+</code></pre>
+
+      <p>最小のAPIは次のように書けます。</p>
+      <pre><code>import { Hono } from 'hono'
+
+const app = new Hono()
+
+app.get('/', (c) =&gt; {
+  return c.text('Hello Hono')
+})
+
+app.get('/users/:id', (c) =&gt; {
+  const id = c.req.param('id')
+  return c.json({ id })
+})
+
+export default app
+</code></pre>
+
+      <p>ミドルウェアは<code>app.use()</code>で追加します。たとえばログとCORSを入れる場合は次のようになります。</p>
+      <pre><code>import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { logger } from 'hono/logger'
+
+const app = new Hono()
+
+app.use(logger())
+app.use('/api/*', cors())
+
+app.get('/api/health', (c) =&gt; c.json({ ok: true }))
+
+export default app
+</code></pre>
+
+      <h2>他のフレームワークとの比較</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">フレームワーク</th>
+            <th scope="col">得意なこと</th>
+            <th scope="col">Honoと比べた見方</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Express</td>
+            <td>Node.jsの定番APIサーバー。情報量、既存ミドルウェア、採用実績が非常に多い。</td>
+            <td>HonoはExpressに近い書き味を保ちつつ、TypeScript体験、軽さ、Edge/サーバーレス適性を現代寄りにした選択肢。</td>
+          </tr>
+          <tr>
+            <td>Fastify</td>
+            <td>Node.jsで高性能なAPIサーバーを作る。スキーマ、プラグイン、バリデーションの仕組みが強い。</td>
+            <td>Node.js中心で堅く作るならFastify、Web標準と複数ランタイムを重視するならHonoが合いやすい。</td>
+          </tr>
+          <tr>
+            <td>NestJS</td>
+            <td>DI、Module、Controller、Serviceなどを備えた構造化バックエンド。中規模以上のチーム開発に向く。</td>
+            <td>Honoは設計の自由度が高く軽い。NestJSは初期学習コストが高い代わりに、大規模化したときの型を先に用意してくれる。</td>
+          </tr>
+          <tr>
+            <td>Next.js Route Handlers</td>
+            <td>Reactアプリと同じプロジェクト内でAPIを持つ。画面、認証、サーバー処理を一体で扱いやすい。</td>
+            <td>画面中心ならNext.js、API単体や複数ランタイム展開を切り出したいならHonoが扱いやすい。</td>
+          </tr>
+          <tr>
+            <td>Elysia</td>
+            <td>Bunを中心に高速なAPIを作る。型推論とスキーマ統合の開発体験が強い。</td>
+            <td>Bun前提で攻めるならElysia、ランタイムを固定しすぎずWeb標準ベースで広く動かすならHonoが選びやすい。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>メリット</h2>
+      <ul>
+        <li>コード量が少なく、APIやWebhookをすぐに書き始められる。</li>
+        <li>Web標準APIを軸にしているため、Edge、サーバーレス、Node.jsなどに展開しやすい。</li>
+        <li>TypeScriptの型補完が効きやすく、ルートやContextの見通しがよい。</li>
+        <li>ミドルウェアとヘルパーが公式に揃っており、小さな構成から段階的に拡張できる。</li>
+        <li>モノレポ内で、フロントエンドとは独立した軽量API層を作りやすい。</li>
+      </ul>
+
+      <h2>デメリットと注意点</h2>
+      <ul>
+        <li>NestJSのようなModule、DI、アーキテクチャ規約は標準では強くないため、大規模化すると設計ルールを自分たちで決める必要がある。</li>
+        <li>Expressほど歴史が長いわけではないため、特定ミドルウェアや社内ノウハウがExpress前提の場合は移行コストが出る。</li>
+        <li>Node.js専用ライブラリを多用すると、せっかくのマルチランタイム性が弱くなる。</li>
+        <li>Edge環境ではファイルシステム、長時間接続、TCP接続、ネイティブ依存などに制約があるため、Honoを使えば何でも同じように動くわけではない。</li>
+        <li>自由度が高いぶん、認証、エラー形式、ディレクトリ構成、テスト方針を早めに揃えないとプロジェクトごとの差が出やすい。</li>
+      </ul>
+
+      <h2>選び方の目安</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">状況</th>
+            <th scope="col">選びやすい候補</th>
+            <th scope="col">理由</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cloudflare WorkersなどEdgeでAPIを作りたい</td>
+            <td>Hono</td>
+            <td>Web標準ベースで、軽量なルーティングとミドルウェアを載せやすい。</td>
+          </tr>
+          <tr>
+            <td>小さなBFFやWebhookを素早く作りたい</td>
+            <td>Hono / Express</td>
+            <td>どちらも書き始めが軽い。新規でTypeScript中心ならHonoが気持ちよく使いやすい。</td>
+          </tr>
+          <tr>
+            <td>Node.jsで高性能・堅牢なAPIを作り込みたい</td>
+            <td>Fastify</td>
+            <td>Node.js中心のプラグイン、スキーマ、バリデーション設計が強い。</td>
+          </tr>
+          <tr>
+            <td>大きな業務APIをチームで長期運用したい</td>
+            <td>NestJS</td>
+            <td>Module、DI、Controller、Serviceなど、設計の型をチームで共有しやすい。</td>
+          </tr>
+          <tr>
+            <td>Reactアプリの中にAPIを同居させたい</td>
+            <td>Next.js Route Handlers</td>
+            <td>画面、サーバー処理、認証、デプロイ単位をまとめやすい。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>Honoは「軽く書けるExpress風のAPIフレームワーク」を、TypeScript、Web標準、Edge/サーバーレス時代に合わせて作り直したような存在です。小さく始めて複数ランタイムへ展開したい場合に強く、逆に大規模な業務アプリの設計規約までフレームワークに任せたい場合はNestJSやFastifyのほうが合うことがあります。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://hono.dev/docs">Hono Documentation</a></li>
+          <li><a href="https://hono.dev/docs/getting-started/basic">Hono Getting Started</a></li>
+          <li><a href="https://hono.dev/docs/guides/middleware">Hono Middleware Guide</a></li>
+          <li><a href="https://github.com/honojs/hono">honojs/hono GitHub Repository</a></li>
+          <li><a href="https://expressjs.com/">Express公式サイト</a></li>
+          <li><a href="https://fastify.dev/">Fastify公式サイト</a></li>
+          <li><a href="https://nestjs.com/">NestJS公式サイト</a></li>
+          <li><a href="https://nextjs.org/docs/app/building-your-application/routing/route-handlers">Next.js Route Handlers</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
