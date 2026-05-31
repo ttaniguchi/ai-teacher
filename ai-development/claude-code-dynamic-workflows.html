@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude CodeのDynamic Workflowsとは何か | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">Claude Code / AI開発</p>
+        <h1>Claude CodeのDynamic Workflowsとは何か</h1>
+        <p class="lead">Dynamic Workflowsは、Claude Codeが複雑な依頼に対して、その場で作業手順を組み立て、ユーザー承認を挟みながら実行できる研究プレビュー機能です。固定のスラッシュコマンドや常設エージェントを増やすのではなく、依頼ごとに「今回だけの実行計画」を生成する点が特徴です。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. Claude CodeのDynamic Workflowsとは何ですか？</dt>
+          <dd>A. 複雑なタスクを受けたとき、Claude Codeが探索、編集、検証、報告などの手順を動的に設計し、承認後に実行する仕組みです。2026年5月28日にAnthropicが研究プレビューとして発表しました。</dd>
+          <dt>Q. 普通のプロンプトやカスタムコマンドと何が違いますか？</dt>
+          <dd>A. プロンプトは一回の指示、カスタムコマンドは事前に決めた手順です。Dynamic Workflowsは、タスク内容を見て毎回ワークフローを生成するため、未知の調査や複数段階の実装に向いています。</dd>
+          <dt>Q. いつ使うと有用ですか？</dt>
+          <dd>A. リポジトリ調査を伴う機能追加、テスト込みのバグ修正、技術調査から記事化までの流れ、既存コードに合わせたリファクタリング、複数成果物を作る作業で効果が出やすいです。</dd>
+          <dt>Q. 注意点はありますか？</dt>
+          <dd>A. 研究プレビューなので挙動や提供条件が変わる可能性があります。また、長いワークフローはコストと実行時間が増えるため、承認前に範囲、停止条件、検証方法を確認するのが重要です。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/claude-code-dynamic-workflows.svg" alt="Claude Code Dynamic Workflowsが依頼からワークフロー生成、承認、実行、検証へ進む流れ">
+        <figcaption>Dynamic Workflowsは、作業プロセスを事前固定せず、依頼ごとに組み立てる発想です。</figcaption>
+      </figure>
+
+      <h2>機能の全体像</h2>
+      <p>Anthropicの公式ブログとClaude Code Docsでは、Dynamic Workflowsは「Claude Codeがタスクに合わせてワークフローを生成し、ユーザーが承認してから実行する」機能として説明されています。対象は、単発のコード生成よりも、複数ステップに分かれる開発作業です。</p>
+      <p>従来のClaude Codeでも、ユーザーが「まず調べて、次に実装して、最後にテストして」と頼むことはできます。Dynamic Workflowsの違いは、Claude Code側が作業の構造を明示的なワークフローとして提案し、それを実行単位にできるところです。人間は「その手順で進めてよいか」「範囲が広すぎないか」「検証は十分か」を確認しやすくなります。</p>
+
+      <h2>構成要素</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th>要素</th>
+            <th>役割</th>
+            <th>実務で見るポイント</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>タスク理解</td>
+            <td>依頼の目的、制約、成果物、検証条件を読み取る。</td>
+            <td>曖昧な依頼では、最初にゴールと除外範囲を入れる。</td>
+          </tr>
+          <tr>
+            <td>ワークフロー生成</td>
+            <td>調査、編集、テスト、レビュー、報告などを手順化する。</td>
+            <td>手順が大きすぎる場合は小さく分ける。</td>
+          </tr>
+          <tr>
+            <td>承認</td>
+            <td>実行前に人間が計画を確認する。</td>
+            <td>コスト、時間、変更対象、実行コマンドを確認する。</td>
+          </tr>
+          <tr>
+            <td>実行と観測</td>
+            <td>ファイル探索、コード変更、テスト、ブラウザ確認などを進める。</td>
+            <td>失敗時に再計画できる余地を残す。</td>
+          </tr>
+          <tr>
+            <td>成果物化</td>
+            <td>コード、ドキュメント、調査メモ、検証結果として残す。</td>
+            <td>最後に何が変わったか、何を確認したかを残す。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>有用な使い方</h2>
+      <h3>1. 大きな開発タスクを「調査→実装→検証」に分ける</h3>
+      <p>新機能追加や不具合修正では、いきなり編集させるより、まず既存構成を読ませ、次に変更方針を立て、最後にテストや画面確認を行う流れが安定します。Dynamic Workflowsは、この一連の作業をClaude Code側で組み立てられるため、ユーザーが細かいプロンプトを何度も書く負担を減らせます。</p>
+
+      <h3>2. 調査と成果物作成をつなげる</h3>
+      <p>技術調査、比較表、記事作成、図解作成のように、入力情報の確認とアウトプット整形が混ざる作業にも向いています。公式情報を確認し、要点を整理し、図に落とし込み、HTMLやMarkdownへ反映する、といった流れを一つの作業プロセスとして扱えます。</p>
+
+      <h3>3. 既存プロジェクトの流儀に合わせる</h3>
+      <p>コードベースごとに、テストの走らせ方、フォーマット、ディレクトリ構成、PRの粒度は違います。Dynamic Workflowsでは、まずリポジトリのルールや既存実装を読み、その上で作業手順を作るように依頼すると、既存の型に合わせた変更になりやすくなります。</p>
+
+      <h3>4. 人間の承認を「安全装置」として使う</h3>
+      <p>承認ステップは単なる確認画面ではなく、作業範囲を締めるためのポイントです。特に、ファイル削除、依存関係追加、外部API利用、長時間の検証、課金が絡む実行は、承認前に目的と影響を見直すと安全です。</p>
+
+      <h2>動画の要点</h2>
+      <p>ユーザー指定のYouTube動画「Claude Opus 4.8の『Dynamic Workflows』って機能が素晴らしい！使い方を解説【徹底検証】」（KEITO【AI&amp;WEB ch】）では、公開チャプターとして、概要、Dynamic Workflowの紹介、セットアップ、使い方、ゲーム開発での実践検証、その他の検証事例、ディープリサーチ、LP作成とポータルサイト、セキュリティプラグイン、注意点とコストが並んでいます。</p>
+      <p>この章立てから読み取れる実践上のポイントは、Dynamic Workflowsを単なるコード生成ではなく、複数ステップの制作・検証プロセスとして試していることです。特に、ゲーム開発やLP作成のような成果物が見える作業、ディープリサーチのような調査量が多い作業、セキュリティ確認のように手順化が重要な作業は、Dynamic Workflowsの価値が出やすい題材です。</p>
+
+      <table class="figure">
+        <thead>
+          <tr>
+            <th>動画チャプター</th>
+            <th>学習メモとしての見どころ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Dynamic Workflowの紹介・使い方</td>
+            <td>機能の入口、どのようにワークフローを作らせるか、承認後にどう進むかを確認する部分。</td>
+          </tr>
+          <tr>
+            <td>実践検証: ゲーム開発</td>
+            <td>仕様づくり、実装、動作確認が連続する題材で、ワークフロー化の効果を見やすい。</td>
+          </tr>
+          <tr>
+            <td>ディープリサーチ機能</td>
+            <td>情報収集、整理、出典確認、成果物化の流れをワークフローに載せる例として参考になる。</td>
+          </tr>
+          <tr>
+            <td>LP作成とポータルサイト</td>
+            <td>文章、構成、UI、実装、確認が混ざるWeb制作タスクへの適用例。</td>
+          </tr>
+          <tr>
+            <td>セキュリティプラグイン・注意点とコスト</td>
+            <td>自動化の便利さだけでなく、実行権限、検証、利用量を管理する必要性を確認する部分。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>向いているタスクと向かないタスク</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th>向いている</th>
+            <th>理由</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>複数ファイルにまたがる実装</td>
+            <td>調査、設計、編集、テストの順番が重要になるため。</td>
+          </tr>
+          <tr>
+            <td>調査から文書化までの作業</td>
+            <td>情報収集、要約、構造化、出典整理を一つの流れにしやすいため。</td>
+          </tr>
+          <tr>
+            <td>UIやゲームなど確認が必要な制作</td>
+            <td>実装後にブラウザ確認やスクリーンショット検証を組み込めるため。</td>
+          </tr>
+          <tr>
+            <td>定型化しきれていない社内作業</td>
+            <td>固定コマンド化する前の試行錯誤を、毎回の状況に合わせて進められるため。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>一方で、単純な質問、短いコード片の作成、すでに完全に定型化された処理には、通常のプロンプトやカスタムコマンドの方が軽いです。Dynamic Workflowsは、作業の段取り自体に価値がある場面で使うのがよいです。</p>
+
+      <h2>使うときのプロンプト例</h2>
+      <pre><code>このリポジトリでログイン画面のバリデーションを改善したいです。
+まず既存実装とテスト構成を調べ、変更計画を作ってください。
+計画を提示して承認を得てから、実装、テスト、変更点の要約まで進めてください。</code></pre>
+      <pre><code>このテーマについて公式情報を確認し、学習用HTML記事にまとめてください。
+出典、図解、Q&amp;A、実務上の注意点を含めてください。
+古い情報と推測は分けて扱ってください。</code></pre>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>Dynamic Workflowsは、「Claude Codeに何を作らせるか」だけでなく「どう進めるか」まで任せる機能です。効果が出るのは、探索、判断、編集、検証が混ざる作業です。ただし研究プレビューなので、利用可能条件、UI、挙動は公式ドキュメントで確認しながら使うのが安全です。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://claude.com/blog/introducing-dynamic-workflows-in-claude-code">Anthropic: Introducing dynamic workflows in Claude Code</a></li>
+          <li><a href="https://docs.anthropic.com/en/docs/claude-code/workflows">Anthropic Docs: Workflows</a></li>
+          <li><a href="https://www.youtube.com/watch?v=xxjb6SWxrZs">YouTube: Claude Opus 4.8の『Dynamic Workflows』って機能が素晴らしい！使い方を解説【徹底検証】</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>

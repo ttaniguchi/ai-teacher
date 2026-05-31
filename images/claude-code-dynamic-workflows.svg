@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" role="img" aria-labelledby="title desc">
+  <title id="title">Claude Code Dynamic Workflowsの流れ</title>
+  <desc id="desc">ユーザーの複雑な依頼から、Claude Codeがワークフロー案を生成し、ユーザー承認後に実行する流れ。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#115e59"/>
+    </marker>
+    <style>
+      .box { fill: #fffdf8; stroke: #bfb7a8; stroke-width: 2; rx: 12; }
+      .accent { fill: #d8f3ef; stroke: #0f766e; stroke-width: 2; rx: 12; }
+      .text { fill: #202124; font: 700 20px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .sub { fill: #5f6368; font: 15px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .label { fill: #115e59; font: 700 15px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .arrow { stroke: #115e59; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="920" height="420" fill="#f7f4ee"/>
+
+  <rect class="box" x="42" y="58" width="170" height="104"/>
+  <text class="text" x="72" y="101">複雑な依頼</text>
+  <text class="sub" x="66" y="130">例: 機能追加、調査、</text>
+  <text class="sub" x="86" y="151">リファクタリング</text>
+
+  <path class="arrow" d="M 216 110 H 300"/>
+
+  <rect class="accent" x="308" y="42" width="240" height="136"/>
+  <text class="text" x="346" y="86">ワークフロー生成</text>
+  <text class="sub" x="336" y="117">探索、編集、検証などを</text>
+  <text class="sub" x="344" y="140">構造化された手順に分解</text>
+
+  <path class="arrow" d="M 552 110 H 636"/>
+
+  <rect class="box" x="644" y="58" width="220" height="104"/>
+  <text class="text" x="702" y="101">人間が確認</text>
+  <text class="sub" x="683" y="130">実行前に承認、調整、</text>
+  <text class="sub" x="718" y="151">却下できる</text>
+
+  <path class="arrow" d="M 754 166 V 220"/>
+
+  <rect class="accent" x="644" y="228" width="220" height="112"/>
+  <text class="text" x="697" y="272">段階的に実行</text>
+  <text class="sub" x="676" y="302">必要に応じて進捗確認、</text>
+  <text class="sub" x="690" y="323">停止、修正を挟む</text>
+
+  <path class="arrow" d="M 640 284 H 540"/>
+
+  <rect class="box" x="300" y="228" width="232" height="112"/>
+  <text class="text" x="343" y="272">成果物と検証</text>
+  <text class="sub" x="330" y="302">コード、文書、調査結果、</text>
+  <text class="sub" x="352" y="323">テスト結果を残す</text>
+
+  <path class="arrow" d="M 296 284 H 190"/>
+
+  <rect class="box" x="42" y="228" width="140" height="112"/>
+  <text class="text" x="82" y="272">完了</text>
+  <text class="sub" x="67" y="302">または次の依頼へ</text>
+
+  <text class="label" x="315" y="210">従来の「一回のプロンプト」ではなく、作業プロセスそのものを一時的に組み立てる</text>
+</svg>
