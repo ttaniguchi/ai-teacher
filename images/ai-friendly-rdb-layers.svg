@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 520" role="img" aria-labelledby="title desc">
+  <title id="title">AIフレンドリーなリレーショナルデータベースの層構造</title>
+  <desc id="desc">正本のリレーショナルデータベースの上に、制約と関係、メタデータ、AI向けビュー、検索索引、アクセス制御が重なる図。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#115e59"/>
+    </marker>
+  </defs>
+  <rect width="920" height="520" fill="#fffdf8"/>
+  <text x="460" y="42" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="24" font-weight="700" fill="#202124">RDBをAIが扱いやすい読み取り面へ整える</text>
+
+  <rect x="90" y="390" width="740" height="74" rx="8" fill="#243447"/>
+  <text x="460" y="423" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="19" font-weight="700" fill="#ffffff">正本のRDB</text>
+  <text x="460" y="448" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="14" fill="#dbe7ef">正規化・トランザクション・主キー・データ整合性</text>
+
+  <rect x="130" y="304" width="660" height="58" rx="8" fill="#d8f3ef" stroke="#0f766e"/>
+  <text x="460" y="339" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="17" font-weight="700" fill="#115e59">外部キー・制約・監査列・時間軸</text>
+
+  <rect x="130" y="218" width="300" height="58" rx="8" fill="#ece6db" stroke="#ded8cc"/>
+  <text x="280" y="242" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="16" font-weight="700" fill="#202124">メタデータ層</text>
+  <text x="280" y="264" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="13" fill="#5f6368">データ辞書・用語集・指標定義</text>
+
+  <rect x="490" y="218" width="300" height="58" rx="8" fill="#ece6db" stroke="#ded8cc"/>
+  <text x="640" y="242" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="16" font-weight="700" fill="#202124">安全境界</text>
+  <text x="640" y="264" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="13" fill="#5f6368">読み取り権限・マスキング・監査ログ</text>
+
+  <rect x="130" y="126" width="300" height="64" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+  <text x="280" y="151" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="16" font-weight="700" fill="#115e59">AI向けビュー</text>
+  <text x="280" y="173" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="13" fill="#5f6368">結合済み・用途別・読み取り専用</text>
+
+  <rect x="490" y="126" width="300" height="64" rx="8" fill="#ffffff" stroke="#0f766e" stroke-width="2"/>
+  <text x="640" y="151" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="16" font-weight="700" fill="#115e59">検索索引</text>
+  <text x="640" y="173" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="13" fill="#5f6368">全文検索・ベクトル検索・RAG</text>
+
+  <path d="M 460 390 L 460 364" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M 360 304 L 300 278" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M 560 304 L 620 278" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M 280 218 L 280 193" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M 640 218 L 640 193" stroke="#115e59" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <text x="460" y="498" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif" font-size="14" fill="#5f6368">本体スキーマを壊さず、AIが参照する意味とアクセス面を明示する</text>
+</svg>
