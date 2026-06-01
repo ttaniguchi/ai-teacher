@@ -65,16 +65,21 @@ python3 -m http.server 8080
 
 ```
 .
-├── index.html              # トップ（記事一覧・ナビゲーション）
+├── index.html              # トップ（記事一覧・カテゴリは UI のみ）
 ├── README.md               # 本ファイル
+├── docs/
+│   └── homepage.md         # ホーム画面のレイアウト・運用ルール
+├── articles/               # 質問ノート HTML（トピック別フォルダは使わない）
+├── scripts/
+│   └── sync-article-dates.py
 ├── styles/
 │   └── site.css            # 共通スタイル
-├── images/                 # 図解（SVG など）
-├── ai-development/         # AI 開発まわりの質問
-└── programming/              # プログラミング・Web まわりの質問
+└── images/                 # 図解（SVG など）
 ```
 
-記事の一覧は [index.html](./index.html) を正とします。新しい質問を追加するときは、トピック用ディレクトリに HTML を1つ追加し、`index.html` にエントリを足してください。
+記事の一覧とカテゴリ分けは [index.html](./index.html) を正とします（生成はスクリプト任せ）。**ホームの構成・新着件数・並び順・記事追加手順**は [docs/homepage.md](./docs/homepage.md) にまとめています。
+
+新しい質問を追加するときは、`articles/` に HTML を1つ追加し、`scripts/sync-article-dates.py` の `ARTICLE_CLUSTER` にファイル名を登録したうえで `python3 scripts/sync-article-dates.py` を実行すると、作成日（git 初回コミット）の付与と index の並び替えが行われます。
 
 ## ページの典型的な構成
 
