@@ -11,46 +11,194 @@
     <div class="header-inner">
       <a class="brand" href="index.html">技術質問ノート</a>
       <nav class="nav" aria-label="カテゴリ">
-        <a href="#ai">AI関連</a>
-        <a href="#app-development">アプリ開発</a>
-        <a href="#javascript">JavaScript基盤</a>
-        <a href="#infrastructure">インフラ</a>
+        <a href="#web">Web</a>
+        <a href="#game">ゲーム</a>
+        <a href="#ai">AI</a>
+        <a href="#infra">インフラ</a>
       </nav>
     </div>
   </header>
 
   <main class="page">
-    <section class="hero">
+    <section class="hero home-hero">
       <p class="eyebrow">知識整理</p>
-      <h1>技術的な疑問を、あとから読み返せる形で残す</h1>
-      <p class="lead">このサイトは、質問への回答をHTMLとして蓄積していくためのインデックスです。記事が増えても探しやすいよう、AI関連、アプリ開発、JavaScript基盤、インフラに分けて整理しています。</p>
+      <h1>技術的な疑問を、読み返せる形で残す</h1>
+      <p class="lead">このサイトは、質問への回答をHTMLとして蓄積していくためのインデックスです。Web、ゲーム、AI、インフラを分け、さらにアプリと開発環境の観点で探しやすく整理しています。</p>
     </section>
 
-    <section class="category-nav" aria-label="カテゴリ一覧">
+    <section class="section-map" aria-label="分類マップ">
+      <a href="#web">
+        <span class="section-map-label">Web</span>
+        <strong>アプリ / 開発環境</strong>
+      </a>
+      <a href="#game">
+        <span class="section-map-label">ゲーム</span>
+        <strong>アプリ / 開発環境</strong>
+      </a>
       <a href="#ai">
-        <strong>AI関連</strong>
-        <span>MCP、RAG、AI Agent、AIセキュリティ</span>
+        <span class="section-map-label">AI</span>
+        <strong>LLM / Agent / データ</strong>
       </a>
-      <a href="#app-development">
-        <strong>アプリ開発</strong>
-        <span>React、配信方式、ゲーム開発環境</span>
-      </a>
-      <a href="#javascript">
-        <strong>JavaScript基盤</strong>
-        <span>Node.js、NestJS、Temporal、パッケージ管理、モノレポ</span>
-      </a>
-      <a href="#infrastructure">
-        <strong>インフラ</strong>
-        <span>AWS、VPC、Web/DB構成</span>
+      <a href="#infra">
+        <span class="section-map-label">インフラ</span>
+        <strong>AWS / ネットワーク</strong>
       </a>
     </section>
 
-    <section class="category-section" id="ai" aria-labelledby="ai-heading">
-      <div class="category-heading">
-        <p class="eyebrow">AI関連</p>
-        <h2 id="ai-heading">LLMアプリと知識拡張</h2>
+    <section class="domain-section" id="web" aria-labelledby="web-heading">
+      <div class="domain-heading">
+        <p class="eyebrow">Web</p>
+        <h2 id="web-heading">WebアプリとWeb開発環境</h2>
       </div>
-      <div class="article-list">
+
+      <div class="cluster-grid">
+        <section class="article-cluster" aria-labelledby="web-app-heading">
+          <div class="cluster-heading">
+            <p class="eyebrow">Web &gt; アプリ</p>
+            <h3 id="web-app-heading">フロントエンド、配信方式、Webアプリ設計</h3>
+          </div>
+          <div class="article-list">
+            <a class="article-card" href="programming/react-router-vs-tanstack-router.html">
+              <p class="eyebrow">React / ルーティング</p>
+              <h4>React RouterとTanStack Routerの違い</h4>
+              <p>フレームワーク性、データ取得、型安全性、ストア管理の観点から2つのルーターを比較します。</p>
+              <span class="meta">比較表あり</span>
+            </a>
+
+            <a class="article-card" href="programming/spa-ssg-ssr.html">
+              <p class="eyebrow">React / ホスティング方式</p>
+              <h4>Reactで実現できるホスティング方式と長短</h4>
+              <p>SPA、SSG、ISR、SSR、サーバーレス、Edge、API分離などの配信パターンを比較します。</p>
+              <span class="meta">一覧表あり</span>
+            </a>
+
+            <a class="article-card" href="programming/use-action-state.html">
+              <p class="eyebrow">React / Actions</p>
+              <h4>useActionStateについて</h4>
+              <p>Actionの結果、送信中状態、フォーム連携、useReducerとの違いを整理します。</p>
+              <span class="meta">コード例あり</span>
+            </a>
+
+            <a class="article-card" href="programming/react-19-changes.html">
+              <p class="eyebrow">React / バージョン移行</p>
+              <h4>React 19で何が変わったか</h4>
+              <p>Actions、フォーム、use、Server Components、移行時の設計変更を実務目線で整理します。</p>
+              <span class="meta">公式情報確認済み</span>
+            </a>
+
+            <a class="article-card" href="programming/remotion-rendering.html">
+              <p class="eyebrow">React / 動画生成</p>
+              <h4>Remotionは動画生成にどんな仕組みを使っているのか</h4>
+              <p>Reactコンポーネントをフレーム単位で描画し、動画へエンコードする流れを整理します。</p>
+              <span class="meta">公式情報確認済み · 図解あり</span>
+            </a>
+
+            <a class="article-card" href="programming/nestjs.html">
+              <p class="eyebrow">Node.js / サーバーサイド</p>
+              <h4>NestJSの特徴と使い方</h4>
+              <p>TypeScript、DI、Module、Controller、Serviceを軸に、NestJSでAPIサーバーを作る基本を整理します。</p>
+              <span class="meta">コード例あり</span>
+            </a>
+
+            <a class="article-card" href="programming/hono.html">
+              <p class="eyebrow">JavaScript / Webフレームワーク</p>
+              <h4>Honoの概要と使い方</h4>
+              <p>軽量なAPIフレームワークとしての特徴、基本コード、ExpressやFastify、NestJSとの違いを整理します。</p>
+              <span class="meta">公式情報確認済み · 比較表あり</span>
+            </a>
+          </div>
+        </section>
+
+        <section class="article-cluster" aria-labelledby="web-dev-heading">
+          <div class="cluster-heading">
+            <p class="eyebrow">Web &gt; 開発環境</p>
+            <h3 id="web-dev-heading">実行環境、言語、ツールチェーン</h3>
+          </div>
+          <div class="article-list">
+            <a class="article-card" href="programming/package-managers.html">
+              <p class="eyebrow">JavaScript / パッケージ管理</p>
+              <h4>npm、Yarn、pnpmなどの違いと優位性</h4>
+              <p>主要なパッケージ管理ツールの特徴、使い分け、新しい候補としてのBunやDenoを整理します。</p>
+              <span class="meta">比較表あり</span>
+            </a>
+
+            <a class="article-card" href="programming/nodejs-versions.html">
+              <p class="eyebrow">Node.js / バージョン管理</p>
+              <h4>Node.jsの現在の安定版と前後バージョンの違い</h4>
+              <p>Node.js 24 LTSを中心に、Node.js 22 LTSとの差分とNode.js 26 Currentの優位性を整理します。</p>
+              <span class="meta">公式情報確認済み</span>
+            </a>
+
+            <a class="article-card" href="programming/temporal-api.html">
+              <p class="eyebrow">JavaScript / 日付時刻</p>
+              <h4>Temporal APIとは何か</h4>
+              <p>Node.js 26で標準有効化されたTemporal APIについて、Dateとの違い、主要な型、使いどころを整理します。</p>
+              <span class="meta">別ページ解説</span>
+            </a>
+
+            <a class="article-card" href="programming/typescript-5-6-7.html">
+              <p class="eyebrow">TypeScript / バージョン移行</p>
+              <h4>TypeScript 5→6→7で起きるインパクト</h4>
+              <p>言語機能の拡張、tsconfigの現代化、Goネイティブ実装による高速化まで、3世代の設計思想と移行影響を整理します。</p>
+              <span class="meta">公式情報確認済み · 図解あり</span>
+            </a>
+
+            <a class="article-card" href="programming/typescript-lint-format-tooling.html">
+              <p class="eyebrow">TypeScript / コーディング基盤</p>
+              <h4>静的解析と自動整形ツールの現在地</h4>
+              <p>ESLint、typescript-eslint、Prettier、Biome、Oxlintの役割と、後継ツールの進化を整理します。</p>
+              <span class="meta">比較表あり</span>
+            </a>
+
+            <a class="article-card" href="programming/turborepo-monorepo.html">
+              <p class="eyebrow">JavaScript / モノレポ</p>
+              <h4>Turborepoを用いたモノレポの構成例</h4>
+              <p>apps/packagesの切り方、pnpm workspace、Next.js・Hono・Prisma・Biome構成を整理します。</p>
+              <span class="meta">図解あり · 構成例あり</span>
+            </a>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="domain-section" id="game" aria-labelledby="game-heading">
+      <div class="domain-heading">
+        <p class="eyebrow">ゲーム</p>
+        <h2 id="game-heading">ゲームアプリとゲーム開発環境</h2>
+      </div>
+
+      <div class="cluster-grid">
+        <section class="article-cluster muted-cluster" aria-labelledby="game-app-heading">
+          <div class="cluster-heading">
+            <p class="eyebrow">ゲーム &gt; アプリ</p>
+            <h3 id="game-app-heading">ゲーム設計、ジャンル、実装パターン</h3>
+          </div>
+          <p class="empty-note">ゲームアプリそのものの設計記事は、今後この枠に追加します。</p>
+        </section>
+
+        <section class="article-cluster" aria-labelledby="game-dev-heading">
+          <div class="cluster-heading">
+            <p class="eyebrow">ゲーム &gt; 開発環境</p>
+            <h3 id="game-dev-heading">ゲームエンジン、制作ツール、配布環境</h3>
+          </div>
+          <div class="article-list">
+            <a class="article-card" href="programming/3d-game-engines.html">
+              <p class="eyebrow">ゲーム開発 / 3Dエンジン</p>
+              <h4>Unity、Unreal Engine、Godotはどう選ぶべきか</h4>
+              <p>3Dゲーム開発環境の強み、学習量、商用化時の金銭コストを比較します。</p>
+              <span class="meta">公式情報確認済み · 比較表あり</span>
+            </a>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="domain-section" id="ai" aria-labelledby="ai-heading">
+      <div class="domain-heading">
+        <p class="eyebrow">AI</p>
+        <h2 id="ai-heading">LLMアプリ、Agent、知識拡張</h2>
+      </div>
+      <div class="article-list feature-list">
         <a class="article-card" href="ai-development/mcp-server.html">
           <p class="eyebrow">AIを介した開発</p>
           <h3>MCPはなぜサーバーを立ち上げる必要があるのか</h3>
@@ -102,126 +250,12 @@
       </div>
     </section>
 
-    <section class="category-section" id="app-development" aria-labelledby="app-development-heading">
-      <div class="category-heading">
-        <p class="eyebrow">アプリ開発</p>
-        <h2 id="app-development-heading">アプリとゲーム開発の設計選択</h2>
-      </div>
-      <div class="article-list">
-        <a class="article-card" href="programming/3d-game-engines.html">
-          <p class="eyebrow">ゲーム開発 / 3Dエンジン</p>
-          <h3>Unity、Unreal Engine、Godotはどう選ぶべきか</h3>
-          <p>3Dゲーム開発環境の強み、学習量、商用化時の金銭コストを比較します。</p>
-          <span class="meta">公式情報確認済み · 比較表あり</span>
-        </a>
-
-        <a class="article-card" href="programming/react-router-vs-tanstack-router.html">
-          <p class="eyebrow">React / ルーティング</p>
-          <h3>React RouterとTanStack Routerの違い</h3>
-          <p>フレームワーク性、データ取得、型安全性、ストア管理の観点から2つのルーターを比較します。</p>
-          <span class="meta">比較表あり</span>
-        </a>
-
-        <a class="article-card" href="programming/spa-ssg-ssr.html">
-          <p class="eyebrow">React / ホスティング方式</p>
-          <h3>Reactで実現できるホスティング方式と長短</h3>
-          <p>SPA、SSG、ISR、SSR、サーバーレス、Edge、API分離などの配信パターンを比較します。</p>
-          <span class="meta">一覧表あり</span>
-        </a>
-
-        <a class="article-card" href="programming/use-action-state.html">
-          <p class="eyebrow">React / Actions</p>
-          <h3>useActionStateについて</h3>
-          <p>Actionの結果、送信中状態、フォーム連携、useReducerとの違いを整理します。</p>
-          <span class="meta">コード例あり</span>
-        </a>
-
-        <a class="article-card" href="programming/react-19-changes.html">
-          <p class="eyebrow">React / バージョン移行</p>
-          <h3>React 19で何が変わったか</h3>
-          <p>Actions、フォーム、use、Server Components、移行時の設計変更を実務目線で整理します。</p>
-          <span class="meta">公式情報確認済み</span>
-        </a>
-
-        <a class="article-card" href="programming/remotion-rendering.html">
-          <p class="eyebrow">React / 動画生成</p>
-          <h3>Remotionは動画生成にどんな仕組みを使っているのか</h3>
-          <p>Reactコンポーネントをフレーム単位で描画し、動画へエンコードする流れを整理します。</p>
-          <span class="meta">公式情報確認済み · 図解あり</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="category-section" id="javascript" aria-labelledby="javascript-heading">
-      <div class="category-heading">
-        <p class="eyebrow">JavaScript基盤</p>
-        <h2 id="javascript-heading">実行環境とツールチェーン</h2>
-      </div>
-      <div class="article-list">
-        <a class="article-card" href="programming/package-managers.html">
-          <p class="eyebrow">JavaScript / パッケージ管理</p>
-          <h3>npm、Yarn、pnpmなどの違いと優位性</h3>
-          <p>主要なパッケージ管理ツールの特徴、使い分け、新しい候補としてのBunやDenoを整理します。</p>
-          <span class="meta">比較表あり</span>
-        </a>
-
-        <a class="article-card" href="programming/nodejs-versions.html">
-          <p class="eyebrow">Node.js / バージョン管理</p>
-          <h3>Node.jsの現在の安定版と前後バージョンの違い</h3>
-          <p>Node.js 24 LTSを中心に、Node.js 22 LTSとの差分とNode.js 26 Currentの優位性を整理します。</p>
-          <span class="meta">公式情報確認済み</span>
-        </a>
-
-        <a class="article-card" href="programming/nestjs.html">
-          <p class="eyebrow">Node.js / サーバーサイド</p>
-          <h3>NestJSの特徴と使い方</h3>
-          <p>TypeScript、DI、Module、Controller、Serviceを軸に、NestJSでAPIサーバーを作る基本を整理します。</p>
-          <span class="meta">コード例あり</span>
-        </a>
-
-        <a class="article-card" href="programming/hono.html">
-          <p class="eyebrow">JavaScript / Webフレームワーク</p>
-          <h3>Honoの概要と使い方</h3>
-          <p>軽量なAPIフレームワークとしての特徴、基本コード、ExpressやFastify、NestJSとの違いを整理します。</p>
-          <span class="meta">公式情報確認済み · 比較表あり</span>
-        </a>
-
-        <a class="article-card" href="programming/temporal-api.html">
-          <p class="eyebrow">JavaScript / 日付時刻</p>
-          <h3>Temporal APIとは何か</h3>
-          <p>Node.js 26で標準有効化されたTemporal APIについて、Dateとの違い、主要な型、使いどころを整理します。</p>
-          <span class="meta">別ページ解説</span>
-        </a>
-
-        <a class="article-card" href="programming/typescript-5-6-7.html">
-          <p class="eyebrow">TypeScript / バージョン移行</p>
-          <h3>TypeScript 5→6→7で起きるインパクト</h3>
-          <p>言語機能の拡張、tsconfigの現代化、Goネイティブ実装による高速化まで、3世代の設計思想と移行影響を整理します。</p>
-          <span class="meta">公式情報確認済み · 図解あり</span>
-        </a>
-
-        <a class="article-card" href="programming/typescript-lint-format-tooling.html">
-          <p class="eyebrow">TypeScript / コーディング基盤</p>
-          <h3>静的解析と自動整形ツールの現在地</h3>
-          <p>ESLint、typescript-eslint、Prettier、Biome、Oxlintの役割と、後継ツールの進化を整理します。</p>
-          <span class="meta">比較表あり</span>
-        </a>
-
-        <a class="article-card" href="programming/turborepo-monorepo.html">
-          <p class="eyebrow">JavaScript / モノレポ</p>
-          <h3>Turborepoを用いたモノレポの構成例</h3>
-          <p>apps/packagesの切り方、pnpm workspace、トレンド寄りのNext.js・Hono・Prisma・Biome構成を整理します。</p>
-          <span class="meta">図解あり · 構成例あり</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="category-section" id="infrastructure" aria-labelledby="infrastructure-heading">
-      <div class="category-heading">
+    <section class="domain-section" id="infra" aria-labelledby="infra-heading">
+      <div class="domain-heading">
         <p class="eyebrow">インフラ</p>
-        <h2 id="infrastructure-heading">AWSとネットワーク設計</h2>
+        <h2 id="infra-heading">AWSとネットワーク設計</h2>
       </div>
-      <div class="article-list">
+      <div class="article-list feature-list">
         <a class="article-card" href="infra/aws-web-db-network.html">
           <p class="eyebrow">AWS / VPC</p>
           <h3>AWSでWebサーバーとDBサーバーを分離する実践的なネットワーク構成</h3>
