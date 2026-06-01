@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unity、Unreal Engine、Godotの比較 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">ゲーム開発 / 3Dエンジン</p>
+        <h1>Unity、Unreal Engine、Godotはどう選ぶべきか</h1>
+        <p class="lead">3Dゲーム開発環境は、作りたいゲームの規模、表現品質、学習に使える時間、商用化したときの費用で選び方が変わります。Unityは汎用性、Unreal Engineは高品質な3D表現、Godotは無料・軽量・オープンソース性が大きな強みです。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. 初めて3Dゲームを作るなら、Unity、Unreal Engine、Godotのどれがよい？</dt>
+          <dd>A. 学習情報と実用性のバランスならUnity、リアルな高品質3Dを最初から目指すならUnreal Engine、無料で軽く始めたいならGodotが向いています。</dd>
+          <dt>Q. 学習量が少ないのはどれ？</dt>
+          <dd>A. 入口だけで見るとGodotが最も軽く、次にUnity、Unreal Engineは覚える範囲が広めです。ただし高度な3D制作では、どのエンジンでも数学、物理、アニメーション、最適化の学習が必要です。</dd>
+          <dt>Q. 金銭コストが低いのはどれ？</dt>
+          <dd>A. 個人学習ではどれも無料で始められます。商用化後のコストまで含めると、Godotはロイヤリティなし、Unityは収益・資金調達額によって有料プラン、Unreal Engineはゲーム製品ごとの収益が一定額を超えるとロイヤリティが関係します。</dd>
+        </dl>
+      </section>
+
+      <h2>全体像</h2>
+      <p>3つのエンジンは、単純な優劣ではなく設計思想が違います。Unityは「幅広いプラットフォームに出しやすい実用的な汎用エンジン」、Unreal Engineは「高品質なリアルタイム3D制作環境」、Godotは「軽量で自由度の高いオープンソースエンジン」と捉えると整理しやすくなります。</p>
+
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">項目</th>
+            <th scope="col">Unity</th>
+            <th scope="col">Unreal Engine</th>
+            <th scope="col">Godot</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">得意分野</th>
+            <td>モバイル、インディー、VR/AR、幅広い3D/2D</td>
+            <td>高品質3D、リアル系表現、大規模制作、映像系</td>
+            <td>個人制作、学習、2D、小中規模3D</td>
+          </tr>
+          <tr>
+            <th scope="row">主な開発言語</th>
+            <td>C#</td>
+            <td>Blueprint、C++</td>
+            <td>GDScript、C#、C++</td>
+          </tr>
+          <tr>
+            <th scope="row">学習量</th>
+            <td>中くらい。教材が多く始めやすい</td>
+            <td>多め。機能が広く、C++まで扱うと難度が上がる</td>
+            <td>少なめ。エディタとGDScriptが比較的シンプル</td>
+          </tr>
+          <tr>
+            <th scope="row">表現力</th>
+            <td>高いが、品質を上げるには調整が必要</td>
+            <td>標準機能で高品質な3D表現を狙いやすい</td>
+            <td>改善中。大規模リアル3DではUnity/Unrealに劣る場面がある</td>
+          </tr>
+          <tr>
+            <th scope="row">情報量・アセット</th>
+            <td>非常に多い</td>
+            <td>多い</td>
+            <td>増加中だが比較的小さい</td>
+          </tr>
+          <tr>
+            <th scope="row">金銭コスト</th>
+            <td>条件内なら無料。収益・資金調達額が上がると有料プランを検討</td>
+            <td>条件内なら無料。ゲーム製品は一定収益超過後にロイヤリティが関係</td>
+            <td>MITライセンスで無料。ロイヤリティなし</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Unityの強みと注意点</h2>
+      <p>Unityの強みは、用途の広さと情報量です。スマートフォン向けゲーム、インディーゲーム、VR/AR、教育用アプリ、シミュレーションなど、さまざまな領域で使われています。C#はC++より扱いやすく、チュートリアル、アセット、質問記事も多いため、初心者が実際に動くものを作るまでの道筋が見つけやすいです。</p>
+      <p>注意点は、選択肢が多いぶん判断も増えることです。レンダーパイプライン、アセット、入力システム、パッケージ、ビルド設定など、プロジェクトが大きくなるほど設計判断が必要になります。また、リアル寄りの高品質な3D表現は可能ですが、Unreal Engineほど最初から映像品質に寄っているわけではありません。</p>
+
+      <h2>Unreal Engineの強みと注意点</h2>
+      <p>Unreal Engineの強みは、高品質な3D表現と大規模制作に向いた機能です。ライティング、マテリアル、物理、キャラクター、映像演出などを高い水準で扱いやすく、リアル系のFPS、TPS、アクション、オープンワールド風の表現を目指す場合に有力です。Blueprintを使えば、プログラムを書かずにゲームロジックを組むこともできます。</p>
+      <p>一方で、エンジン自体が大きく、学ぶ範囲も広くなります。Blueprintだけでも制作はできますが、深い制御や最適化ではC++の理解が重要になります。PCへの負荷も比較的大きいため、軽い個人制作やスマートフォン向けの小規模ゲームでは、UnityやGodotのほうが扱いやすい場合があります。</p>
+
+      <h2>Godotの強みと注意点</h2>
+      <p>Godotの強みは、無料、軽量、オープンソースであることです。MITライセンスで提供されており、商用利用でもロイヤリティを気にせず使えます。GDScriptはPythonに近い書き味で、ノードとシーンの考え方も比較的つかみやすいため、ゲーム制作の基本を学ぶ環境として優れています。</p>
+      <p>注意点は、UnityやUnreal Engineに比べると、商用大規模3Dの事例、アセット、外部サービス連携、教材の量がまだ少ないことです。小中規模の3Dや2Dには強い一方、写実的な大規模3Dを作る場合は、エンジン側の機能や制作ノウハウを自分で補う場面が増えます。</p>
+
+      <h2>学習コストの見方</h2>
+      <p>学習量は「最初の1本を作るまで」と「商用品質に近づけるまで」で分けて考える必要があります。最初の1本なら、Godotは軽く始めやすく、Unityは教材の多さで進めやすく、Unreal Engineは機能が多いぶん最初の理解に時間がかかります。</p>
+      <p>ただし、3Dゲーム開発そのものには共通の学習項目があります。座標、ベクトル、カメラ、物理、衝突判定、アニメーション、UI、入力、シェーダー、パフォーマンス最適化、ビルドと配布は、どのエンジンを選んでも避けられません。エンジン選びは学習量をゼロにするものではなく、どの順番で学ぶかを変えるものです。</p>
+
+      <h2>金銭コストの見方</h2>
+      <p>個人学習や小さな試作では、3つとも無料で始められます。差が出るのは、収益化、チーム規模、コンソール対応、クラウド機能、商用サポートが必要になった段階です。</p>
+      <p>2026年6月1日時点の公式情報では、Unity Personalは過去12か月の収益や資金調達が20万米ドル未満の個人・小規模組織向けに提供されています。Unityはゲーム向けRuntime Feeを撤回しているため、少なくともこの時点の案内ではRuntime Feeを前提に予算を組む必要はありません。ただし、一定規模を超える場合はUnity Proなどの有料プランを確認する必要があります。</p>
+      <p>Unreal Engineは、ゲーム開発者は基本的に無料で使い始められます。ゲーム製品では、製品ごとの累計総収益が100万米ドルを超えた後にロイヤリティが関係します。標準のロイヤリティ率は5%で、条件を満たす配信形態では3.5%に下がる制度もあります。</p>
+      <p>GodotはMITライセンスの自由ソフトウェアです。エンジン利用料、サブスクリプション、ロイヤリティがないため、金銭コストを最小化したい個人制作や教育用途では特に扱いやすい選択肢です。</p>
+
+      <h2>目的別の選び方</h2>
+      <ul>
+        <li>ゲーム開発を初めて学ぶなら、GodotまたはUnity。</li>
+        <li>教材、実績、将来の仕事へのつながりを重視するなら、UnityまたはUnreal Engine。</li>
+        <li>スマートフォン向けゲームを作りたいなら、Unity。</li>
+        <li>リアルな3Dグラフィックや大規模な3D表現を目指すなら、Unreal Engine。</li>
+        <li>無料、軽量、オープンソース、ロイヤリティなしを重視するなら、Godot。</li>
+        <li>VR/ARや幅広い案件を意識するなら、Unity。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>迷ったら、作りたい作品の規模と見た目から選ぶのが現実的です。小さく学ぶならGodot、幅広く作るならUnity、リアルな高品質3Dを狙うならUnreal Engineが基本線です。金銭面では、学習段階はどれも無料で始められますが、商用化後はUnityとUnreal Engineの条件を公式ページで確認し、Godotはライセンス表記を守ったうえで無料利用できる、という違いがあります。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://unity.com/products/unity-personal">Unity Personal</a></li>
+          <li><a href="https://unity.com/products/pricing-updates">Unity Pricing Updates</a></li>
+          <li><a href="https://www.unrealengine.com/license">Unreal Engine Licensing Options</a></li>
+          <li><a href="https://www.unrealengine.com/eula/unreal">Unreal Engine End User License Agreement</a></li>
+          <li><a href="https://godotengine.org/license/">Godot Engine License</a></li>
+          <li><a href="https://docs.godotengine.org/en/stable/about/faq.html">Godot Documentation: Frequently asked questions</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
