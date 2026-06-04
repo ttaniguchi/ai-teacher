@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoでWeb APIバックエンドを構築する方法 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">Go / バックエンドAPI</p>
+        <h1>GoでWeb APIバックエンドを構築する方法</h1>
+        <p class="article-created"><time datetime="2026-06-04">作成日: 2026年6月4日</time></p>
+        <p class="lead">GoでAPI群を作る場合、巨大なフレームワークに最初から寄せるより、標準ライブラリの<code>net/http</code>を土台にし、必要な範囲でルーター、ミドルウェア、OpenAPI、DBアクセス、テストを組み合わせる実装がよく使われます。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. GoでWeb APIを作るとき、定番の実装方法はありますか？</dt>
+          <dd>A. あります。小さめなら標準の<code>net/http</code>、少し大きくなるなら<code>chi</code>、素早いREST APIなら<code>Gin</code>や<code>Echo</code>、Express風の書き味や高性能を重視するなら<code>Fiber</code>、OpenAPIを強く管理したいなら<code>Huma</code>やOpenAPIコード生成を使う構成が候補になります。</dd>
+          <dt>Q. まず何を選ぶのが無難ですか？</dt>
+          <dd>A. 新規の業務APIなら、まず<code>net/http</code>または<code>chi</code>を基準に考えるのが堅実です。標準の<code>http.Handler</code>互換に寄せると、ミドルウェア、テスト、移行の自由度を残しやすいからです。</dd>
+          <dt>Q. フレームワーク選び以外で大事な実装プラクティスは？</dt>
+          <dd>A. ハンドラーを薄くする、サービス層とDB層を分ける、<code>context.Context</code>を伝播する、JSONエラー形式を統一する、<code>httptest</code>でHTTP境界をテストする、OpenAPIやスキーマを早めに整える、といった点が重要です。</dd>
+        </dl>
+      </section>
+
+      <h2>GoのWeb API開発の考え方</h2>
+      <p>Goのバックエンド開発では、Ruby on RailsやNestJSのような大きなフレームワークを中心に据えるより、標準ライブラリと小さな部品を組み合わせる設計がよく採られます。HTTPサーバー、ハンドラー、コンテキスト、テスト、SQL接続など、基礎になる部品が標準ライブラリに揃っているためです。</p>
+      <p>特にGo 1.22以降は、標準の<code>net/http.ServeMux</code>がHTTPメソッド指定やパスワイルドカードに対応し、単純なREST APIであればサードパーティのルーターなしでも読みやすく書けます。まず標準機能で足りるかを見て、ルートグループ、ミドルウェア管理、バリデーション、OpenAPI生成などが必要になったら追加のライブラリを検討するとよいです。</p>
+
+      <h2>よく使われる選択肢</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">選択肢</th>
+            <th scope="col">向いている場面</th>
+            <th scope="col">見方</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>net/http</code></td>
+            <td>小規模API、社内API、依存を少なくしたいサービス</td>
+            <td>標準ライブラリだけで完結しやすい。Go 1.22以降は<code>GET /users/{id}</code>のようなルーティングも扱いやすい。</td>
+          </tr>
+          <tr>
+            <td><code>chi</code></td>
+            <td>中規模以上のREST API、標準<code>http.Handler</code>互換を保ちたいAPI</td>
+            <td>軽量なルーター。ルートグループ、サブルーター、ミドルウェア構成を整理しやすく、標準ライブラリとの相性がよい。</td>
+          </tr>
+          <tr>
+            <td><code>Gin</code></td>
+            <td>素早くREST APIを作りたい、情報量や利用例の多さを重視したい</td>
+            <td>ルーティング、JSONレスポンス、バインディング、ミドルウェアがまとまっている。独自Contextに寄るため、標準<code>http.Handler</code>互換だけで設計したい場合は確認が必要。</td>
+          </tr>
+          <tr>
+            <td><code>Echo</code></td>
+            <td>軽量さと機能のバランスが欲しいWeb API</td>
+            <td>ルーティング、ミドルウェア、バインディング、バリデーションなどをまとめて扱える。Ginと同じく、フレームワークのContextを前提にした書き方になる。</td>
+          </tr>
+          <tr>
+            <td><code>Fiber</code></td>
+            <td>Express風のAPI、パフォーマンス志向、Node.js経験者が多いチーム</td>
+            <td><code>fasthttp</code>上に作られており高速志向。標準<code>net/http</code>とは土台が異なるため、互換性やContext値の扱いを理解して使う。</td>
+          </tr>
+          <tr>
+            <td><code>Huma</code></td>
+            <td>OpenAPI、型付き入出力、ドキュメント生成を重視するAPI</td>
+            <td>API実装からOpenAPI 3.1などの仕様書を生成しやすい。クライアント生成や契約管理を重視するチームに向く。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>実装パターン1: 標準ライブラリ中心</h2>
+      <p>最小構成では、<code>http.NewServeMux()</code>にルートを登録し、各ハンドラーでJSONを返します。Go 1.22以降なら、メソッドとパスパラメータをルートパターンに含められます。</p>
+      <pre><code>mux := http.NewServeMux()
+
+mux.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request) {
+    id := r.PathValue("id")
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(map[string]string{
+        "id": id,
+    })
+})
+
+server := &amp;http.Server{
+    Addr:    ":8080",
+    Handler: mux,
+}
+
+log.Fatal(server.ListenAndServe())
+</code></pre>
+      <p>この形は依存が少なく、<code>http.Handler</code>互換のミドルウェアや<code>httptest</code>によるテストと合わせやすいのが利点です。ルート数が増えてグループ化や共通ミドルウェアの見通しが悪くなったら、<code>chi</code>などを検討します。</p>
+
+      <h2>実装パターン2: chiで薄く構成する</h2>
+      <p><code>chi</code>は標準<code>net/http</code>に近い感覚を保ちながら、ルートグループやミドルウェアを整理できます。大きめのREST APIでも、ハンドラーを<code>http.HandlerFunc</code>として保ちやすいのが強みです。</p>
+      <pre><code>r := chi.NewRouter()
+r.Use(middleware.RequestID)
+r.Use(middleware.Logger)
+r.Use(middleware.Recoverer)
+
+r.Route("/users", func(r chi.Router) {
+    r.Get("/{id}", getUser)
+    r.Post("/", createUser)
+})
+
+http.ListenAndServe(":8080", r)
+</code></pre>
+
+      <h2>実装パターン3: GinやEchoで素早く作る</h2>
+      <p>GinやEchoは、ルーティング、JSONレスポンス、バインディング、ミドルウェアなどをフレームワーク側でまとめて提供します。チュートリアルやサンプルが多く、APIを素早く立ち上げたい場合に選ばれやすいです。</p>
+      <pre><code>r := gin.Default()
+
+r.GET("/ping", func(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{"message": "pong"})
+})
+
+r.Run(":8080")
+</code></pre>
+      <p>一方で、ハンドラーがフレームワーク独自のContextに結びつきやすいため、将来別のルーターへ移したい場合や、標準<code>http.Handler</code>で統一したい場合は、アプリケーションロジックをハンドラーの外に逃がしておくと扱いやすくなります。</p>
+
+      <h2>実装パターン4: OpenAPI起点またはOpenAPI生成</h2>
+      <p>外部公開API、複数クライアントが使うAPI、フロントエンドと並行開発するAPIでは、OpenAPIを早めに整える価値が高くなります。Humaのように実装から仕様書を生成する方法、OpenAPI定義からサーバーやクライアントを生成する方法、コメントやアノテーションから生成する方法があります。</p>
+      <p>どの方式でも、リクエスト/レスポンスのスキーマ、エラー形式、認証方式、ページネーション、バージョニングをAPI契約として明示することが重要です。</p>
+
+      <h2>実務でのプラクティス</h2>
+      <h3>ハンドラーを薄くする</h3>
+      <p>HTTPハンドラーには、入力の取り出し、認証済みユーザー情報の確認、サービス呼び出し、レスポンス変換だけを置きます。DBアクセスや複雑な業務処理はサービス層やリポジトリ層へ分けると、テストしやすくなります。</p>
+
+      <h3>Contextを必ず伝播する</h3>
+      <p>DBクエリ、外部API呼び出し、キュー処理などには<code>r.Context()</code>を渡します。クライアント切断、タイムアウト、キャンセルを下位処理へ伝えられるため、APIサーバーのリソースを無駄に保持しにくくなります。</p>
+
+      <h3>エラー形式を統一する</h3>
+      <p>APIごとにエラーJSONの形がばらつくと、クライアント実装と監視がつらくなります。たとえば<code>code</code>、<code>message</code>、<code>details</code>、<code>request_id</code>のような共通形式を用意し、バリデーションエラー、認証エラー、業務エラー、内部エラーをHTTPステータスと対応づけます。</p>
+
+      <h3>ミドルウェアを入口に集約する</h3>
+      <p>リクエストID、構造化ログ、panic recovery、CORS、認証、レート制限、メトリクス、トレースはミドルウェアとして入口に集約します。ただし、ビジネスルールまでミドルウェアへ入れると追いにくくなるため、横断的な関心事に絞るのが無難です。</p>
+
+      <h3>HTTP境界のテストを書く</h3>
+      <p><code>net/http/httptest</code>を使うと、実際のHTTPサーバーに近い形でハンドラーをテストできます。単体テストではサービス層を直接テストし、結合テストではルーター全体にリクエストを流す、という分け方が扱いやすいです。</p>
+
+      <h2>選び方の目安</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">状況</th>
+            <th scope="col">候補</th>
+            <th scope="col">理由</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>依存を少なく、長く保守したい</td>
+            <td><code>net/http</code> / <code>chi</code></td>
+            <td>標準APIとの距離が近く、移行やテストの自由度を残しやすい。</td>
+          </tr>
+          <tr>
+            <td>REST APIを短期間で立ち上げたい</td>
+            <td><code>Gin</code> / <code>Echo</code></td>
+            <td>JSON、バインディング、ミドルウェアなどの開発体験がまとまっている。</td>
+          </tr>
+          <tr>
+            <td>Express経験者が多い、速度を強く意識する</td>
+            <td><code>Fiber</code></td>
+            <td>Express風の書き味で、高性能志向の設計。ただし<code>net/http</code>互換性は事前確認が必要。</td>
+          </tr>
+          <tr>
+            <td>API契約やクライアント生成が重要</td>
+            <td><code>Huma</code> / OpenAPIコード生成</td>
+            <td>仕様書、型、ドキュメント、クライアント生成を開発フローに入れやすい。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>GoのAPI開発では、まず<code>net/http</code>互換を中心に考えると設計の自由度を残しやすくなります。小さなAPIは標準ライブラリで十分なことが多く、ルートやミドルウェアが増えたら<code>chi</code>、開発速度を重視するならGinやEcho、OpenAPI契約を重視するならHumaやコード生成を選ぶ、という整理が実務的です。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://go.dev/blog/routing-enhancements">Go Blog: Routing Enhancements for Go 1.22</a></li>
+          <li><a href="https://pkg.go.dev/net/http">Go package documentation: net/http</a></li>
+          <li><a href="https://pkg.go.dev/net/http/httptest">Go package documentation: net/http/httptest</a></li>
+          <li><a href="https://pkg.go.dev/database/sql">Go package documentation: database/sql</a></li>
+          <li><a href="https://github.com/go-chi/chi">go-chi/chi GitHub Repository</a></li>
+          <li><a href="https://gin-gonic.com/en/docs/">Gin Web Framework Documentation</a></li>
+          <li><a href="https://echo.labstack.com/docs">Echo Documentation</a></li>
+          <li><a href="https://docs.gofiber.io/">Fiber Documentation</a></li>
+          <li><a href="https://huma.rocks/features/openapi-generation/">Huma: Configuration &amp; OpenAPI</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
