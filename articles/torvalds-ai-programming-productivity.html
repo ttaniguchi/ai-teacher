@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linus TorvaldsのAIプログラミング観を読む | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">AI記事 / 開発生産性</p>
+        <h1>Linus TorvaldsのAIプログラミング観を読む</h1>
+        <p class="article-created"><time datetime="2026-06-06">作成日: 2026年6月6日</time></p>
+        <p class="lead">The New Stackの記事「Why Linux creator Linus Torvalds gets angry hearing “99% of code is AI”」をもとに、Torvaldsの主張を「AIは強力な道具だが、設計・理解・保守責任は人間に残る」という軸で整理します。あわせて、周辺報道やRedditなどで見られた賛否の反応も分類します。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. 記事でTorvaldsは何を言っているのですか？</dt>
+          <dd>A. AIはプログラミングの生産性を上げる重要な道具だが、「AIがコードを書いた割合」だけを誇るのは見方が浅い、という主張です。コンパイラが機械語生成を担っても人間の設計責任が消えなかったように、AIでもコード理解と保守責任は残る、という立場です。</dd>
+          <dt>Q. TorvaldsはAIコーディングに反対なのですか？</dt>
+          <dd>A. 反対ではありません。AIツールは好きで有用だと認めています。ただし、AIが出したコードやバグ報告を理解せずに投げる行為、特にOSSメンテナへ負担を押しつける使い方を強く批判しています。</dd>
+          <dt>Q. ネットの反応は賛成が多いのですか？</dt>
+          <dd>A. 賛成寄りでは「AIは道具で、人間がレビューすべき」という受け止めが目立ちます。一方で、反対・懐疑寄りでは「AIによる置き換えはもっと進む」「メールリストやOSS側の受け入れプロセスも変えるべき」という意見もあります。</dd>
+        </dl>
+      </section>
+
+      <h2>記事の背景</h2>
+      <p>The New Stackの記事は、2026年5月20日にOpen Source Summit North Americaで行われた「Linus Torvalds, Creator of Linux &amp; Git, in Conversation with Dirk Hohndel」という基調講演での発言を取り上げています。Linux Foundationのイベントページでも、この講演が同日に予定されていたことを確認できます。</p>
+      <p>同時期の文脈として、LinuxカーネルではAI支援による脆弱性報告やバグ報告が増え、重複報告やフォロー不足がメンテナの負担になっていました。Linux 7.1-rc4のリリース告知でも、TorvaldsはAI由来の報告がセキュリティリストを扱いにくくしていると述べています。</p>
+
+      <h2>Torvaldsの主張の要約</h2>
+      <h3>1. AIは道具であり、生産性を上げる</h3>
+      <p>Torvaldsは、AIを「新しい生産性向上ツール」として評価しています。機械語を直接書く時代からアセンブラ、コンパイラ、高級言語へ進んだように、AIもプログラミングの抽象度を上げる道具だ、という見方です。</p>
+      <p>重要なのは、彼がAIを否定していない点です。むしろ、AIがプログラミングを変えること、作業効率を上げることは認めています。ただし、それは「プログラミングの本質が消える」という意味ではありません。</p>
+
+      <h3>2. 「コードの何%をAIが書いたか」は浅い指標</h3>
+      <p>記事の見出しになっている怒りのポイントは、「99%のコードをAIが書いた」という言い方です。Torvaldsの比喩では、コンパイラも最終的には機械語を大量に生成しています。それでも普通は「このプロダクトはコンパイラが書いた」とは言いません。</p>
+      <p>つまり、コード生成の物理的な担当者だけを数えても、設計、要求整理、レビュー、テスト、保守、障害対応の責任は測れません。AI生成コードでも、何を作るべきか、どの設計にするか、なぜその実装でよいかを判断するのは人間側に残ります。</p>
+
+      <h3>3. 長期保守にはコード理解が必要</h3>
+      <p>Torvaldsは、プロンプトを理解するだけでなく、出てきたコードとシステム全体を理解する必要があると述べています。特にLinuxのように何十年も保守されるソフトウェアでは、生成されたコードが「今動く」だけでは足りません。</p>
+      <p>この立場は、AI利用を禁止するものではなく、AIを使う人間の責任範囲を広く見るものです。AIが書いたコードでも、自分がレビューし、説明でき、壊れたときに直せる状態にすることが前提になります。</p>
+
+      <h3>4. AIバグ報告は価値もあるが、メンテナ負荷も増やす</h3>
+      <p>Torvaldsは、AIが古いコードベースの深いバグを見つける可能性を認めています。一方で、AIが見つけたらしい問題を、理解や再現確認なしに「報告だけ」投げる行為は、OSSメンテナに余計なトリアージ負荷を与えます。</p>
+      <p>Linuxカーネルのセキュリティ報告ドキュメントも、AI支援で見つけた問題は同時に複数人が発見しやすいため、公開扱いとして考えること、簡潔で検証済みの情報を出すこと、必要なやり取りに応じることを求めています。</p>
+
+      <h2>ネットの言及: 賛成寄り</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th>反応の型</th>
+            <th>内容</th>
+            <th>読み取り</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>「AIは道具」への同意</td>
+            <td>TechRadarなどの報道では、Torvaldsの立場を「AIは有用だが痛点もある」というバランス型として紹介しています。Redditでも、AI生成コードはジュニア開発者のPRと同じように読むべき、という趣旨のコメントが見られます。</td>
+            <td>AI利用そのものではなく、レビュー責任と理解の不足を問題にする受け止めです。</td>
+          </tr>
+          <tr>
+            <td>OSSメンテナ負担への共感</td>
+            <td>Tom's HardwareやRedditの議論では、重複したAI報告がトリアージ時間を奪う問題が強調されています。既に修正済みの問題を何度も確認するコストは、コード修正そのものより重くなることがあります。</td>
+            <td>AIによって「発見者」は増えても、「直す人」「文脈を説明する人」は同じだけ増えない、という問題意識です。</td>
+          </tr>
+          <tr>
+            <td>教育的な使い方への肯定</td>
+            <td>AIで足場を作り、自分で読み、テストし、理解するなら有用だという意見があります。低リスクの試作や反復的なコードでは、AIの速度を活かしやすいという見方です。</td>
+            <td>「任せきる」のではなく、「自分が検証できる範囲で加速する」使い方を評価しています。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>ネットの言及: 反対・懐疑寄り</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th>反応の型</th>
+            <th>内容</th>
+            <th>読み取り</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>「置き換えは進む」派</td>
+            <td>Redditには、Torvaldsの見方は保守的で、AIは多くのプログラマの仕事を実際に置き換える方向へ進む、という反応もあります。AIエージェントの能力が急速に伸びていることを根拠にする意見です。</td>
+            <td>短期の保守責任より、中長期の自動化能力の伸びを重く見る立場です。</td>
+          </tr>
+          <tr>
+            <td>OSSプロセス側の問題視</td>
+            <td>一部の反応では、メールリストや非公開セキュリティリストという運用が、AI時代の大量報告に合っていないのではないか、という指摘があります。重複検知、公開トリアージ、報告テンプレートなどの仕組み改善を求める見方です。</td>
+            <td>報告者だけでなく、受け入れ側のワークフローも変えるべきだという論点です。</td>
+          </tr>
+          <tr>
+            <td>生産性評価への疑問</td>
+            <td>「AIで10倍」という表現に対しては、タスクや利用者によって効果が大きく違うという懐疑もあります。METRの2026年5月レポートでも、生産性向上の証拠はあるが大きさは不確実だと整理されています。</td>
+            <td>AIの効果は一律ではなく、検証しやすいタスク、既存コード理解、レビュー体制に強く依存します。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>整理すると何が学べるか</h2>
+      <p>Torvaldsの発言は、AIコーディングを「使うか使わないか」の二択ではなく、「誰が理解し、誰が責任を持ち、誰の負荷を増やしているか」で見るべきだ、という話です。</p>
+      <p>実務では、AIが生成した行数や割合よりも、次の問いの方が重要です。</p>
+      <ul>
+        <li>そのコードの設計意図を説明できるか。</li>
+        <li>失敗したときにデバッグできるか。</li>
+        <li>テスト、レビュー、運用で検証できているか。</li>
+        <li>OSSや社内のレビュアに、未整理の負担を押しつけていないか。</li>
+        <li>AIの出力をそのまま投げず、再現手順、影響範囲、修正案まで人間が整理しているか。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>この記事でのTorvaldsの立場は、AI楽観論でもAI否定論でもありません。AIはプログラミングを大きく加速するが、長期に保守されるソフトウェアでは、理解、設計判断、レビュー、責任は人間に残るという現実的な見方です。ネット上の賛否も、最終的には「AIの能力」だけでなく「人間側のプロセスが追いついているか」に集約できます。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://thenewstack.io/torvalds-ai-programming-productivity/">The New Stack: Why Linux creator Linus Torvalds gets angry hearing “99% of code is AI”</a></li>
+          <li><a href="https://events.linuxfoundation.org/open-source-summit-north-america/">Linux Foundation: Open Source Summit North America 2026</a></li>
+          <li><a href="https://lwn.net/Articles/1073192/">LWN.net: Linux 7.1-rc4</a></li>
+          <li><a href="https://kernel.org/doc/html/next/process/security-bugs.html">The Linux Kernel documentation: Security bugs</a></li>
+          <li><a href="https://www.techradar.com/pro/ai-is-a-great-tool-but-its-a-tool-linus-torvalds-lays-out-his-complex-love-hate-relationship-with-ai">TechRadar: Linus Torvalds lays out his love-hate relationship with AI</a></li>
+          <li><a href="https://www.tomshardware.com/software/linux/linus-torvalds-says-ai-bug-reports-have-made-the-linux-security-mailing-list-almost-entirely-unmanageable">Tom's Hardware: duplicate AI-generated vulnerability reports</a></li>
+          <li><a href="https://www.reddit.com/r/linuxmasterrace/comments/1tjs67a/linus_torvalds_on_the_ai_claim_that_makes_him/">Reddit: r/linuxmasterrace thread</a></li>
+          <li><a href="https://www.reddit.com/r/technology/comments/1tgewe8/linus_torvalds_says_aipowered_bug_hunters_have/">Reddit: r/technology thread</a></li>
+          <li><a href="https://metr.org/blog/2026-05-19-frontier-risk-report/">METR: Frontier Risk Report (February to March 2026)</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="関連記事">
+        <h2>関連記事</h2>
+        <ul>
+          <li><a href="../index.html">記事一覧に戻る</a></li>
+          <li><a href="claude-code-dynamic-workflows.html">関連記事: Claude CodeのDynamic Workflowsとは何か</a></li>
+          <li><a href="transformer-paper.html">関連記事: トランスフォーマー論文を図解で理解する</a></li>
+        </ul>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
