@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ルーターのWi-Fiセキュリティ設定の違い | 技術質問ノート</title>
+  <title>Wi-Fiセキュリティ設定と公衆Wi-Fiのリスク | 技術質問ノート</title>
   <link rel="stylesheet" href="../styles/site.css">
 </head>
 <body>
@@ -16,10 +16,10 @@
   <main class="page">
     <article>
       <header class="hero">
-        <p class="eyebrow">ネットワーク / Wi-Fi / ルーター設定</p>
-        <h1>ルーターのWi-Fiセキュリティ設定の違い</h1>
+        <p class="eyebrow">ネットワーク / Wi-Fi / ルーター設定 / 公衆Wi-Fi</p>
+        <h1>Wi-Fiセキュリティ設定と公衆Wi-Fiのリスク</h1>
         <p class="article-created"><time datetime="2026-06-02">作成日: 2026年6月2日</time></p>
-        <p class="lead">家庭用ルーターのWi-Fiセキュリティは、基本的に「WPA3が使えるか」「古い端末も接続したいか」「企業向け認証を使うか」で選びます。家庭ではWPA3-パーソナル、または互換性重視ならWPA3-パーソナル+WPA2-PSK[AES]が第一候補です。</p>
+        <p class="lead">Wi-Fiの安全性は、家庭内ではルーターの暗号化方式、公衆Wi-Fiでは接続先の信頼性・HTTPS・端末設定に分けて考えます。昔よりWeb全体の暗号化が進んだため、カフェなどのWi-Fiで通常のHTTPSサイトを見る危険は下がりましたが、偽アクセスポイントや暗号化されない通信、追跡、証明書警告の無視は今もリスクです。</p>
       </header>
 
       <section class="qa" aria-labelledby="quick-answer">
@@ -31,6 +31,10 @@
           <dd>A. <code>WPA2-PSK[AES]+WPA-PSK[TKIP]</code>のように<code>WPA</code>や<code>TKIP</code>を含む設定は避けます。古い機器向けの互換設定で、現在の家庭用Wi-Fiでは弱い設定です。</dd>
           <dt>Q. エンタープライズは家庭で使う？</dt>
           <dd>A. 通常は使いません。RADIUSサーバーなどでユーザーごとに認証する企業・学校向けの方式です。家庭では「パーソナル」または「PSK」を選べば十分です。</dd>
+          <dt>Q. 最近の公衆Wi-Fiはどの程度セキュア？</dt>
+          <dd>A. 昔よりは安全です。多くのWebサイトやアプリがHTTPSを使うため、同じWi-Fi上の人がログイン内容や本文をそのまま読むリスクは大きく下がりました。ただし、ネットワーク自体は信頼しすぎず、証明書警告を無視しない、OSやブラウザを更新する、重要操作では携帯回線や信頼できるVPNも選択肢にする、という扱いが現実的です。</dd>
+          <dt>Q. スターバックスなどのWi-Fiで銀行や仕事をしてよい？</dt>
+          <dd>A. 公式のネットワーク名を確認し、HTTPSや公式アプリを使い、警告が出ていないなら、一般的な閲覧や多くのログイン操作は以前ほど危険ではありません。大きな送金、機密性の高い作業、証明書警告が出る場面では、携帯回線や組織指定のVPNに切り替えるほうが安全です。</dd>
         </dl>
       </section>
 
@@ -101,23 +105,89 @@
       </ol>
       <p>セキュリティ方式を強くしても、Wi-Fiパスワードが短い・推測しやすいと効果が落ちます。方式の選択と同じくらい、十分に長く、使い回していないパスワードにすることが大切です。</p>
 
+      <h2>公衆Wi-Fiのリスクは昔よりどう変わったか</h2>
+      <p>昔の公衆Wi-Fiが強く警戒された大きな理由は、Webサイトやアプリが平文HTTPを使うことが多く、同じWi-Fiにいる攻撃者が通信内容をのぞいたり、改ざんしたりしやすかったためです。現在はHTTPS、HSTS、ブラウザの警告、アプリ側のTLS利用が広がり、通信の本文やパスワードを横取りされる典型的なリスクは下がっています。</p>
+      <p>ただし、これは「公衆Wi-Fiが信頼できるようになった」という意味ではありません。正しくは「多くの重要な通信がWi-Fiの外側で暗号化されるようになった」ということです。Wi-Fi運営者や同じネットワーク上の攻撃者は、通信先の一部情報、接続時刻、通信量、DNSの扱い、端末名やMACアドレスなどのメタデータを観測できる場合があります。また、HTTPだけのサイト、古いアプリ、証明書警告を無視した通信は今も危険です。</p>
+
+      <h3>公衆Wi-Fiで今も残る主なリスク</h3>
+      <ul>
+        <li>偽アクセスポイント: 店名に似せたSSIDへ誘導され、ログイン画面や決済画面を偽装される可能性があります。</li>
+        <li>証明書警告の無視: HTTPSの警告を突破すると、中間者攻撃や偽サイトを見分けにくくなります。</li>
+        <li>平文HTTPや古いアプリ: 暗号化されない通信は、同じネットワーク上で読まれたり改ざんされたりする可能性があります。</li>
+        <li>端末の露出: ファイル共有、AirDrop、プリンター共有、開発サーバーなどが公開ネットワークで見える設定になっていると、不要な接触面が増えます。</li>
+        <li>追跡: 同じ端末識別子を複数の場所で使うと、ネットワーク事業者や観測者が行動を関連付けやすくなります。</li>
+      </ul>
+
+      <h3>実用的な判断基準</h3>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">使い方</th>
+            <th scope="col">公衆Wi-Fiでの目安</th>
+            <th scope="col">理由</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ニュース、地図、動画、一般的なWeb閲覧</td>
+            <td>多くの場合は可</td>
+            <td>HTTPS対応サイトや公式アプリなら本文の盗聴リスクは低めです。</td>
+          </tr>
+          <tr>
+            <td>メール、SNS、通常のログイン</td>
+            <td>条件付きで可</td>
+            <td>HTTPS、二要素認証、端末更新、証明書警告なしを前提にします。</td>
+          </tr>
+          <tr>
+            <td>銀行、決済、大きな送金、重要なアカウント変更</td>
+            <td>携帯回線や信頼できるVPNが無難</td>
+            <td>リスクが小さくても、失敗したときの影響が大きいためです。</td>
+          </tr>
+          <tr>
+            <td>業務の機密情報、社内システム</td>
+            <td>組織の指定手順に従う</td>
+            <td>企業ではゼロトラスト、MDM、VPN、端末証明書など運用ルールが優先されます。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>VPNは必須か</h3>
+      <p>個人利用では、VPNは「必須」ではなく「信頼先をWi-Fi運営者からVPN事業者へ移す道具」と考えると分かりやすいです。HTTPSが正しく使われている通信は、VPNなしでも内容は暗号化されます。一方で、VPNはローカルネットワークからの観測を減らしたいとき、HTTPや古いアプリが残るとき、ホテルや空港など信頼しにくいネットワークをよく使うときに役立ちます。無料VPNや運営実態の不明なVPNは、かえって別のリスクになるため避けます。</p>
+
+      <h3>公衆Wi-Fiでの安全な使い方</h3>
+      <ol>
+        <li>店内表示や公式案内でSSIDを確認し、似た名前のネットワークへ接続しない。</li>
+        <li>HTTPSの鍵マークやブラウザ警告を確認し、証明書警告は突破しない。</li>
+        <li>OS、ブラウザ、アプリを更新し、二要素認証を有効にする。</li>
+        <li>端末のネットワーク種別を「公共」相当にし、ファイル共有や自動検出を必要時以外は切る。</li>
+        <li>自動接続を必要なネットワークだけに絞り、使わない公衆Wi-Fiは削除する。</li>
+        <li>プライベートWi-FiアドレスやMACアドレスランダム化を有効にして、場所をまたいだ追跡を減らす。</li>
+      </ol>
+
       <h2>よくある誤解</h2>
       <ul>
         <li>「WPA2なら全部同じ」ではありません。<code>WPA2-PSK[AES]</code>と<code>WPA2-PSK[AES]+WPA-PSK[TKIP]</code>では、後者が古い互換方式を許します。</li>
         <li>「WPA3にすれば全端末が安全に高速化する」わけではありません。WPA3非対応端末は接続できないことがあり、混在モードでは端末ごとにWPA3またはWPA2で接続します。</li>
         <li>「エンタープライズのほうが名前が強そうだから家庭でもよい」わけではありません。認証サーバーを前提にした運用方式なので、家庭用ルーター単体では通常使いません。</li>
+        <li>「有名チェーンのWi-Fiなら必ず安全」ではありません。店舗や提供事業者によって認証画面や暗号化方式は変わるため、SSID確認、HTTPS確認、端末側の防御を前提にします。</li>
+        <li>「VPNを入れれば全部安全」でもありません。偽サイト、フィッシング、マルウェア、証明書警告の無視、VPN事業者への信頼問題は残ります。</li>
       </ul>
 
       <section class="note">
         <h2>要点</h2>
-        <p>家庭用のおすすめ順は、<code>WPA3-パーソナル</code>、<code>WPA3-パーソナル+WPA2-PSK[AES]</code>、<code>WPA2-PSK[AES]</code>です。<code>WPA</code>や<code>TKIP</code>を含む設定は古い端末向けの互換モードなので、通常は避けます。会社や学校のようにユーザーごとに認証する仕組みがない限り、エンタープライズ設定も選びません。</p>
+        <p>家庭用のおすすめ順は、<code>WPA3-パーソナル</code>、<code>WPA3-パーソナル+WPA2-PSK[AES]</code>、<code>WPA2-PSK[AES]</code>です。公衆Wi-Fiは、HTTPSの普及により昔より安全に使える場面が増えましたが、ネットワーク自体は信頼しすぎません。公式SSID、HTTPS、更新済み端末、二要素認証、共有設定オフを基本にし、重要度の高い操作では携帯回線や信頼できるVPNを使います。</p>
       </section>
 
       <section class="related" aria-label="参考資料">
         <h2>参考資料</h2>
         <ul>
           <li><a href="https://support.apple.com/en-us/102766">Apple Support: Recommended settings for Wi-Fi routers and access points</a></li>
+          <li><a href="https://consumer.ftc.gov/articles/are-public-wi-fi-networks-safe-what-you-need-know">FTC Consumer Advice: Are Public Wi-Fi Networks Safe?</a></li>
+          <li><a href="https://www.cisa.gov/sites/default/files/publications/Best%20Practices%20for%20Using%20Public%20WiFi.pdf">CISA: Best Practices for Using Public Wi-Fi</a></li>
+          <li><a href="https://blog.google/security/https-by-defau/">Google Security Blog: HTTPS by default</a></li>
+          <li><a href="https://support.apple.com/en-us/102509">Apple Support: Use private Wi-Fi addresses on Apple devices</a></li>
           <li><a href="https://www.wi-fi.org/news-events/newsroom/wi-fi-alliance-introduces-wi-fi-certified-wpa3-security">Wi-Fi Alliance: Wi-Fi Alliance introduces Wi-Fi CERTIFIED WPA3 security</a></li>
+          <li><a href="https://www.globenewswire.com/news-release/2018/06/05/1516867/0/en/Wi-Fi-CERTIFIED-Enhanced-Open-delivers-data-protection-in-open-Wi-Fi-networks.html">Wi-Fi Alliance: Wi-Fi CERTIFIED Enhanced Open delivers data protection in open Wi-Fi networks</a></li>
         </ul>
       </section>
 
