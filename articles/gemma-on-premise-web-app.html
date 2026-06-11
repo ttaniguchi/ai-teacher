@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GemmaはオンプレWebアプリで有用か | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">AI運用 / オンプレミス</p>
+        <h1>GemmaはオンプレWebアプリで有用か</h1>
+        <p class="article-created"><time datetime="2026-06-11">作成日: 2026年6月11日</time></p>
+        <p class="lead">Gemmaは、機密データを外部APIへ送らず、用途に合わせて小型モデルを調整したいWebアプリで有力な選択肢です。ただし、モデル世代によってライセンスが異なり、モデル利用料が無料でもGPU、電力、運用、評価には費用がかかります。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. Gemmaを企業のオンプレWebアプリで利用してよいか？</dt>
+          <dd>A. 商用利用は可能です。ただし、2026年4月公開のGemma 4はApache License 2.0、Gemma 3以前や多くの派生モデルはGemma Terms of Useです。採用するモデルごとにライセンスを確認する必要があります。</dd>
+          <dt>Q. 利用料はかからないか？</dt>
+          <dd>A. Googleへ支払うモデル重量の利用料や推論回数ごとのロイヤリティは基本的にありません。一方、サーバー、GPU、電力、ストレージ、監視、保守、セキュリティ対策、人件費は自社負担です。</dd>
+          <dt>Q. 企業利用の事例はあるか？</dt>
+          <dd>A. あります。Google DeepMindの公開事例では、Levroが金融向けAIエージェントをオンプレ運用し、Lettriaが文書から知識グラフを生成するモデルにGemma 3を利用しています。</dd>
+          <dt>Q. Webアプリではどの構成がよいか？</dt>
+          <dd>A. 一般には、ブラウザへモデルを配るより、社内ネットワーク上の推論サーバーをAPI化し、Webアプリから呼び出す構成が管理しやすいです。小型モデルを端末内で完全オフライン実行したい場合はブラウザ推論も候補になります。</dd>
+        </dl>
+      </section>
+
+      <h2>結論</h2>
+      <p>Gemmaは「データを社外へ出せない」「API従量課金を避けたい」「特定業務に絞って調整したい」という条件に合います。特に、社内文書の要約、分類、定型文作成、RAGによる社内検索、限定されたツール呼び出しなど、正解範囲を定義して評価できる用途と相性がよいです。</p>
+      <p>反対に、幅広い質問へ最高水準の回答を求める一般向けチャット、高リスクな自動判断、常に最新情報が必要な用途では、モデル単体での採用は慎重に判断すべきです。オンプレ化はデータ送信先を制御できますが、回答品質や安全性を自動的に保証するものではありません。</p>
+
+      <h2>ライセンスと利用規約</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">対象</th>
+            <th scope="col">主な条件</th>
+            <th scope="col">Webアプリでの注意</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gemma 4</td>
+            <td>Apache License 2.0。商用利用、変更、再配布が可能で、無償・ロイヤリティフリーの許諾が明記されています。</td>
+            <td>ライセンス文、著作権・NOTICE、変更表示など、Apache 2.0の再配布条件を守ります。商標利用の許諾は含まれません。</td>
+          </tr>
+          <tr>
+            <td>Gemma 1、2、3、3nと規約付属書掲載モデル</td>
+            <td>Gemma Terms of Use。商用利用は可能ですが、Prohibited Use Policyが契約に組み込まれています。</td>
+            <td>APIやWebアクセスによる機能提供もHosted Serviceとして「Distribution」に含まれます。利用者との規約に禁止用途を拘束力ある条項として入れ、Gemma規約の通知などを行う必要があります。</td>
+          </tr>
+          <tr>
+            <td>コミュニティの量子化版・派生モデル</td>
+            <td>元モデルの条件に加え、変換者が付けたライセンスやNOTICEが適用される場合があります。</td>
+            <td>モデル名だけで判断せず、配布元のモデルカード、LICENSE、NOTICE、ベースモデルを確認します。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Gemma 3以前の規約では、生成物に対する権利をGoogleは主張しない一方、生成物とその利用について利用者側が責任を負うとされています。また、規約違反で契約が終了した場合は、モデルと派生モデルの利用停止・削除が必要です。</p>
+      <p>禁止用途には、違法行為、マルウェアや詐欺、権利侵害、同意のない個人追跡・センシティブ情報処理、誤認を狙ったコンテンツ、名誉毀損、高リスク領域で権利や福祉に影響する自動判断などが含まれます。法務確認が必要な案件では、この記事ではなく採用時点の原文を基準にしてください。</p>
+
+      <h2>「無料」の範囲</h2>
+      <p>モデルを自社設備へダウンロードして推論する場合、一般的なSaaS型LLMのような入力・出力トークン単位のGoogle API料金は発生しません。ただし、総保有コストはゼロではありません。</p>
+      <ul>
+        <li>GPUまたは十分なRAMを持つサーバーの購入・リース費用。</li>
+        <li>電力、冷却、ラック、ストレージ、バックアップ、ネットワーク費用。</li>
+        <li>推論基盤、ドライバー、コンテナ、脆弱性対応、監視の保守費用。</li>
+        <li>品質評価、プロンプト・RAG・ファインチューニング、ガードレールの開発費用。</li>
+        <li>高可用性、同時接続数、障害対応、モデル更新に備える運用人件費。</li>
+      </ul>
+      <p>したがって「Gemmaは無料」ではなく、「モデルライセンス料とAPI従量課金を抑え、自社インフラ費へ置き換えられる」と捉えるのが正確です。利用量が少ない場合は外部APIの方が安く、利用量が安定して多い場合やデータ所在の要件が強い場合はオンプレが有利になりやすいです。</p>
+
+      <h2>公開されている企業・組織の利用例</h2>
+      <h3>Levro: 金融向けAIエージェント</h3>
+      <p>Google DeepMindの事例では、LevroはGemma 3 4Bを調整し、顧客アカウント情報の取得などを行う金融向けエージェントを開発しています。事例にはオンプレ運用によるデータ保護と応答時間の改善が明記され、同社計測では他モデルから98%のコスト削減を達成したとされています。これはベンダー掲載の個別事例であり、同じ削減率が一般化できるわけではありません。</p>
+
+      <h3>Lettria: 文書から知識グラフを生成</h3>
+      <p>LettriaはGemma 3をファインチューニングし、非構造化テキストを知識グラフへ変換するPerseusを開発しています。公開事例では、顧客の機密データを扱う際の選択肢、予測しやすい費用、出力スキーマへの適合性が採用理由として挙げられています。</p>
+
+      <h3>そのほかの公開例</h3>
+      <p>Gemmaverseには、Roboflowの画像理解、Sarvam AIのインド諸言語翻訳、SCBX Groupのタイ語モデル、Crane AI Labsのオフライン・地域言語モデルなどが掲載されています。企業内Webアプリに近い提案用途としては、文書分類、情報抽出、翻訳、ナレッジ検索、カスタマーサポート、業務APIを限定的に呼び出すエージェントが現実的です。</p>
+
+      <h2>Webアプリでの推奨構成</h2>
+      <h3>基本案: オンプレ推論API</h3>
+      <p>Webブラウザは通常の社内Webアプリへ接続し、バックエンドが認証・認可・入力検査を行ったうえで、社内GPUサーバー上のvLLMなどへ推論を依頼します。モデルとRAG用データはサーバー側に置き、ブラウザへ配布しません。</p>
+      <ul>
+        <li>モデルを一元更新でき、利用者へ重量ファイルを配らずに済む。</li>
+        <li>SSO、権限、レート制限、監査ログ、データマスキングを共通化できる。</li>
+        <li>GPUを複数利用者で共有し、バッチ処理やキャッシュで効率化できる。</li>
+        <li>RAGの検索権限をユーザーごとに制御しやすい。</li>
+      </ul>
+
+      <h3>例外案: ブラウザ内推論</h3>
+      <p>GoogleはMediaPipe LLM Inference APIによるブラウザ内のオンデバイス実行を案内しています。入力をサーバーへ送らず、ネットワーク切断時にも使える点は魅力です。一方で、モデルのダウンロード容量、初回起動時間、端末メモリ、WebGPU対応、発熱、端末ごとの性能差が課題になります。</p>
+      <p>さらに、ブラウザへ配ったモデルは利用者が取得できる前提になります。Gemma 3以前ではWebアクセスによる提供自体が規約上のDistributionに含まれ、重量ファイルを直接配る場合はNOTICEなど追加の再配布条件も確認が必要です。社内端末限定でも、ライセンス管理とモデル持ち出し対策を設計します。</p>
+
+      <h2>導入時の注意点</h2>
+      <h3>1. モデル世代と由来を固定する</h3>
+      <p>「Gemmaを使う」だけでは不十分です。正確なモデルID、バージョン、量子化方式、入手元、ハッシュ値、ライセンス、モデルカードを台帳化します。Gemma 4とGemma 3では契約条件が異なるため、更新時は法務レビューも更新します。</p>
+
+      <h3>2. 日本語と業務精度を自社データで測る</h3>
+      <p>公開ベンチマークだけで採用せず、実際の質問、文書、専門用語、長文、表、拒否すべき入力を含む評価セットを作ります。正答率だけでなく、根拠一致、JSON形式遵守、ハルシネーション、遅延、同時接続時の性能を測ります。</p>
+
+      <h3>3. RAGでも権限漏えいを防ぐ</h3>
+      <p>オンプレでも、検索インデックスに全社文書を混在させると権限のない情報を回答する可能性があります。検索前にユーザー権限で絞り込み、引用元を表示し、ログにも機密本文を無制限に残さない設計が必要です。</p>
+
+      <h3>4. 出力を業務判断へ直結させない</h3>
+      <p>Gemmaを含むLLMは、事実と異なる内容や不適切な内容を生成できます。採用、融資、医療、法務、保険など、人の権利や重要な利益に影響する判断をモデルだけで自動化しないことが重要です。重要操作にはルール検証と人間承認を入れます。</p>
+
+      <h3>5. セキュリティを通常のWeb APIとして実装する</h3>
+      <p>認証、認可、CSRF・CORS、入力サイズ制限、タイムアウト、同時実行制限、監査ログ、秘密情報の除去を行います。ツール呼び出しを許す場合は、モデルが生成した引数を信用せず、許可リストとスキーマ検証を通します。</p>
+
+      <h3>6. 可用性と容量を事前計測する</h3>
+      <p>モデルがGPUメモリへ載ることと、実用的な同時接続数を処理できることは別です。入力長、出力長、量子化、KVキャッシュ、同時利用者数を想定した負荷試験を行い、キュー、タイムアウト、縮退運転を用意します。</p>
+
+      <h2>採用判断の目安</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">条件</th>
+            <th scope="col">判断</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>機密情報を外部APIへ送れず、GPU運用体制がある</td>
+            <td>オンプレGemmaを検証する価値が高い</td>
+          </tr>
+          <tr>
+            <td>用途が分類・抽出・要約・社内RAGなどに限定される</td>
+            <td>小型モデルの調整と評価がしやすく、有力</td>
+          </tr>
+          <tr>
+            <td>利用量が少ない、または変動が非常に大きい</td>
+            <td>設備費を含めると外部APIの方が安い可能性が高い</td>
+          </tr>
+          <tr>
+            <td>一般知識の最高品質や最新情報を幅広く求める</td>
+            <td>Gemma単体より、RAGや外部モデルとの併用を検討</td>
+          </tr>
+          <tr>
+            <td>高リスクな判断を完全自動化したい</td>
+            <td>規約・法令・品質面から不適切。人間承認を含む再設計が必要</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>Gemmaは、オンプレWebアプリの選択肢として十分に有用です。ただし、採用理由は「無料だから」ではなく、データ所在、調整可能性、予測可能な大量推論コストに置くべきです。まずGemma 4と旧世代のライセンス差を確認し、社内推論APIとして小さく検証し、実データに近い評価、権限制御、出力監視、総保有コストを比較してから本番化します。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://ai.google.dev/gemma/terms">Google AI for Developers: Gemma Terms of Use</a></li>
+          <li><a href="https://ai.google.dev/gemma/apache_2">Google AI for Developers: Gemma 4 Apache License 2.0</a></li>
+          <li><a href="https://ai.google.dev/gemma/prohibited_use_policy">Google AI for Developers: Gemma Prohibited Use Policy</a></li>
+          <li><a href="https://ai.google.dev/gemma/docs/core">Google AI for Developers: Gemma model overview</a></li>
+          <li><a href="https://ai.google.dev/gemma/docs/integrations/web">Google AI for Developers: Deploy Gemma in web browsers</a></li>
+          <li><a href="https://ai.google.dev/gemma/docs/core/gke">Google AI for Developers: Run Gemma with Kubernetes Engine</a></li>
+          <li><a href="https://deepmind.google/models/gemma/gemmaverse/levro/">Google DeepMind: Levro case study</a></li>
+          <li><a href="https://deepmind.google/models/gemma/gemmaverse/lettria/">Google DeepMind: Lettria case study</a></li>
+          <li><a href="https://deepmind.google/models/gemma/gemmaverse/">Google DeepMind: Gemmaverse</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="関連リンク">
+        <p><a href="rag.html">RAGによる知識の拡充</a></p>
+        <p><a href="chatgpt-enterprise-risk.html">企業で生成AIを利用するときの情報漏えいリスク</a></p>
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
