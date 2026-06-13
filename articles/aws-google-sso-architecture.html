@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AWS上の自社サービスでGoogle SSOを実現する構成案 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">AWS / 認証アーキテクチャ</p>
+        <h1>AWS上の自社サービスでGoogle SSOを実現する構成案</h1>
+        <p class="article-created"><time datetime="2026-06-14">作成日: 2026年6月14日</time></p>
+        <p class="lead">AWSで運用するtoBサービスへGoogle SSOを導入し、企業管理のGoogle Workspaceアカウントと個人Googleアカウントの両方を受け付ける場合の構成を、Cognito、ALB認証、直接実装、Google Cloudとの組み合わせ、外部IDaaSに分けて比較します。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. AWS上の一般的なWebサービスなら、どの構成が第一候補ですか？</dt>
+          <dd>A. 特別な要件がなければ、Amazon Cognito User Poolsを認証基盤にし、Googleを外部IdPとして連携する構成が第一候補です。Googleとの接続、トークン発行、ユーザーディレクトリをマネージドサービスへ寄せられます。</dd>
+          <dt>Q. Cognitoを使わず、Google OIDCを直接実装してもよいですか？</dt>
+          <dd>A. 可能です。既存の認証・セッション基盤が成熟している場合や、画面・アカウント統合・トークン仕様を細かく制御したい場合に向きます。ただし、脆弱性対応、鍵更新、アカウント復旧、監査などの責任が増えます。</dd>
+          <dt>Q. ALBだけで認証できますか？</dt>
+          <dd>A. ALBのHTTPSリスナーにはOIDC認証アクションがあり、GoogleをOIDC Providerとして入口を保護できます。社内ツールなどには便利ですが、複雑なアカウント管理、ネイティブアプリ、API単体の認証基盤には向きません。</dd>
+          <dt>Q. Google CloudとAWSを組み合わせる意味はありますか？</dt>
+          <dd>A. 既にGoogle Identity PlatformやFirebase Authenticationを標準化している場合は、認証をGoogle Cloud、アプリ実行をAWSに分ける構成が成立します。ただし、障害点、課金、監視、IAM、データ所在地の管理対象は増えます。</dd>
+          <dt>Q. 企業アカウントと個人アカウントの両方を受け付ける場合、どれが向きますか？</dt>
+          <dd>A. AWS中心ならCognito User Pool + Googleが第一候補です。認証フローは共通にし、Workspaceアカウントでは<code>hd</code>を補助情報としてTenant候補を特定し、個人アカウントでは招待コードや管理者承認など別の方法でTenantへ所属させます。</dd>
+          <dt>Q. 企業のGoogleアカウントと個人のGoogleアカウントで、認証フローを二つ作る必要がありますか？</dt>
+          <dd>A. 通常は必要ありません。同じGoogle OIDCフローとOAuthクライアントを使い、認証後に<code>hd</code>の有無、自社の招待・契約情報、選択されたTenantでオンボーディングを分けます。どちらも許可する場合、<code>hd</code>がないことは拒否理由ではありません。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/aws-google-sso-options.svg" alt="AWS上のGoogle SSOについてCognito、ALB認証、アプリ直実装、Google Identity Platform、外部IDaaSの構成を比較した図">
+        <figcaption>どの案でもGoogleは本人確認を担います。違いは、GoogleとのOIDC接続、ユーザー管理、トークン発行、セッション管理をどの層へ任せるかです。</figcaption>
+      </figure>
+
+      <section class="note">
+        <h2>この記事のアカウント前提</h2>
+        <p>主な想定は、<strong>toBサービスの利用者が、企業管理のGoogle Workspaceアカウントまたは個人Googleアカウントのどちらでもログインできる</strong>構成です。認証入口は一つにし、Googleが確認したユーザーを、自社サービスの招待、Tenant、Membership、Roleへ対応付けます。</p>
+        <p>Workspaceアカウントでは検証済みIDトークンの<code>hd</code>をTenant候補の特定や企業管理アカウントの識別に利用できます。個人アカウントでは通常<code>hd</code>がないため、招待メール、招待コード、管理者承認などでTenantを確定します。どちらの場合も一意な外部IDにはメールではなく<code>issuer + sub</code>を使います。</p>
+      </section>
+
+      <h2>今回の対応範囲と高度なEnterprise SSOの違い</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">段階</th>
+            <th scope="col">認証方式</th>
+            <th scope="col">必要な機能</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>今回の主対象</td>
+            <td>共通のGoogleログインを、Workspace・個人Googleアカウントの双方が利用</td>
+            <td><code>issuer + sub</code>による識別、招待、Tenantへの所属、利用状態、ロール管理。Workspaceでは任意で<code>hd</code>も利用</td>
+          </tr>
+          <tr>
+            <td>高度なEnterprise SSO</td>
+            <td>顧客企業ごとにGoogle、Entra ID、Okta等のSAML/OIDC接続を登録</td>
+            <td>Organization、IdP Discovery、顧客管理者向け設定、JIT、SCIM、証明書・シークレット更新</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>今回の要件だけなら、顧客ごとのSAML接続やSCIMは必須ではありません。ただし、企業アカウントだけを許可したい、退職者のWorkspace停止を直ちに反映したい、顧客管理者がユーザーを自動作成・削除したい、といった要求が出たら、企業アカウント限定ポリシーや高度なEnterprise SSO、プロビジョニング連携を追加します。</p>
+
+      <h2>企業アカウントと個人アカウントは別フローにするのか</h2>
+      <p>Google OIDCから見ると、どちらもGoogleアカウントであり、認可エンドポイント、トークンエンドポイント、Authorization Code Flow、IDトークン検証は共通です。企業用と個人用にOAuthクライアント、コールバックAPI、ログインボタン、セッション実装を二重に用意する必要は通常ありません。</p>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">項目</th>
+            <th scope="col">Google Workspace管理アカウント</th>
+            <th scope="col">個人・管理外Googleアカウント</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>OIDC認証フロー</td>
+            <td>共通</td>
+            <td>共通</td>
+          </tr>
+          <tr>
+            <td>利用するOAuthクライアント</td>
+            <td>原則共通</td>
+            <td>原則共通</td>
+          </tr>
+          <tr>
+            <td>IDトークンの<code>hd</code></td>
+            <td>Google WorkspaceまたはCloud組織のドメインが入る</td>
+            <td>通常は存在しない</td>
+          </tr>
+          <tr>
+            <td>自社サービスの判定</td>
+            <td><code>hd</code>をTenant候補として使い、招待・Membership・ロールを確認</td>
+            <td>招待コードや管理者承認でTenantへ所属させ、Membership・ロールを確認</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>認証と認可を分けて考えることが重要です。Googleが「このGoogleアカウントの本人である」と確認する処理は同じです。その後、自社サービスが招待、Tenant、Membership、Roleを確認します。Workspaceアカウントの<code>hd</code>はTenant候補を特定する材料にはなりますが、個人アカウントも許可する構成では必須条件にしません。</p>
+
+      <h3><code>hd</code>パラメーターとクレームを混同しない</h3>
+      <p>認証リクエストの<code>hd</code>パラメーターは、特定ドメインのアカウントを選びやすくする画面上のヒントです。アクセス制御には使えません。Workspace情報が必要な場合は、認証後に署名検証したIDトークンの<code>hd</code>クレームを確認します。Google公式資料も、WorkspaceまたはCloud組織のメンバーへ限定するときは<code>hd</code>クレームを検証し、メールアドレスのドメインだけでは判定しないよう案内しています。</p>
+
+      <section class="note">
+        <h3>企業アカウントのみに限定する場合</h3>
+        <p>本記事の標準案は個人アカウントも許可します。セキュリティポリシーや契約条件により企業管理アカウントだけを許可する場合に限り、<code>hd</code>が存在し、契約企業の許可ドメインに一致することを必須条件にします。個人Gmail、管理外Googleアカウント、未契約ドメインは拒否し、その理由をログイン画面で説明します。</p>
+      </section>
+
+      <h3>二つのフローが必要になる例外</h3>
+      <ul>
+        <li>企業ユーザーと個人ユーザーで、OAuth同意画面、ブランド、契約主体、データ利用条件を明確に分離したい。</li>
+        <li>企業向け環境と個人向け環境を、ドメイン、AWSアカウント、データベース、セキュリティ境界ごと分離している。</li>
+        <li>企業向けには顧客別SAML/OIDC、個人向けにはGoogleソーシャルログインを使うなど、IdP自体が異なる。</li>
+      </ul>
+      <p>これらは「Googleの企業アカウントと個人アカウントでOIDC仕様が違うから」ではなく、製品・契約・インフラの境界を分ける要件があるためにフローを分けるケースです。</p>
+
+      <h2>構成案の比較</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">構成</th>
+            <th scope="col">向いているケース</th>
+            <th scope="col">両アカウント対応への適性</th>
+            <th scope="col">実装負担</th>
+            <th scope="col">主な注意点</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cognito User Pool + Google</td>
+            <td>AWS中心の一般向けWeb・モバイルサービス</td>
+            <td>最も向く</td>
+            <td>低〜中</td>
+            <td>共通Googleログインをマネージド化できる。個人は招待、Workspaceは任意で<code>hd</code>も使い、Tenantと認可は自社管理。</td>
+          </tr>
+          <tr>
+            <td>ALB + Google OIDC</td>
+            <td>ALB配下の社内ツール、管理画面、小規模Web</td>
+            <td>条件付き</td>
+            <td>低</td>
+            <td>ブラウザ専用の単純なサービスなら可能。テナント所属、招待、API認証はアプリ側で補う。</td>
+          </tr>
+          <tr>
+            <td>アプリへ直接実装</td>
+            <td>既存認証基盤がある、特殊要件が多いサービス</td>
+            <td>向くが高コスト</td>
+            <td>高</td>
+            <td>アカウント種別ごとのオンボーディングを自由に作れるが、認証・セッション運用を自社で負う。</td>
+          </tr>
+          <tr>
+            <td>Google Identity Platform + AWS</td>
+            <td>Firebase/GCPとの共通認証、マルチクラウド</td>
+            <td>向く</td>
+            <td>中</td>
+            <td>Firebase/GCP標準化済みなら有力。Googleログインだけならマルチクラウド化が過剰な場合もある。</td>
+          </tr>
+          <tr>
+            <td>Auth0・Okta等のIDaaS + AWS</td>
+            <td>複数IdP、B2B、Enterprise Federationが重要</td>
+            <td>向くが過剰になりやすい</td>
+            <td>低〜中</td>
+            <td>個人・企業Googleの双方に対応でき、将来のSAML・SCIMにも強いが、Googleログインだけなら過剰になりやすい。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>両方を受け付ける共通ログイン判定</h2>
+      <ol>
+        <li>Googleまたは仲介する認証基盤が発行したトークンについて、署名、<code>iss</code>、<code>aud</code>、<code>exp</code>を検証する。</li>
+        <li>外部ユーザーの識別には<code>issuer + sub</code>を使い、メールアドレスは連絡先・表示属性として扱う。</li>
+        <li><code>hd</code>がある場合はWorkspace管理アカウントとして記録し、契約企業の許可ドメインと一致すればTenant候補にする。<code>hd</code>がなくても個人アカウントとして処理を続ける。</li>
+        <li>招待トークン、招待先メール、既存Membership、管理者承認などから参加先Tenantを確定する。ドメイン一致だけで無条件に加入させるかは契約企業ごとに設定する。</li>
+        <li>契約が有効か、ユーザーとMembershipが停止されていないか、必要なロールがあるかを自社DBで確認する。</li>
+        <li>検証後に自社サービスのセッションまたはアプリ用トークンを発行する。</li>
+      </ol>
+      <pre><code>tenants
+  id
+  name
+  contract_status
+  workspace_only      # trueなら企業管理アカウントだけ許可
+
+tenant_google_domains
+  tenant_id
+  hosted_domain       # hd と照合。個人アカウントでは未使用
+  auto_join_enabled
+
+external_identities
+  user_id
+  issuer
+  subject             # Googleの sub
+  account_type        # workspace / personal / unknown
+  hosted_domain       # Workspaceの場合のみ
+
+invitations
+  tenant_id
+  invited_email
+  token_hash
+  expires_at
+
+tenant_memberships
+  tenant_id
+  user_id
+  role
+  status
+</code></pre>
+      <p>Workspaceアカウントは<code>hd</code>一致でJIT登録し、個人アカウントは招待必須にする、といった差を設けられます。ただし、同じ人物が会社アカウントと個人アカウントを使う可能性があるため、メール一致だけでアカウントを自動統合しません。ログイン済み状態での明示的な紐付けや、管理者による確認手順を用意します。</p>
+
+      <h3>Google Workspaceでの停止と自社セッション</h3>
+      <p>企業管理者がGoogle Workspaceアカウントを停止しても、すでに発行済みの自社サービスのセッションが直ちに消えるとは限りません。セッションを短めにする、一定時間ごとに再認証する、自社管理者が利用者を停止できるようにするなどの対策が必要です。即時性の高い入退社連携が必要になった場合は、SCIMや管理APIを使う高度なプロビジョニング要件として切り分けます。</p>
+
+      <h3>個人アカウントで必要な追加配慮</h3>
+      <ul>
+        <li>個人アカウントには企業による停止・回収の保証がないため、Tenant管理者がMembershipを停止できるようにする。</li>
+        <li>会社を離れた後も個人アカウント自体は有効なので、契約企業側の定期棚卸しや有効期限付きMembershipを検討する。</li>
+        <li>個人アカウントを許可するTenantと、Workspace限定のTenantを設定で分ける。</li>
+        <li>会社メールと個人Googleアカウントのメールが異なる場合に備え、招待トークンとログイン済みIDを安全に結び付ける。</li>
+      </ul>
+
+      <h2>案1: Cognito User PoolにGoogleを連携する</h2>
+      <section class="note">
+        <h3>両アカウント対応への適性: 最も向く</h3>
+        <p>Googleアカウント種別にかかわらず共通のログイン経路を提供できます。Cognitoは認証とJWT発行を担い、自社DBは招待、Tenant、Membership、Roleを管理します。Workspace情報をオンボーディングや企業限定ポリシーに使う場合だけ、<code>hd</code>をCognitoトークンへ反映できる構成か確認します。</p>
+      </section>
+      <h3>構成</h3>
+      <pre><code>ブラウザ / モバイルアプリ
+  -> Cognito Managed Login またはアプリのログイン画面
+  -> Googleで認証
+  -> Cognito User Pool
+  -> CognitoのID token / access token
+  -> API Gateway・ALB・アプリAPI
+  -> ECS / Lambda / EC2 + RDS・DynamoDB
+</code></pre>
+      <p>Amazon Cognito User Poolsを自社サービスのIdPとして置き、その外部ソーシャルIdPにGoogleを登録します。Googleの認証後、アプリが利用するのは通常Googleのトークンではなく、Cognitoが発行したJWTです。API GatewayのJWT Authorizer、ALB、またはアプリのJWT検証処理でCognitoトークンを検証します。</p>
+
+      <h3>メリット</h3>
+      <ul>
+        <li>Google、Apple、SAML、OIDC、Cognitoローカルユーザーなどを同じUser Poolへ集約しやすい。</li>
+        <li>トークン発行、署名鍵公開、ユーザーディレクトリ、MFA、パスワードポリシーなどをマネージド化できる。</li>
+        <li>API Gateway、ALB、LambdaなどAWSサービスとの接続パターンが豊富。</li>
+        <li>Googleログイン以外の認証方式を追加するとき、アプリ側のトークン検証先をCognitoに統一できる。</li>
+      </ul>
+
+      <h3>デメリットと設計ポイント</h3>
+      <ul>
+        <li>ログインUI、クレーム、トークン有効期限、ユーザー属性をCognitoの仕様へ合わせる部分がある。</li>
+        <li>Googleユーザーと既存Cognitoユーザーを自動的に同一人物とみなす設計は避け、アカウントリンク手順を明示する。</li>
+        <li>Pre Token Generation、Pre Sign-upなどLambdaトリガーを増やしすぎると、認証処理が追いにくくなる。</li>
+        <li>CognitoのサインアウトとGoogleのサインアウトは別であり、Googleセッションが残れば再ログインは短縮される。</li>
+        <li>Workspace情報を利用する場合は、Googleから受け取る<code>hd</code>をCognitoへどうマッピングし、どこで検証するかを事前に確認する。</li>
+        <li>Googleアカウントで認証済みであることと、自社サービスのTenantへ所属して利用を許可されていることは別なので、招待・Membership・状態確認を省略しない。</li>
+      </ul>
+
+      <h3>企業アカウント情報として<code>hd</code>を使うときの注意</h3>
+      <p>Cognitoの組み込みGoogleソーシャルIdPでは、Googleから取得した属性をUser Pool属性へマッピングします。ただし、管理画面で選べる既知属性やCognitoが取得するレスポンスに、要件どおり<code>hd</code>が含まれてアプリのトークンへ渡るかを確認してください。メールアドレスだけを代用すると、Google Workspace管理下かどうかを厳密に判定できません。</p>
+      <p><code>hd</code>が組み込みGoogle連携で取得できない場合は、GoogleをCognitoの汎用OIDC IdPとして設定し、IDトークンの<code>hd</code>を可変のカスタム属性へマッピングする構成を検証します。それでも取得できない場合、両アカウントのログイン自体は継続できますが、Workspace判定を使う機能は提供できません。企業限定ポリシーが必須なら、Google IDトークンを自社認証APIで直接検証する構成を選びます。</p>
+
+      <h3>User PoolとIdentity Poolを混同しない</h3>
+      <p>User Poolはアプリ利用者の認証とJWT発行を担います。Identity Poolは、認証済みユーザーへ一時的なAWS認証情報を渡し、S3などのAWSリソースへ直接アクセスさせる用途です。通常のWeb APIへログインさせるだけならUser Poolが中心で、Identity Poolは必須ではありません。</p>
+
+      <h2>案2: ALBのOIDC認証でGoogleを直接使う</h2>
+      <section class="note">
+        <h3>両アカウント対応への適性: 条件付き</h3>
+        <p>ブラウザだけで利用する単純なtoB Webサービスなら、企業・個人を問わない共通Googleログインとして利用できます。ただしALBは認証済みであることを入口で確認する層であり、招待、Tenant、Membership、Role、アカウント種別ごとのポリシーは自社アプリで判定します。モバイルアプリ、外部API、細かなセッション制御がある製品ではCognitoまたはアプリ認証基盤のほうが扱いやすくなります。</p>
+      </section>
+      <h3>構成</h3>
+      <pre><code>ブラウザ
+  -> Application Load Balancer
+       -> Google OIDCへリダイレクト
+       -> 認証後にALBセッションCookieを発行
+  -> ECS / EC2 / LambdaのWebアプリ
+</code></pre>
+      <p>Application Load BalancerのHTTPSリスナールールに<code>authenticate-oidc</code>を設定し、Googleの認可・トークン・UserInfoエンドポイントを登録します。ALBが認証フローとセッションCookieを処理し、認証済みユーザー情報をHTTPヘッダーでターゲットへ渡します。</p>
+
+      <h3>向いているケース</h3>
+      <ul>
+        <li>ブラウザから利用する社内ツールや管理画面。</li>
+        <li>すでにALB配下で動いており、アプリ改修を小さくしたいサービス。</li>
+        <li>入口で未認証アクセスを遮断し、アプリではロール判定だけ行いたい場合。</li>
+      </ul>
+
+      <h3>制約</h3>
+      <ul>
+        <li>ALBの保護範囲はリスナー配下のHTTPアクセスであり、モバイルアプリや外部APIクライアントのBearer token基盤とは役割が違う。</li>
+        <li>ALBが渡すクレームを使う場合も、ターゲットへの通信経路をALBだけに限定し、ヘッダー偽装を防ぐ。</li>
+        <li>ユーザー登録、利用規約同意、アカウント統合、テナント・ロール管理はアプリ側に残る。</li>
+        <li>クライアントシークレットはAWS Secrets Manager等で管理し、更新手順を用意する。</li>
+      </ul>
+
+      <h2>案3: アプリケーションへGoogle OIDCを直接実装する</h2>
+      <section class="note">
+        <h3>両アカウント対応への適性: 向くが高コスト</h3>
+        <p><code>hd</code>があるWorkspaceアカウントと、<code>hd</code>がない個人アカウントのオンボーディングを自由に実装できます。ただし、Cognitoで代替できる認証フロー、トークン検証、セッション、秘密管理、障害対応まで自社で保守することになります。既存の認証基盤へ統合する明確な理由がある場合に選びます。</p>
+      </section>
+      <h3>構成</h3>
+      <pre><code>ブラウザ
+  -> CloudFront / ALB / API Gateway
+  -> 自社認証API
+       -> Google OIDC
+       -> external_identitiesテーブル
+       -> セッションストア
+  -> 業務API
+</code></pre>
+      <p>自社バックエンドをGoogleのRelying Partyとして実装し、Authorization Code Flow、IDトークン検証、外部IDの紐付け、自社セッション発行を直接扱います。AWSは実行・保存基盤として利用し、たとえばECSまたはLambda、RDSまたはDynamoDB、ElastiCache、Secrets Manager、CloudWatchを組み合わせます。</p>
+
+      <h3>メリット</h3>
+      <ul>
+        <li>既存のユーザーDB、セッション、監査、リスク判定へ自然に統合できる。</li>
+        <li>ログイン画面、アカウント統合、テナント選択、トークン・Cookie設計を細かく制御できる。</li>
+        <li>認証ライブラリやデータモデルを適切に抽象化すれば、複数IdPへ拡張できる。</li>
+      </ul>
+
+      <h3>自社が負う責任</h3>
+      <ul>
+        <li><code>state</code>、<code>nonce</code>、PKCE、Redirect URI、IDトークン署名・<code>iss</code>・<code>aud</code>・<code>exp</code>の検証。</li>
+        <li>Googleの<code>sub</code>を使った外部ID管理と、安全な既存アカウント紐付け。</li>
+        <li>セッション固定攻撃、CSRF、Cookie、失効、再認証、ログアウトの設計。</li>
+        <li>ライブラリ更新、障害監視、監査ログ、秘密情報ローテーション、インシデント対応。</li>
+      </ul>
+      <p>「OAuth/OIDCコードを自分で書く」という意味のフルスクラッチは避け、十分に保守されたOIDCライブラリを使います。スクラッチにするのは、認証フローを配置するアーキテクチャと自社のユーザー・セッション統合部分です。</p>
+
+      <h2>案4: Google Identity Platformで認証し、AWS APIを利用する</h2>
+      <section class="note">
+        <h3>両アカウント対応への適性: 向く</h3>
+        <p>Firebase AuthenticationやGoogle Cloudをすでに利用している場合は有力です。企業・個人Googleアカウントの共通ログインとユーザー管理をIdentity Platformへ置き、AWS側で検証済みUIDを招待とTenantへ対応付けます。ただし、Googleログインだけを新規導入するためにAWSとGCPの二つを運用するなら、Cognitoより構成が複雑になる可能性があります。</p>
+      </section>
+      <h3>構成</h3>
+      <pre><code>Web / モバイルアプリ
+  -> Google Identity Platform / Firebase Authentication
+  -> Google側が発行したID token
+  -> Amazon API Gateway / ALB / 自社API
+       -> JWTを検証
+  -> Lambda / ECS + AWS上のDB
+</code></pre>
+      <p>認証基盤をGoogle Cloud Identity PlatformまたはFirebase Authenticationへ置き、アプリ本体とデータ基盤をAWSで運用します。AWS側APIはGoogle側の公開鍵、Issuer、Audienceに基づいてJWTを検証し、検証済みのUIDを自社ユーザーへ対応付けます。</p>
+
+      <h3>採用しやすい条件</h3>
+      <ul>
+        <li>Web・モバイルアプリですでにFirebase Authenticationを利用している。</li>
+        <li>複数プロダクトの認証をGoogle Cloud側へ統一している。</li>
+        <li>Google CloudのIdentity Platform機能とAWSのコンピューティング・データ基盤を組み合わせたい。</li>
+      </ul>
+
+      <h3>注意点</h3>
+      <ul>
+        <li>認証障害の切り分けがGoogle Cloud、ネットワーク、AWS APIにまたがる。</li>
+        <li>AWS側でJWT検証設定、ユーザーマッピング、認可を実装する必要がある。</li>
+        <li>ログ、監査、課金、データ処理契約、リージョン・データ所在地を2クラウド分管理する。</li>
+        <li>Google Identity Platformを使うことと、Googleアカウントだけを許可することは別問題であり、許可するIdPとテナントを設計する。</li>
+      </ul>
+
+      <h2>案5: 外部IDaaSを認証ハブにする</h2>
+      <section class="note">
+        <h3>両アカウント対応への適性: 向くが過剰になりやすい</h3>
+        <p>企業・個人Googleアカウントの双方に対応し、Organizationや招待も統合しやすい構成です。ただしGoogleログインだけならCognitoより機能と費用が過剰になりやすくなります。将来、顧客企業ごとのSAML/OIDC接続、Microsoft Entra ID、IdP Discovery、管理ポータル、SCIM Directory Syncまで提供する計画が明確なら、早い段階から採用する価値があります。</p>
+      </section>
+      <h3>構成</h3>
+      <pre><code>Google / Microsoft Entra ID / SAML IdP
+  -> Auth0・Okta・WorkOS等のIDaaS
+  -> IDaaSが発行したトークン
+  -> AWS上のWeb・API
+</code></pre>
+      <p>複数の企業IdPやソーシャルログインをIDaaSへ集約し、AWS上のアプリはIDaaSだけを信頼します。顧客企業ごとのSAML/OIDC接続、Organization、招待、Enterprise SSO、SCIMなどが重要なB2B SaaSで候補になります。</p>
+      <p>機能を早く揃えやすい一方、月間アクティブユーザー、Enterprise Connection、MFA、ログ保持などで料金が変わります。障害時の影響、ユーザーデータの移行性、トークン仕様への依存も評価します。</p>
+
+      <h2>要件別の選び方</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">要件</th>
+            <th scope="col">選びやすい案</th>
+            <th scope="col">理由</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AWS中心で企業・個人Googleの双方を受け付けるtoBサービス</td>
+            <td>Cognito User Pool</td>
+            <td>Google連携をマネージド化し、招待・Tenant・Membership・認可を自社DBで管理できる。</td>
+          </tr>
+          <tr>
+            <td>ALB配下の社内管理画面を早く保護</td>
+            <td>ALB OIDC</td>
+            <td>アプリ改修を抑え、入口で認証できる。</td>
+          </tr>
+          <tr>
+            <td>既存認証基盤と特殊なアカウント統合</td>
+            <td>アプリ直実装</td>
+            <td>ユーザー・セッションモデルを自由に設計できる。</td>
+          </tr>
+          <tr>
+            <td>Firebaseを使うWeb・モバイル製品</td>
+            <td>Google Identity Platform + AWS</td>
+            <td>クライアント側の既存認証をAWS APIでも利用できる。</td>
+          </tr>
+          <tr>
+            <td>将来、顧客企業ごとのSAML/OIDC・SCIMを提供</td>
+            <td>外部IDaaS</td>
+            <td>B2B向け接続とライフサイクル機能を導入しやすい。</td>
+          </tr>
+          <tr>
+            <td>少数の顧客企業へ運営者が個別にSSO設定</td>
+            <td>Cognito User Pool</td>
+            <td>SAML/OIDC接続は可能。顧客別管理とプロビジョニングは追加実装する。</td>
+          </tr>
+          <tr>
+            <td>GCPを併用し、TenantごとにIdPとユーザーを分離</td>
+            <td>Google Identity Platform</td>
+            <td>B2B向けマルチテナンシーとSAML/OIDC Federationを利用できる。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>共通してAWS側に必要なもの</h2>
+      <ul>
+        <li>Route 53、ACM、CloudFrontまたはALBによるHTTPS公開。</li>
+        <li>AWS WAF、レート制限、認証エンドポイントの監視。</li>
+        <li>Secrets ManagerまたはSSM Parameter Storeによるクライアントシークレット管理。</li>
+        <li>CloudWatch Logs・Metrics、CloudTrail、必要に応じた監査ログ保管。</li>
+        <li>ユーザーIDと外部IdPの<code>issuer + subject</code>を対応付けるDB。</li>
+        <li>認証と分離された、自社サービスのテナント・ロール・契約状態による認可処理。</li>
+        <li>開発、ステージング、本番ごとに分離したOAuthクライアントとRedirect URI。</li>
+      </ul>
+
+      <h2>おすすめの初期判断</h2>
+      <ol>
+        <li>AWS中心の新規構成なら、Cognito User Pool + Googleを第一候補にする。</li>
+        <li>自社DBへTenant、Invitation、Membership、Role、利用状態を持たせ、Googleアカウント種別に依存しない所属管理を作る。</li>
+        <li>Workspaceアカウントでは任意で<code>hd</code>をTenant候補やJIT登録に使い、個人アカウントでは招待・承認でTenantを決定する。</li>
+        <li>ブラウザ専用で要件が単純ならALB OIDCも比較するが、API・モバイル・細かなセッション制御が必要なら避ける。</li>
+        <li>既存のFirebase/GCP認証基盤がある場合だけ、Google Identity Platformとの分業を優先的に比較する。</li>
+        <li>既存認証基盤への深い統合が必要な場合に、直接実装を検討する。</li>
+        <li>顧客別SAML/OIDC、Entra ID、SCIMがロードマップへ入った時点で外部IDaaSを再評価する。</li>
+      </ol>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>企業管理のGoogle Workspaceアカウントと個人Googleアカウントは、通常は同じGoogle OIDCフローで受け付けます。AWS中心ならCognito User Pool + Googleが標準候補です。自社DBでは<code>issuer + sub</code>を外部IDとし、招待、Tenant、Membership、Roleを管理します。<code>hd</code>はWorkspaceアカウントのTenant候補特定や、企業アカウント限定Tenantの追加条件として使い、個人アカウントには招待・承認による参加経路を用意します。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-social-idp.html">AWS Documentation: Adding social identity providers to a user pool</a></li>
+          <li><a href="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-oidc-idp.html">AWS Documentation: Using OIDC identity providers with a user pool</a></li>
+          <li><a href="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-specifying-attribute-mapping.html">AWS Documentation: Mapping IdP attributes to profiles and tokens</a></li>
+          <li><a href="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-saml-idp.html">AWS Documentation: Using SAML identity providers with a user pool</a></li>
+          <li><a href="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-identity-federation-consolidate-users.html">AWS Documentation: Linking federated users to an existing user profile</a></li>
+          <li><a href="https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html">AWS Documentation: Amazon Cognito identity pools</a></li>
+          <li><a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html">AWS Documentation: Authenticate users using an Application Load Balancer</a></li>
+          <li><a href="https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html">AWS Documentation: Control access to HTTP APIs with JWT authorizers</a></li>
+          <li><a href="https://developers.google.com/identity/openid-connect/openid-connect">Google for Developers: OpenID Connect</a></li>
+          <li><a href="https://cloud.google.com/identity-platform/docs/web/google">Google Cloud Documentation: Sign in users with Google</a></li>
+          <li><a href="https://firebase.google.com/docs/auth/admin/verify-id-tokens">Firebase Documentation: Verify ID tokens</a></li>
+          <li><a href="https://cloud.google.com/identity-platform/docs/how-to">Google Cloud Documentation: Identity Platform how-to guides</a></li>
+          <li><a href="https://cloud.google.com/identity-platform/docs/multi-tenancy">Google Cloud Documentation: Identity Platform multi-tenancy</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="関連記事とインデックスへのリンク">
+        <p><a href="google-sso.html">Google認証によるSSOの仕組みと導入手順</a></p>
+        <p><a href="aws-web-db-network.html">AWSでWebサーバーとDBサーバーを分離する構成</a></p>
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="510" viewBox="0 0 1080 510" role="img" aria-labelledby="title desc">
+  <title id="title">Google SSOの認証フロー</title>
+  <desc id="desc">ブラウザが既存プロダクトからGoogleへ移動し、認可コードをバックエンドへ返す。バックエンドはIDトークンを検証し、ユーザーDBを照合して独自セッションを発行する。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#315f8c"/>
+    </marker>
+    <style>
+      .bg { fill: #fffefa; }
+      .box { fill: #ffffff; stroke: #b8c7c2; stroke-width: 2; rx: 16; }
+      .google { fill: #e7f0f8; stroke: #315f8c; }
+      .product { fill: #d8f3ef; stroke: #0f766e; }
+      .db { fill: #fbefd1; stroke: #9a6b18; }
+      .title { fill: #202124; font: 700 24px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .label { fill: #202124; font: 700 18px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .small { fill: #5b625f; font: 15px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .step { fill: #315f8c; font: 700 15px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .arrow { fill: none; stroke: #315f8c; stroke-width: 3; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect class="bg" width="1080" height="510" rx="20"/>
+  <text class="title" x="540" y="42" text-anchor="middle">Google SSO: 認証結果を自サービスのセッションへ変換する</text>
+
+  <rect class="box" x="50" y="90" width="210" height="100"/>
+  <text class="label" x="155" y="130" text-anchor="middle">ブラウザ</text>
+  <text class="small" x="155" y="160" text-anchor="middle">「Googleでログイン」</text>
+
+  <rect class="box google" x="435" y="90" width="210" height="100"/>
+  <text class="label" x="540" y="130" text-anchor="middle">Google</text>
+  <text class="small" x="540" y="160" text-anchor="middle">本人確認・同意</text>
+
+  <rect class="box product" x="800" y="90" width="230" height="100"/>
+  <text class="label" x="915" y="130" text-anchor="middle">既存プロダクト</text>
+  <text class="small" x="915" y="160" text-anchor="middle">バックエンド / API</text>
+
+  <path class="arrow" d="M260 120 C330 70, 365 70, 435 120"/>
+  <text class="step" x="347" y="82" text-anchor="middle">1. 認証要求</text>
+
+  <path class="arrow" d="M435 165 C365 215, 330 215, 260 165"/>
+  <text class="step" x="347" y="218" text-anchor="middle">2. 認可コード</text>
+
+  <path class="arrow" d="M645 120 C710 70, 735 70, 800 120"/>
+  <text class="step" x="723" y="82" text-anchor="middle">3. コード交換</text>
+
+  <path class="arrow" d="M800 165 C735 215, 710 215, 645 165"/>
+  <text class="step" x="723" y="218" text-anchor="middle">4. IDトークン</text>
+
+  <rect class="box db" x="800" y="300" width="230" height="100"/>
+  <text class="label" x="915" y="340" text-anchor="middle">ユーザーDB</text>
+  <text class="small" x="915" y="370" text-anchor="middle">provider + sub を照合</text>
+
+  <path class="arrow" d="M885 190 L885 300"/>
+  <text class="step" x="790" y="250" text-anchor="middle">5. 検証・照合</text>
+  <path class="arrow" d="M945 300 L945 190"/>
+
+  <path class="arrow" d="M800 400 C620 475, 400 475, 260 185"/>
+  <text class="step" x="535" y="458" text-anchor="middle">6. 自サービスの安全なセッションCookieを発行</text>
+
+  <text class="small" x="50" y="488">IDトークンは本人確認、アクセストークンはGoogle APIの権限、自サービスのログイン状態は独自セッションで管理</text>
+</svg>

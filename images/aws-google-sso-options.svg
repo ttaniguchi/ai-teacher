@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="850" viewBox="0 0 1120 850" role="img" aria-labelledby="title desc">
+  <title id="title">AWSでGoogle SSOを利用する5つの構成案</title>
+  <desc id="desc">GoogleからCognito、ALB、アプリ認証API、Google Identity Platform、外部IDaaSを経由してAWS上のアプリへ接続する5つの方式を比較する。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#315f8c"/>
+    </marker>
+    <style>
+      .bg { fill: #fffefa; }
+      .title { fill: #202124; font: 700 27px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .subtitle { fill: #5b625f; font: 15px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .lane { fill: #ffffff; stroke: #d9ded6; stroke-width: 2; rx: 14; }
+      .number { fill: #0f766e; font: 700 18px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .lane-title { fill: #202124; font: 700 18px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .box { stroke-width: 2; rx: 11; }
+      .google { fill: #e7f0f8; stroke: #315f8c; }
+      .aws { fill: #fbefd1; stroke: #9a6b18; }
+      .auth { fill: #d8f3ef; stroke: #0f766e; }
+      .external { fill: #f1edf8; stroke: #75528f; }
+      .label { fill: #202124; font: 700 15px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .small { fill: #5b625f; font: 13px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .arrow { fill: none; stroke: #315f8c; stroke-width: 2.5; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect class="bg" width="1120" height="850" rx="20"/>
+  <text class="title" x="560" y="42" text-anchor="middle">AWS上の自社サービスでGoogle SSOを実現する構成案</text>
+  <text class="subtitle" x="560" y="68" text-anchor="middle">認証処理をどのサービスへ任せるかで、実装負担と自由度が変わる</text>
+
+  <rect class="lane" x="40" y="92" width="1040" height="130"/>
+  <text class="number" x="65" y="125">1</text>
+  <text class="lane-title" x="95" y="125">Cognito User Pool</text>
+  <rect class="box google" x="95" y="145" width="170" height="52"/>
+  <text class="label" x="180" y="177" text-anchor="middle">Google</text>
+  <path class="arrow" d="M265 171 L420 171"/>
+  <rect class="box auth" x="430" y="137" width="225" height="68"/>
+  <text class="label" x="542" y="166" text-anchor="middle">Cognito User Pool</text>
+  <text class="small" x="542" y="187" text-anchor="middle">JWT・ユーザー管理</text>
+  <path class="arrow" d="M655 171 L805 171"/>
+  <rect class="box aws" x="815" y="145" width="205" height="52"/>
+  <text class="label" x="917" y="177" text-anchor="middle">AWS Web / API</text>
+
+  <rect class="lane" x="40" y="237" width="1040" height="130"/>
+  <text class="number" x="65" y="270">2</text>
+  <text class="lane-title" x="95" y="270">ALB OIDC認証</text>
+  <rect class="box google" x="95" y="290" width="170" height="52"/>
+  <text class="label" x="180" y="322" text-anchor="middle">Google</text>
+  <path class="arrow" d="M265 316 L430 316"/>
+  <rect class="box auth" x="440" y="282" width="205" height="68"/>
+  <text class="label" x="542" y="311" text-anchor="middle">Application LB</text>
+  <text class="small" x="542" y="332" text-anchor="middle">入口認証・Cookie</text>
+  <path class="arrow" d="M645 316 L805 316"/>
+  <rect class="box aws" x="815" y="290" width="205" height="52"/>
+  <text class="label" x="917" y="322" text-anchor="middle">ECS / EC2 Web</text>
+
+  <rect class="lane" x="40" y="382" width="1040" height="130"/>
+  <text class="number" x="65" y="415">3</text>
+  <text class="lane-title" x="95" y="415">アプリへ直接実装</text>
+  <rect class="box google" x="95" y="435" width="170" height="52"/>
+  <text class="label" x="180" y="467" text-anchor="middle">Google</text>
+  <path class="arrow" d="M265 461 L420 461"/>
+  <rect class="box auth" x="430" y="427" width="225" height="68"/>
+  <text class="label" x="542" y="456" text-anchor="middle">自社認証API</text>
+  <text class="small" x="542" y="477" text-anchor="middle">OIDC・セッション・DB</text>
+  <path class="arrow" d="M655 461 L805 461"/>
+  <rect class="box aws" x="815" y="435" width="205" height="52"/>
+  <text class="label" x="917" y="467" text-anchor="middle">AWS業務API</text>
+
+  <rect class="lane" x="40" y="527" width="1040" height="130"/>
+  <text class="number" x="65" y="560">4</text>
+  <text class="lane-title" x="95" y="560">Google Cloudとの分業</text>
+  <rect class="box google" x="95" y="580" width="170" height="52"/>
+  <text class="label" x="180" y="612" text-anchor="middle">Googleログイン</text>
+  <path class="arrow" d="M265 606 L405 606"/>
+  <rect class="box google" x="415" y="572" width="255" height="68"/>
+  <text class="label" x="542" y="601" text-anchor="middle">Identity Platform</text>
+  <text class="small" x="542" y="622" text-anchor="middle">GCPでトークン発行</text>
+  <path class="arrow" d="M670 606 L805 606"/>
+  <rect class="box aws" x="815" y="580" width="205" height="52"/>
+  <text class="label" x="917" y="612" text-anchor="middle">AWS API</text>
+
+  <rect class="lane" x="40" y="672" width="1040" height="130"/>
+  <text class="number" x="65" y="705">5</text>
+  <text class="lane-title" x="95" y="705">外部IDaaSを認証ハブにする</text>
+  <rect class="box google" x="95" y="725" width="170" height="52"/>
+  <text class="label" x="180" y="757" text-anchor="middle">Google / SAML</text>
+  <path class="arrow" d="M265 751 L405 751"/>
+  <rect class="box external" x="415" y="717" width="255" height="68"/>
+  <text class="label" x="542" y="746" text-anchor="middle">Auth0・Okta等</text>
+  <text class="small" x="542" y="767" text-anchor="middle">複数IdP・B2B SSO</text>
+  <path class="arrow" d="M670 751 L805 751"/>
+  <rect class="box aws" x="815" y="725" width="205" height="52"/>
+  <text class="label" x="917" y="757" text-anchor="middle">AWS Web / API</text>
+
+  <text class="subtitle" x="560" y="829" text-anchor="middle">AWS側では、どの案でも認証結果と自社のユーザー・テナント・ロールを対応付けて認可する</text>
+</svg>

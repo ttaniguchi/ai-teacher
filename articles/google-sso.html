@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Google認証によるSSOの仕組みと導入手順 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">認証 / OpenID Connect</p>
+        <h1>Google認証によるSSOの仕組みと導入手順</h1>
+        <p class="article-created"><time datetime="2026-06-14">作成日: 2026年6月14日</time></p>
+        <p class="lead">既存プロダクトに「Googleでログイン」を追加するときの仕組み、必要なインフラ、実装手順、既存アカウントとの安全な紐付け方を整理します。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. Google認証によるSSOとは何ですか？</dt>
+          <dd>A. プロダクトがGoogleのパスワードを預からず、Googleが本人確認した結果をOpenID Connect（OIDC）のIDトークンとして受け取り、自サービスのログインに利用する仕組みです。ユーザーはGoogleアカウントを使って複数サービスへログインできます。</dd>
+          <dt>Q. OAuth 2.0との違いは何ですか？</dt>
+          <dd>A. OAuth 2.0はGoogle DriveやCalendarなどを操作する「権限の委譲」が中心です。ログインには、OAuth 2.0の上に本人確認を追加したOpenID Connectを使います。ログインだけなら通常は<code>openid email profile</code>の範囲で足ります。</dd>
+          <dt>Q. Google Cloud上にプロダクトを移す必要がありますか？</dt>
+          <dd>A. ありません。Google Cloud側にはOAuthクライアントと同意画面を設定しますが、アプリ本体、DB、セッション基盤はAWS、Azure、オンプレミスなど既存環境のままでも導入できます。</dd>
+          <dt>Q. 最小構成は何ですか？</dt>
+          <dd>A. HTTPSで公開されたWebアプリ、Googleから戻るコールバックAPI、ユーザーDB、アプリ独自のセッション管理、クライアントシークレットを保管する秘密管理基盤が基本です。</dd>
+          <dt>Q. OIDCを実装済みの場合、SSOについてはどこを読めばよいですか？</dt>
+          <dd>A. <a href="#oidc-to-sso">OIDC実装者向け: SSOによって何が変わるか</a>を読むと、Googleと自社サービスのセッションの関係、ログアウト、ユーザー管理、運用への影響をまとめて確認できます。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/google-sso-flow.svg" alt="ブラウザ、Google、既存プロダクトのバックエンド、ユーザーDBの間で行うGoogle SSOの認証フロー">
+        <figcaption>Googleは本人確認を行い、既存プロダクトは検証済みのGoogle IDと自サービスのユーザーを紐付けて、独自セッションを発行します。</figcaption>
+      </figure>
+
+      <h2>仕組みの全体像</h2>
+      <p>GoogleをIdentity Provider（IdP）、既存プロダクトをRelying Party（RP）として利用します。一般的なサーバー付きWebアプリでは、OpenID ConnectのAuthorization Code Flowを認証ライブラリ経由で実装します。</p>
+
+      <figure class="figure">
+        <img src="../images/google-sso-sequence.svg" alt="ブラウザ、自社サーバー、Googleの間で行うGoogle SSOの通信手順を時系列で示したシーケンス図">
+        <figcaption>認可コードはGoogleからブラウザを経由して自社サーバーへ届きます。その後のコード交換とIDトークン受領は、自社サーバーとGoogleの間で直接行います。</figcaption>
+      </figure>
+
+      <ol>
+        <li>ユーザーが「Googleでログイン」を選ぶ。</li>
+        <li>プロダクトが<code>state</code>や<code>nonce</code>を生成し、Googleの認証画面へリダイレクトする。</li>
+        <li>Googleがユーザーを認証し、同意後に一時的な認可コードを登録済みのコールバックURLへ返す。</li>
+        <li>バックエンドが認可コードをトークンエンドポイントへ送り、IDトークンを受け取る。</li>
+        <li>バックエンドが署名、<code>iss</code>、<code>aud</code>、<code>exp</code>、必要に応じて<code>nonce</code>や<code>hd</code>を検証する。</li>
+        <li>検証済みの<code>sub</code>をGoogle側の不変なユーザーIDとしてDBで照合し、自サービスのセッションCookieを発行する。</li>
+      </ol>
+      <p>IDトークンは「このユーザーをGoogleが認証した」という主張です。アクセストークンはGoogle APIを呼び出すための権限です。自サービスのログイン状態には、検証後に発行する自サービス独自のセッションを使います。</p>
+
+      <h2 id="oidc-to-sso">OIDC実装者向け: SSOによって何が変わるか</h2>
+      <p>OIDCを実装した経験があるなら、認可コードの交換やIDトークン検証を新しく学び直す必要はありません。SSOで重要なのはプロトコルの追加ではなく、<strong>Googleですでに成立しているログイン状態が、別のサービスへログインするときにも利用される</strong>ことが、ユーザー体験と運用へどう影響するかです。</p>
+
+      <h3>OIDCは通信規約、SSOはその結果として得られる利用体験</h3>
+      <p>OIDCは、Relying Party（自社サービス）がOpenID Provider（Google）へ認証を依頼し、IDトークンを受け取って検証するための規約です。SSOは、複数のサービスが同じIdPへ認証を依頼したとき、IdP側のログインセッションを再利用できるため、ユーザーがサービスごとにパスワードを入力し直さずに済む状態を指します。</p>
+      <p>たとえばユーザーが先にGmailへログインしていれば、Googleにはすでに認証済みセッションがあります。その状態で自社サービスがGoogleへOIDC認証を要求すると、Googleは再度パスワード入力を求めず、アカウント選択や同意だけで認証結果を返せる場合があります。これが「Googleを使ったSSO」として見える部分です。</p>
+
+      <h3>セッションは共有されず、3つの状態が別々に存在する</h3>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">状態</th>
+            <th scope="col">管理者</th>
+            <th scope="col">役割</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Googleのログインセッション</td>
+            <td>Google</td>
+            <td>Googleがユーザーをすでに認証済みかを表す。GoogleドメインのCookie等で管理され、自社サーバーから直接読むことはできない。</td>
+          </tr>
+          <tr>
+            <td>OIDCの認証トランザクション</td>
+            <td>Googleと自社サーバー</td>
+            <td><code>state</code>、<code>nonce</code>、認可コード、IDトークンを使い、今回のログイン要求が正当かを確認する短時間の処理。</td>
+          </tr>
+          <tr>
+            <td>自社サービスのセッション</td>
+            <td>自社サービス</td>
+            <td>OIDC認証後に自社が発行するログイン状態。期限、Cookie、強制失効、権限確認は自社の責任で管理する。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>SSOは、GoogleのセッションCookieを複数サービスへ配る仕組みではありません。各サービスはそれぞれGoogleへリダイレクトし、OIDCの認証結果を受け取った後、それぞれ独自のセッションを作ります。</p>
+
+      <h3>初回ログインと2回目以降で何が変わるか</h3>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">場面</th>
+            <th scope="col">Google側</th>
+            <th scope="col">自社サービス側</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Googleにも未ログイン</td>
+            <td>パスワード、パスキー、多要素認証などで本人確認を行う。</td>
+            <td>認証結果を検証し、新規登録または既存ユーザーとの紐付けを行う。</td>
+          </tr>
+          <tr>
+            <td>Googleにはログイン済み、自社には未ログイン</td>
+            <td>既存セッションを再利用するため、パスワード入力を省略できる場合がある。</td>
+            <td>OIDCフロー自体は毎回実行し、受け取った結果から新しい自社セッションを作る。</td>
+          </tr>
+          <tr>
+            <td>自社セッションも有効</td>
+            <td>通常は問い合わせない。</td>
+            <td>既存の自社セッションだけで画面を表示する。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>つまり、SSOによって省略される可能性があるのは主にGoogleでの本人確認操作です。自社サーバーでのIDトークン検証、ユーザー照合、停止状態や権限の確認まで省略してよいわけではありません。</p>
+
+      <h3>ログアウトは自動的に連動しない</h3>
+      <p>自社サービスからログアウトしても、通常は自社セッションが終了するだけで、Googleのログインセッションや別サービスのセッションは残ります。そのため、再び「Googleでログイン」を選ぶと、Googleでのパスワード入力なしに戻ってこられる場合があります。</p>
+      <p>逆にGoogleからログアウトしても、すでに発行済みの自社セッションが即座に消えるとは限りません。自社セッションをいつ失効させるか、重要操作で再認証を要求するか、アカウント停止をどう反映するかは、自社側で設計する必要があります。OIDCにはRPからIdPへログアウトを要求する仕様もありますが、プロバイダーの対応状況と、他サービスまでログアウトさせることの利用者影響を確認して採用します。</p>
+
+      <h3>SSO導入によって影響を受ける設計</h3>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">領域</th>
+            <th scope="col">主な影響</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ログインUX</td>
+            <td>パスワード入力が減る一方、複数Googleアカウント利用時のアカウント選択や、意図しないアカウントでのログインを考慮する。</td>
+          </tr>
+          <tr>
+            <td>アカウントモデル</td>
+            <td>メールアドレスではなく<code>issuer + sub</code>を外部IDとして保存し、既存アカウントとの安全な紐付け・解除を用意する。</td>
+          </tr>
+          <tr>
+            <td>認可</td>
+            <td>Googleが保証するのは認証結果であり、自社の契約、ロール、テナント、停止状態は引き続き自社で判定する。</td>
+          </tr>
+          <tr>
+            <td>セッション管理</td>
+            <td>Googleと自社の有効期限は別々。自社のアイドルタイムアウト、絶対有効期限、強制失効、重要操作の再認証を決める。</td>
+          </tr>
+          <tr>
+            <td>障害と依存関係</td>
+            <td>Googleの認証障害、ネットワーク障害、設定ミスが新規ログインへ影響する。既存自社セッションを継続できるか、代替ログインを残すかを決める。</td>
+          </tr>
+          <tr>
+            <td>セキュリティ</td>
+            <td>多要素認証等をIdPへ集約できる一方、Googleアカウント侵害時の影響範囲が広がる。高リスク操作では追加確認を検討する。</td>
+          </tr>
+          <tr>
+            <td>ユーザーライフサイクル</td>
+            <td>SSOだけでは入社・異動・退職に伴う作成、権限変更、削除は自動化されない。企業用途では別のプロビジョニング手段が必要になる場合がある。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>OIDCを実装済みなら追加で決めること</h3>
+      <ol>
+        <li>Googleにログイン済みなら、どの程度操作を省略してログインさせるか。</li>
+        <li>複数Googleアカウントがあるとき、アカウント選択をどう扱うか。</li>
+        <li>Googleと自社のログアウトを連動させるか、それぞれ独立させるか。</li>
+        <li>Google側の認証から時間が経過した重要操作で、再認証を要求するか。</li>
+        <li>Googleアカウント停止・侵害・組織離脱を、自社セッションと権限へいつ反映するか。</li>
+        <li>Google認証が利用できない場合に、既存セッション、管理者対応、代替ログインをどう扱うか。</li>
+      </ol>
+      <p>一言でまとめると、OIDC実装が「Googleの認証結果を安全に受け取る方法」なら、SSO設計は「Googleの認証済み状態へ依存することで、ログイン体験、セッション境界、運用責任がどう変わるかを決める作業」です。</p>
+
+      <h2>既存プロダクトへの組み込み方</h2>
+      <h3>既存ユーザーと外部IDを分離する</h3>
+      <p>ユーザーテーブルへGoogle固有列を直接増やす方法でも始められますが、将来ほかのIdPを追加するなら、外部IDを別テーブルにするほうが拡張しやすくなります。</p>
+      <pre><code>users
+  id
+  display_name
+  status
+
+external_identities
+  user_id
+  provider          # "google"
+  provider_subject  # IDトークンの sub
+  email_at_link
+  created_at
+
+UNIQUE(provider, provider_subject)
+</code></pre>
+      <p>主キーとして使うのはメールアドレスではなく<code>sub</code>です。メールアドレスは変わる可能性があり、Google公式資料も一意な識別には<code>sub</code>を使うよう案内しています。</p>
+
+      <h3>アカウント紐付けの方針を先に決める</h3>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">ケース</th>
+            <th scope="col">推奨する扱い</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>新規ユーザー</td>
+            <td>利用規約への同意や必須プロフィール入力を経て、ユーザーとGoogleの<code>sub</code>を登録する。</td>
+          </tr>
+          <tr>
+            <td>既存ユーザーがログイン済み</td>
+            <td>設定画面からGoogleアカウントを追加し、再認証やCSRF対策を行って明示的に紐付ける。</td>
+          </tr>
+          <tr>
+            <td>同じメールの既存ユーザーがいる</td>
+            <td>無条件に自動連携しない。既存の認証方法で本人確認してから紐付ける方針が安全。</td>
+          </tr>
+          <tr>
+            <td>組織内ユーザーだけ許可</td>
+            <td>メール末尾ではなくIDトークンの<code>hd</code>を検証し、アプリ側の許可組織・ユーザー・状態も確認する。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>必要なインフラ環境</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">構成要素</th>
+            <th scope="col">役割</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Google Cloudプロジェクト</td>
+            <td>Google Auth Platformのブランド、対象ユーザー、スコープ、OAuthクライアントを管理する。</td>
+          </tr>
+          <tr>
+            <td>OAuth 2.0クライアント</td>
+            <td>本番・ステージング・開発を分け、Authorized JavaScript originsとRedirect URIを環境ごとに登録する。</td>
+          </tr>
+          <tr>
+            <td>HTTPSのWeb/API</td>
+            <td>ログイン開始、コールバック、ログアウト、アカウント紐付け・解除のエンドポイントを提供する。</td>
+          </tr>
+          <tr>
+            <td>ユーザーDB</td>
+            <td>自サービスのユーザーと<code>(provider, sub)</code>の対応を保存する。</td>
+          </tr>
+          <tr>
+            <td>セッションストア</td>
+            <td>Cookieベースのサーバーセッション、または短命なアクセストークンと安全な更新手段を管理する。単一サーバーならDB、複数台ならRedis等も候補。</td>
+          </tr>
+          <tr>
+            <td>秘密管理</td>
+            <td>クライアントシークレットやセッション署名鍵をSecret Manager、Secrets Manager、Vault等に保管する。ブラウザへ配布しない。</td>
+          </tr>
+          <tr>
+            <td>監視・監査ログ</td>
+            <td>ログイン成功・失敗、紐付け・解除、設定変更を記録する。IDトークンやCookieそのものはログへ残さない。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Google認証だけのためにKubernetesなど大きな基盤を追加する必要はありません。既存バックエンドとDBがあれば、主な追加はGoogle Cloud側の設定、認証エンドポイント、外部IDテーブル、秘密管理です。</p>
+
+      <h2>実装手順</h2>
+      <ol>
+        <li>ログイン対象を、一般のGoogleアカウント、特定Google Workspace組織、招待済みユーザーのどれにするか決める。</li>
+        <li>Google Cloudで開発用と本番用のプロジェクトまたはOAuthクライアントを分ける。</li>
+        <li>Google Auth PlatformのBrandingでアプリ名、サポート窓口、ホームページ、プライバシーポリシー、利用規約、承認済みドメインを設定する。</li>
+        <li>Web applicationのOAuthクライアントを作成し、JavaScript originとコールバックURLを完全一致で登録する。</li>
+        <li>公式または十分に保守されたOIDCライブラリを選び、Authorization Code Flow、<code>state</code>、<code>nonce</code>、必要ならPKCEを有効にする。</li>
+        <li>コールバックでIDトークンを検証し、<code>sub</code>からユーザーを検索して、自サービスのセッションを発行する。</li>
+        <li>新規登録、既存アカウントへの紐付け、解除、停止ユーザー、退会済みユーザーの処理を実装する。</li>
+        <li>ローカル、ステージングでテストし、本番ドメインと公開ページを整えて、必要なブランド確認やスコープ確認を申請する。</li>
+        <li>段階リリースし、ログイン成功率、コールバックエラー、アカウント重複、問い合わせを監視する。</li>
+      </ol>
+
+      <h2>セキュリティ上の注意点</h2>
+      <ul>
+        <li>IDトークンを単にBase64デコードして信用せず、署名と<code>aud</code>、<code>iss</code>、<code>exp</code>をサーバー側で検証する。</li>
+        <li><code>state</code>でログインCSRFを防ぎ、フローに応じて<code>nonce</code>とPKCEも利用する。</li>
+        <li>Redirect URIは固定の許可リストにし、ログイン後の遷移先パラメーターでオープンリダイレクトを作らない。</li>
+        <li>セッションCookieには<code>Secure</code>、<code>HttpOnly</code>、適切な<code>SameSite</code>を設定し、ログイン成功時にセッションIDを更新する。</li>
+        <li>Googleログイン成功だけで権限を決めず、契約状態、招待、ロール、停止状態など自サービス側の認可を毎回確認する。</li>
+        <li>ログインだけならGoogle API用アクセストークンやリフレッシュトークンを保存しない。必要なGoogle API機能は後から最小スコープで追加する。</li>
+        <li>自サービスのログアウトは通常、自サービスのセッションを終了する処理であり、Googleアカウント全体からログアウトさせる処理ではない。</li>
+      </ul>
+
+      <h2>「Googleでログイン」と企業SSOの違い</h2>
+      <p>一般公開サービスにGoogleログインを追加する場合、複数のGoogleアカウントで使える外部ログイン機能という意味合いが強くなります。一方、特定企業のGoogle Workspaceアカウントだけを受け入れ、退職・異動時の停止や組織ポリシーと連動させる場合は、企業SSOとしての性格が強くなります。</p>
+      <p>企業向けでは<code>hd</code>の検証だけで完結させず、許可組織、招待、ユーザー状態、ロールをアプリ側でも管理します。即時のアカウント停止同期や自動プロビジョニングまで必要なら、OIDCログインに加えてWorkspace管理、Directory API、SCIM対応のIdP・認証基盤などを別途検討します。</p>
+
+      <h2>導入前のチェックリスト</h2>
+      <ul>
+        <li>既存ログインを残すか、Google必須にするかを決めた。</li>
+        <li>同一メールアドレスの既存アカウントをどう紐付けるか決めた。</li>
+        <li><code>(provider, sub)</code>に一意制約がある。</li>
+        <li>開発・ステージング・本番のOAuth設定と秘密を分離した。</li>
+        <li>プライバシーポリシーに取得情報と利用目的を記載した。</li>
+        <li>ログイン、紐付け、解除、停止、退会、障害時の代替手段をテストした。</li>
+        <li>トークンや認証Cookieをログ・分析基盤へ送らない設定にした。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>Google SSOは、GoogleのOIDC認証結果を検証し、Googleの<code>sub</code>と既存プロダクトのユーザーを安全に対応付けた後、自サービスのセッションを発行する仕組みです。Google Cloud上へシステムを移す必要はありません。実装の中心は、OAuthクライアント設定、コールバックAPI、IDトークン検証、外部IDテーブル、既存アカウントの紐付け方針、セッション保護です。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://developers.google.com/identity/openid-connect/openid-connect">Google for Developers: OpenID Connect</a></li>
+          <li><a href="https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid">Google for Developers: Google Identity Servicesのセットアップ</a></li>
+          <li><a href="https://developers.google.com/identity/gsi/web/guides/verify-google-id-token">Google for Developers: サーバー側でGoogle IDトークンを検証する</a></li>
+          <li><a href="https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance">Google for Developers: OAuth 2.0ポリシーへの準拠</a></li>
+          <li><a href="https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification">Google for Developers: ブランド確認</a></li>
+          <li><a href="https://openid.net/specs/openid-connect-core-1_0.html">OpenID Foundation: OpenID Connect Core 1.0</a></li>
+          <li><a href="https://openid.net/specs/openid-connect-rpinitiated-1_0.html">OpenID Foundation: OpenID Connect RP-Initiated Logout 1.0</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>

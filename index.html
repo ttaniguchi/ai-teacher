@@ -57,6 +57,26 @@
         <p class="section-note">直近 6 件。作成日は git の初回コミット日です。</p>
       </div>
       <div class="article-list recent-list">
+            <a class="article-card" href="articles/google-sso.html">
+              <p class="card-meta-row">
+                <time class="article-date" datetime="2026-06-14">2026年6月14日</time>
+                <span class="eyebrow">認証 / OpenID Connect</span>
+              </p>
+              <h4>Google認証によるSSOの仕組みと導入手順</h4>
+              <p>OIDCの認証フロー、必要なインフラ、既存アカウントとの紐付け、実装時の注意点を整理します。</p>
+              <span class="meta">導入手順 · セキュリティ</span>
+            </a>
+
+            <a class="article-card" href="articles/aws-google-sso-architecture.html">
+              <p class="card-meta-row">
+                <time class="article-date" datetime="2026-06-14">2026年6月14日</time>
+                <span class="eyebrow">AWS / 認証アーキテクチャ</span>
+              </p>
+              <h4>AWS上のGoogle SSO構成案を比較する</h4>
+              <p>AWS上のtoBサービスで、企業・個人Googleアカウントの双方を認証する5構成を比較します。</p>
+              <span class="meta">5構成比較 · 両アカウント対応</span>
+            </a>
+
             <a class="article-card" href="articles/gemma-on-premise-web-app.html">
               <p class="card-meta-row">
                 <time class="article-date" datetime="2026-06-11">2026年6月11日</time>
@@ -96,26 +116,6 @@
               <p>net/http、chi、Gin、Echo、Fiber、Humaなどの選択肢と、API実装の基本プラクティスを整理します。</p>
               <span class="meta">公式情報確認済み · 比較表あり</span>
             </a>
-
-            <a class="article-card" href="articles/react-router-vs-tanstack-router.html">
-              <p class="card-meta-row">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="eyebrow">React / ルーティング</span>
-              </p>
-              <h4>React RouterとTanStack Routerの違い</h4>
-              <p>フレームワーク性、データ取得、型安全性、ストア管理の観点から2つのルーターを比較します。</p>
-              <span class="meta">比較表あり</span>
-            </a>
-
-            <a class="article-card" href="articles/spa-ssg-ssr.html">
-              <p class="card-meta-row">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="eyebrow">React / ホスティング方式</span>
-              </p>
-              <h4>Reactで実現できるホスティング方式と長短</h4>
-              <p>SPA、SSG、ISR、SSR、サーバーレス、Edge、API分離などの配信パターンを比較します。</p>
-              <span class="meta">一覧表あり</span>
-            </a>
       </div>
     </section>
 
@@ -132,6 +132,18 @@
             <h3 id="dev-backend-heading">サーバー側フレームワークと API 設計</h3>
           </div>
           <div class="article-row-list">
+            <a class="article-row" href="articles/google-sso.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-14">2026年6月14日</time>
+                <span class="article-row-eyebrow">認証 / OpenID Connect</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Google認証によるSSOの仕組みと導入手順</span>
+                <p class="article-row-desc">OIDCの認証フロー、必要なインフラ、既存アカウントとの紐付け、実装時の注意点を整理します。</p>
+              </div>
+              <span class="article-row-meta">導入手順 · セキュリティ</span>
+            </a>
+
             <a class="article-row" href="articles/go-backend-api-frameworks.html">
               <div class="article-row-aside">
                 <time class="article-date" datetime="2026-06-04">2026年6月4日</time>
@@ -528,6 +540,18 @@
             <h3 id="infra-cloud-heading">VPC、データベース、可用性</h3>
           </div>
           <div class="article-row-list">
+            <a class="article-row" href="articles/aws-google-sso-architecture.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-14">2026年6月14日</time>
+                <span class="article-row-eyebrow">AWS / 認証アーキテクチャ</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">AWS上のGoogle SSO構成案を比較する</span>
+                <p class="article-row-desc">AWS上のtoBサービスで、企業・個人Googleアカウントの双方を認証する5構成を比較します。</p>
+              </div>
+              <span class="article-row-meta">5構成比較 · 両アカウント対応</span>
+            </a>
+
             <a class="article-row" href="articles/aws-web-db-network.html">
               <div class="article-row-aside">
                 <time class="article-date" datetime="2026-06-02">2026年6月2日</time>

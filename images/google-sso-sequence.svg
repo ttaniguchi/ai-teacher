@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1040" viewBox="0 0 1080 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Google SSOの通信シーケンス</title>
+  <desc id="desc">ブラウザ、自社サーバー、Googleの間で、ログイン開始、認証画面へのリダイレクト、認可コードの返却、トークン交換、IDトークン検証、セッションCookie発行を行う順序を示す。</desc>
+  <defs>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#315f8c"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#0f766e"/>
+    </marker>
+    <style>
+      .bg { fill: #fffefa; }
+      .title { fill: #202124; font: 700 26px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .actor { stroke-width: 2; rx: 14; }
+      .browser { fill: #ffffff; stroke: #b8c7c2; }
+      .server { fill: #d8f3ef; stroke: #0f766e; }
+      .google { fill: #e7f0f8; stroke: #315f8c; }
+      .actor-name { fill: #202124; font: 700 19px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .actor-note { fill: #5b625f; font: 14px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .life { stroke: #9ca7a2; stroke-width: 2; stroke-dasharray: 7 7; }
+      .request { stroke: #315f8c; stroke-width: 2.5; marker-end: url(#arrow-blue); }
+      .response { stroke: #0f766e; stroke-width: 2.5; marker-end: url(#arrow-green); }
+      .message { fill: #202124; font: 700 15px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .detail { fill: #5b625f; font: 13px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .phase { fill: #f6f7f4; stroke: #d9ded6; rx: 10; }
+      .phase-label { fill: #5b625f; font: 700 14px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .check { fill: #fbefd1; stroke: #9a6b18; stroke-width: 1.5; rx: 9; }
+      .check-text { fill: #6f4c10; font: 700 14px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1080" height="1040" rx="20"/>
+  <text class="title" x="540" y="42" text-anchor="middle">Google SSO: ブラウザ・Google・自社サーバーの通信手順</text>
+
+  <rect class="actor browser" x="70" y="70" width="240" height="82"/>
+  <text class="actor-name" x="190" y="105" text-anchor="middle">ブラウザ</text>
+  <text class="actor-note" x="190" y="130" text-anchor="middle">ユーザー操作・画面遷移</text>
+
+  <rect class="actor server" x="420" y="70" width="240" height="82"/>
+  <text class="actor-name" x="540" y="105" text-anchor="middle">自社サーバー</text>
+  <text class="actor-note" x="540" y="130" text-anchor="middle">認証API・セッション管理</text>
+
+  <rect class="actor google" x="770" y="70" width="240" height="82"/>
+  <text class="actor-name" x="890" y="105" text-anchor="middle">Google</text>
+  <text class="actor-note" x="890" y="130" text-anchor="middle">認証・OIDC Provider</text>
+
+  <line class="life" x1="190" y1="152" x2="190" y2="988"/>
+  <line class="life" x1="540" y1="152" x2="540" y2="988"/>
+  <line class="life" x1="890" y1="152" x2="890" y2="988"/>
+
+  <rect class="phase" x="42" y="180" width="996" height="38"/>
+  <text class="phase-label" x="62" y="205">1. ログイン開始とGoogleへの画面遷移</text>
+
+  <line class="request" x1="190" y1="260" x2="530" y2="260"/>
+  <text class="message" x="360" y="245" text-anchor="middle">GET /auth/google</text>
+
+  <rect class="check" x="445" y="285" width="190" height="50"/>
+  <text class="check-text" x="540" y="316" text-anchor="middle">state・nonceを生成、保存</text>
+
+  <line class="response" x1="530" y1="370" x2="200" y2="370"/>
+  <text class="message" x="365" y="353" text-anchor="middle">302 Redirect</text>
+  <text class="detail" x="365" y="388" text-anchor="middle">Google認可エンドポイントのURL</text>
+
+  <line class="request" x1="200" y1="430" x2="880" y2="430"/>
+  <text class="message" x="540" y="414" text-anchor="middle">GET /o/oauth2/v2/auth</text>
+  <text class="detail" x="540" y="448" text-anchor="middle">client_id, redirect_uri, scope, state, nonce</text>
+
+  <rect class="check" x="795" y="470" width="190" height="50"/>
+  <text class="check-text" x="890" y="493" text-anchor="middle">Googleで本人確認</text>
+  <text class="check-text" x="890" y="511" text-anchor="middle">必要に応じて同意</text>
+
+  <rect class="phase" x="42" y="548" width="996" height="38"/>
+  <text class="phase-label" x="62" y="573">2. 認可コードの受領とサーバー間のトークン交換</text>
+
+  <line class="response" x1="880" y1="625" x2="200" y2="625"/>
+  <text class="message" x="540" y="609" text-anchor="middle">302 Redirect: /auth/google/callback</text>
+  <text class="detail" x="540" y="644" text-anchor="middle">code, state（認可コードはブラウザ経由で返る）</text>
+
+  <line class="request" x1="190" y1="690" x2="530" y2="690"/>
+  <text class="message" x="360" y="674" text-anchor="middle">GET /auth/google/callback?code=...&amp;state=...</text>
+
+  <rect class="check" x="445" y="714" width="190" height="44"/>
+  <text class="check-text" x="540" y="741" text-anchor="middle">stateを照合</text>
+
+  <line class="request" x1="550" y1="790" x2="880" y2="790"/>
+  <text class="message" x="715" y="774" text-anchor="middle">POST /token</text>
+  <text class="detail" x="715" y="808" text-anchor="middle">code, client_id, client_secret, redirect_uri</text>
+
+  <line class="response" x1="880" y1="850" x2="550" y2="850"/>
+  <text class="message" x="715" y="834" text-anchor="middle">ID token・access token</text>
+  <text class="detail" x="715" y="868" text-anchor="middle">ブラウザを通さないHTTPSのサーバー間通信</text>
+
+  <rect class="phase" x="42" y="895" width="996" height="38"/>
+  <text class="phase-label" x="62" y="920">3. 検証後、自社サービスのログイン状態を作る</text>
+
+  <rect class="check" x="420" y="950" width="240" height="50"/>
+  <text class="check-text" x="540" y="971" text-anchor="middle">署名・iss・aud・expを検証</text>
+  <text class="check-text" x="540" y="990" text-anchor="middle">subでユーザーを照合</text>
+
+  <line class="response" x1="530" y1="1015" x2="200" y2="1015"/>
+  <text class="message" x="365" y="1007" text-anchor="middle">302 Redirect + Set-Cookie</text>
+  <text class="detail" x="365" y="1034" text-anchor="middle">自社サービスのセッションを開始</text>
+</svg>
