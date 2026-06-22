@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+  <title id="title">ハーネスエンジニアリングのループ</title>
+  <desc id="desc">タスク仕様、コンテキスト、ツール、権限、実行ログ、検証がモデルを囲み、失敗分類から改善へ戻る流れ</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#325a7a"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#13324a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <rect width="960" height="560" rx="28" fill="#f7fafc"/>
+  <rect x="74" y="70" width="812" height="410" rx="24" fill="#e7f0f6" stroke="#c7d8e5"/>
+  <text x="480" y="116" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="26" font-weight="700" fill="#183247">ハーネス = モデルを囲む実行基盤</text>
+
+  <rect x="360" y="220" width="240" height="118" rx="18" fill="#ffffff" stroke="#28536b" stroke-width="2" filter="url(#shadow)"/>
+  <text x="480" y="270" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="24" font-weight="700" fill="#183247">LLM / Agent</text>
+  <text x="480" y="304" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="16" fill="#46667a">判断と生成の中心</text>
+
+  <g font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="16" fill="#183247">
+    <rect x="118" y="164" width="182" height="74" rx="12" fill="#fff8e6" stroke="#d9a632"/>
+    <text x="209" y="196" text-anchor="middle" font-weight="700">タスク仕様</text>
+    <text x="209" y="219" text-anchor="middle" font-size="13">目的・除外範囲</text>
+
+    <rect x="118" y="318" width="182" height="74" rx="12" fill="#eef8f0" stroke="#55a46b"/>
+    <text x="209" y="350" text-anchor="middle" font-weight="700">コンテキスト</text>
+    <text x="209" y="373" text-anchor="middle" font-size="13">必要ファイル・履歴</text>
+
+    <rect x="389" y="394" width="182" height="74" rx="12" fill="#f3efff" stroke="#7c67c8"/>
+    <text x="480" y="426" text-anchor="middle" font-weight="700">ツールと権限</text>
+    <text x="480" y="449" text-anchor="middle" font-size="13">許可・確認・隔離</text>
+
+    <rect x="660" y="318" width="182" height="74" rx="12" fill="#fff0ef" stroke="#d56b5d"/>
+    <text x="751" y="350" text-anchor="middle" font-weight="700">実行ログ</text>
+    <text x="751" y="373" text-anchor="middle" font-size="13">トレース・差分</text>
+
+    <rect x="660" y="164" width="182" height="74" rx="12" fill="#eaf7fb" stroke="#4b9db8"/>
+    <text x="751" y="196" text-anchor="middle" font-weight="700">検証</text>
+    <text x="751" y="219" text-anchor="middle" font-size="13">テスト・採点・レビュー</text>
+  </g>
+
+  <g fill="none" stroke="#325a7a" stroke-width="3" marker-end="url(#arrow)">
+    <path d="M300 201 C335 207 348 225 360 248"/>
+    <path d="M300 355 C334 351 349 332 366 312"/>
+    <path d="M480 394 L480 346"/>
+    <path d="M600 312 C626 331 638 349 660 355"/>
+    <path d="M600 248 C626 226 641 207 660 201"/>
+    <path d="M751 238 C744 278 744 281 751 318"/>
+    <path d="M660 201 C610 145 350 145 300 201"/>
+  </g>
+
+  <rect x="250" y="500" width="460" height="34" rx="17" fill="#ffffff" stroke="#c7d8e5"/>
+  <text x="480" y="522" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" fill="#31506a">失敗分類から、仕様・文脈・ツール・検証条件を改善する</text>
+</svg>
