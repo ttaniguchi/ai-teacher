@@ -57,6 +57,16 @@
         <p class="section-note">直近 6 件。作成日は git の初回コミット日です。</p>
       </div>
       <div class="article-list recent-list">
+            <a class="article-card" href="articles/forward-deployed-engineer.html">
+              <p class="card-meta-row">
+                <time class="article-date" datetime="2026-06-22">2026年6月22日</time>
+                <span class="eyebrow">AI導入 / FDE</span>
+              </p>
+              <h4>Forward Deployed Engineerの由来と意味</h4>
+              <p>Palantirで知られるFDEについて、言葉の由来、登場経緯、AI時代に再注目される理由を整理します。</p>
+              <span class="meta">由来整理 · 役割比較</span>
+            </a>
+
             <a class="article-card" href="articles/google-sso.html">
               <p class="card-meta-row">
                 <time class="article-date" datetime="2026-06-14">2026年6月14日</time>
@@ -105,16 +115,6 @@
               <h4>rtk-ai/rtkの用途、利便性、安全性</h4>
               <p>AI開発時のコマンド出力を圧縮するRTKについて、用途、便利さ、導入リスク、類似ツールを整理します。</p>
               <span class="meta">公開情報確認済み · 比較表あり</span>
-            </a>
-
-            <a class="article-card" href="articles/go-backend-api-frameworks.html">
-              <p class="card-meta-row">
-                <time class="article-date" datetime="2026-06-04">2026年6月4日</time>
-                <span class="eyebrow">Go / バックエンドAPI</span>
-              </p>
-              <h4>GoでWeb APIバックエンドを構築する方法</h4>
-              <p>net/http、chi、Gin、Echo、Fiber、Humaなどの選択肢と、API実装の基本プラクティスを整理します。</p>
-              <span class="meta">公式情報確認済み · 比較表あり</span>
             </a>
       </div>
     </section>
@@ -366,6 +366,62 @@
       </div>
 
       <div class="cluster-stack">
+        <section class="article-cluster" aria-labelledby="ai-workflow-heading">
+          <div class="cluster-heading">
+            <p class="eyebrow">AI &gt; 開発ワークフロー</p>
+            <h3 id="ai-workflow-heading">コーディング支援、ツール連携、作業の自動化</h3>
+          </div>
+          <div class="article-row-list">
+            <a class="article-row" href="articles/forward-deployed-engineer.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-22">2026年6月22日</time>
+                <span class="article-row-eyebrow">AI導入 / FDE</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Forward Deployed Engineerの由来と意味</span>
+                <p class="article-row-desc">Palantirで知られるFDEについて、言葉の由来、登場経緯、AI時代に再注目される理由を整理します。</p>
+              </div>
+              <span class="article-row-meta">由来整理 · 役割比較</span>
+            </a>
+
+            <a class="article-row" href="articles/rtk-ai-token-proxy.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-05">2026年6月5日</time>
+                <span class="article-row-eyebrow">AI開発 / CLIプロキシ</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">rtk-ai/rtkの用途、利便性、安全性</span>
+                <p class="article-row-desc">AI開発時のコマンド出力を圧縮するRTKについて、用途、便利さ、導入リスク、類似ツールを整理します。</p>
+              </div>
+              <span class="article-row-meta">公開情報確認済み · 比較表あり</span>
+            </a>
+
+            <a class="article-row" href="articles/mcp-server.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">AIを介した開発</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">MCPはなぜサーバーを立ち上げる必要があるのか</span>
+                <p class="article-row-desc">LLMアプリと外部ツールをつなぐ境界として、MCPサーバーが担う役割を整理します。</p>
+              </div>
+              <span class="article-row-meta">図解あり</span>
+            </a>
+
+            <a class="article-row" href="articles/claude-code-dynamic-workflows.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">Claude Code / AI開発</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Claude CodeのDynamic Workflowsとは何か</span>
+                <p class="article-row-desc">複雑な依頼に応じて作業手順を生成し、承認後に実行する機能の全体像と使いどころを整理します。</p>
+              </div>
+              <span class="article-row-meta">公式情報確認済み · 図解あり</span>
+            </a>
+          </div>
+        </section>
+
         <section class="article-cluster" aria-labelledby="ai-governance-heading">
           <div class="cluster-heading">
             <p class="eyebrow">AI &gt; 安全・運用</p>
@@ -414,50 +470,6 @@
                 <p class="article-row-desc">AIは強力な道具だが理解と保守責任は人間に残る、という発言を要約し、賛否の反応を整理します。</p>
               </div>
               <span class="article-row-meta">記事読解 · ネット反応整理</span>
-            </a>
-          </div>
-        </section>
-
-        <section class="article-cluster" aria-labelledby="ai-workflow-heading">
-          <div class="cluster-heading">
-            <p class="eyebrow">AI &gt; 開発ワークフロー</p>
-            <h3 id="ai-workflow-heading">コーディング支援、ツール連携、作業の自動化</h3>
-          </div>
-          <div class="article-row-list">
-            <a class="article-row" href="articles/rtk-ai-token-proxy.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-05">2026年6月5日</time>
-                <span class="article-row-eyebrow">AI開発 / CLIプロキシ</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">rtk-ai/rtkの用途、利便性、安全性</span>
-                <p class="article-row-desc">AI開発時のコマンド出力を圧縮するRTKについて、用途、便利さ、導入リスク、類似ツールを整理します。</p>
-              </div>
-              <span class="article-row-meta">公開情報確認済み · 比較表あり</span>
-            </a>
-
-            <a class="article-row" href="articles/mcp-server.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">AIを介した開発</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">MCPはなぜサーバーを立ち上げる必要があるのか</span>
-                <p class="article-row-desc">LLMアプリと外部ツールをつなぐ境界として、MCPサーバーが担う役割を整理します。</p>
-              </div>
-              <span class="article-row-meta">図解あり</span>
-            </a>
-
-            <a class="article-row" href="articles/claude-code-dynamic-workflows.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">Claude Code / AI開発</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">Claude CodeのDynamic Workflowsとは何か</span>
-                <p class="article-row-desc">複雑な依頼に応じて作業手順を生成し、承認後に実行する機能の全体像と使いどころを整理します。</p>
-              </div>
-              <span class="article-row-meta">公式情報確認済み · 図解あり</span>
             </a>
           </div>
         </section>
