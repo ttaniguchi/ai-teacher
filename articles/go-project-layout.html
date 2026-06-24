@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Goプロジェクトレイアウトの考え方 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">Go / プロジェクト構成</p>
+        <h1>golang-standards/project-layoutの考え方</h1>
+        <p class="article-created"><time datetime="2026-06-24">作成日: 2026年6月24日</time></p>
+        <p class="lead">golang-standards/project-layoutは、Goの公式標準ではなく、Goアプリケーションでよく使われるディレクトリ構成を集めた実用的なパターン集です。全部を採用するものではなく、プロジェクトの規模に合わせて必要な棚だけを使う、と考えると扱いやすくなります。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. golang-standards/project-layoutはGo公式の標準ですか？</dt>
+          <dd>A. いいえ。READMEでも、Go公式チームが定義した標準ではないと明記されています。公式情報としては、Goドキュメントの「Organizing a Go module」がより基本方針に近い資料です。</dd>
+          <dt>Q. 最初に覚えるべきディレクトリはどれですか？</dt>
+          <dd>A. まずは<code>cmd/</code>、<code>internal/</code>、必要になったときの<code>pkg/</code>です。特にアプリ本体は<code>internal/</code>に置き、<code>cmd/</code>の<code>main.go</code>は薄くする、という考え方が実用的です。</dd>
+          <dt>Q. 小さい個人プロジェクトでも全部作るべきですか？</dt>
+          <dd>A. 作らなくて大丈夫です。小さなツールなら<code>go.mod</code>と<code>main.go</code>だけで始め、複数コマンドや共有パッケージが出てきた段階で<code>cmd/</code>や<code>internal/</code>を足すのが自然です。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/go-project-layout-map.svg" alt="Goプロジェクトでcmd、internal、pkg、api、configs、scriptsなどを使い分ける図">
+        <figcaption>代表的なGoアプリケーションの置き場所。最初から全ディレクトリを作るのではなく、必要になった場所だけを増やします。</figcaption>
+      </figure>
+
+      <h2>このリポジトリの位置づけ</h2>
+      <p><a href="https://github.com/golang-standards/project-layout">golang-standards/project-layout</a>は、Goのアプリケーションプロジェクトで見かける構成をまとめたテンプレート的なリポジトリです。ただし、Go言語仕様やGo公式チームのルールではありません。READMEでは、学習用、PoC、小さな個人プロジェクトには過剰になりやすく、まずは単純な構成から始めることが勧められています。</p>
+      <p>公式Goドキュメントの<a href="https://go.dev/doc/modules/layout">Organizing a Go module</a>も同じ方向性です。小さいパッケージやコマンドはルートに置けます。支援パッケージが増えたら<code>internal</code>を使い、複数コマンドや非Goファイルが増えるサーバープロジェクトでは<code>cmd</code>にコマンドを集めると見通しがよくなります。</p>
+
+      <h2>全体像</h2>
+      <pre><code>my-go-project/
+├── go.mod
+├── cmd/              # 実行ファイルごとの main
+│   ├── api-server/
+│   │   └── main.go
+│   └── worker/
+│       └── main.go
+├── internal/         # このリポジトリ内だけで使う非公開コード
+│   ├── handler/
+│   ├── service/
+│   ├── repository/
+│   └── config/
+├── pkg/              # 外部からimportされてもよい公開ライブラリ
+├── api/              # OpenAPI、Protocol Buffers、JSON Schemaなど
+├── web/              # 静的ファイル、テンプレート、SPA
+├── configs/          # 設定ファイルのテンプレート
+├── scripts/          # 開発・ビルド・運用補助スクリプト
+├── build/            # Docker、CI、パッケージング関連
+├── deployments/      # Kubernetes、Terraform、docker-composeなど
+├── test/             # 結合テスト用データや外部テスト
+└── docs/             # 設計資料、利用者向け資料</code></pre>
+      <p>大事なのは、ディレクトリを全部作ることではありません。コードを見た人が「これは実行入口」「これは外部に公開しない本体コード」「これは外部に使わせてもよいライブラリ」と判断できるようにすることです。</p>
+
+      <h2>まず押さえる3つ</h2>
+      <h3><code>cmd/</code>: 実行ファイルごとの入口</h3>
+      <p><code>cmd/</code>には、ビルドして実行するアプリケーションごとの<code>main.go</code>を置きます。たとえばAPIサーバー、worker、管理CLIを同じリポジトリで持つなら、次のように分けます。</p>
+      <pre><code>cmd/
+├── api/
+│   └── main.go
+├── worker/
+│   └── main.go
+└── migrate/
+    └── main.go</code></pre>
+      <p><code>main.go</code>には、設定読み込み、依存関係の組み立て、サーバー起動などを書きます。認証、DBアクセス、業務ロジックを大量に置くと、テストや再利用がしづらくなるため、実体は<code>internal/</code>へ逃がすのが扱いやすいです。</p>
+
+      <h3><code>internal/</code>: 外部に公開しない本体コード</h3>
+      <p><code>internal/</code>はGoで特別扱いされるディレクトリです。<code>internal</code>配下のパッケージは、決められた範囲の外からimportできません。つまり「このコードはこのリポジトリ内の実装詳細です」という意図を、コンパイラにも守らせることができます。</p>
+      <p>Web APIなら、最初は次のような分け方で十分です。</p>
+      <pre><code>internal/
+├── handler/      # HTTPリクエストとレスポンス
+├── service/      # アプリケーションロジック
+├── repository/   # DBや外部APIとの接続
+├── model/        # 内部モデル
+└── config/       # 設定読み込み</code></pre>
+
+      <h3><code>pkg/</code>: 外部公開してよいライブラリ</h3>
+      <p><code>pkg/</code>は、他のプロジェクトからimportされてもよいコードを置くための慣習的な場所です。ただし、Goコンパイラが特別に保護してくれるわけではありません。外部から使われる前提にすると、API互換性やドキュメント、テストの責任が増えます。</p>
+      <p>個人開発や業務アプリでは、最初から<code>pkg/</code>を作るより、まず<code>internal/</code>に置くほうが無難です。本当に外部モジュールから使わせたいコードだけを<code>pkg/</code>や別モジュールへ切り出します。</p>
+
+      <h2>周辺ディレクトリの使いどころ</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">ディレクトリ</th>
+            <th scope="col">役割</th>
+            <th scope="col">使う目安</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>api/</code></td>
+            <td>OpenAPI、Protocol Buffers、JSON SchemaなどのAPI仕様</td>
+            <td>API契約をコードとは別に管理したいとき</td>
+          </tr>
+          <tr>
+            <td><code>web/</code></td>
+            <td>静的ファイル、サーバーサイドテンプレート、SPA</td>
+            <td>Goサーバーが画面や静的資産も配るとき</td>
+          </tr>
+          <tr>
+            <td><code>configs/</code></td>
+            <td>設定ファイルのテンプレートやデフォルト値</td>
+            <td><code>config.example.yaml</code>のような公開可能な例を置くとき</td>
+          </tr>
+          <tr>
+            <td><code>scripts/</code></td>
+            <td>ビルド、生成、マイグレーション、検証などの補助スクリプト</td>
+            <td>MakefileやREADMEだけでは手順が長くなるとき</td>
+          </tr>
+          <tr>
+            <td><code>build/</code></td>
+            <td>Docker、CI、OSパッケージング関連</td>
+            <td>ビルドや配布の設定が増えてきたとき</td>
+          </tr>
+          <tr>
+            <td><code>deployments/</code></td>
+            <td>Kubernetes、Helm、Terraform、docker-composeなど</td>
+            <td>アプリの配置・運用設定をリポジトリで管理するとき</td>
+          </tr>
+          <tr>
+            <td><code>test/</code></td>
+            <td>追加の外部テスト、結合テスト、テストデータ</td>
+            <td>各パッケージ内の<code>_test.go</code>だけでは表現しづらいテストがあるとき</td>
+          </tr>
+          <tr>
+            <td><code>docs/</code></td>
+            <td>設計資料、運用手順、利用者向け資料</td>
+            <td>READMEに収まらない説明が増えたとき</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>実用面のメリット</h2>
+      <p>一番のメリットは、チームでも未来の自分でも迷いにくいことです。入口は<code>cmd/</code>、本体は<code>internal/</code>、公開ライブラリは<code>pkg/</code>、API仕様は<code>api/</code>という目印があるため、初見でも探索しやすくなります。</p>
+      <p>もう一つ大きいのは、公開範囲を整理できることです。<code>internal/</code>に置いたコードは外部からimportされにくいため、実装詳細をあとから変更しやすくなります。逆に<code>pkg/</code>に置いたコードは、外部に使わせる覚悟があるものとして扱えます。</p>
+      <p>複数の実行ファイルを持つプロジェクトにも向いています。APIサーバー、バッチ、worker、管理CLIを同じリポジトリで持っても、<code>cmd/</code>配下で入口を分け、共通処理を<code>internal/</code>に寄せれば、構成の意図が崩れにくくなります。</p>
+
+      <h2>導入の目安</h2>
+      <p>最初から大きな棚を作る必要はありません。小さい順に育てるなら、次の流れが現実的です。</p>
+      <pre><code># 小さなCLIや学習用
+project/
+├── go.mod
+└── main.go
+
+# 少し処理が増えた
+project/
+├── go.mod
+├── main.go
+└── internal/
+    └── parser/
+
+# 複数コマンドやサーバーになった
+project/
+├── go.mod
+├── cmd/
+│   └── server/
+│       └── main.go
+└── internal/
+    ├── handler/
+    ├── service/
+    └── repository/</code></pre>
+      <p>Goのサーバープロジェクトなら、公式ドキュメントでも<code>internal</code>にサーバーロジックを置き、<code>cmd</code>にコマンドを集める構成が例示されています。サーバーは通常、外部にimportさせるライブラリではなく自己完結したバイナリなので、<code>pkg/</code>を急いで作らない判断も自然です。</p>
+
+      <h2>よくある誤解</h2>
+      <h3>「この構成にしないとGoらしくない」わけではない</h3>
+      <p>Goでは、単純な構成も尊重されます。小さなプロジェクトに大量の空ディレクトリを作ると、かえって読む人の負担が増えます。必要な複雑さだけを導入するのがよい判断です。</p>
+
+      <h3><code>pkg/</code>は万能の共通置き場ではない</h3>
+      <p>「なんとなく共通っぽい」だけで<code>pkg/</code>へ置くと、公開ライブラリのように見えてしまいます。外部に使わせる意図がないなら、まず<code>internal/</code>に置くほうが保守しやすくなります。</p>
+
+      <h3><code>internal/</code>だけで設計が完成するわけではない</h3>
+      <p><code>internal/</code>は公開範囲を制御する仕組みであり、レイヤードアーキテクチャやクリーンアーキテクチャを自動的に作ってくれるものではありません。handler、service、repositoryなどの分け方は、アプリの規模とチームの理解に合わせて決めます。</p>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>golang-standards/project-layoutは、Go公式標準ではなく、成長したGoアプリケーションを整理するためのパターン集です。最初に使うなら<code>cmd/</code>と<code>internal/</code>を中心に考え、<code>pkg/</code>は外部公開の意図があるときだけ慎重に使うのが実用的です。小さく始め、複雑さが増えたところにだけ棚を足す、という使い方がいちばん失敗しにくいです。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://github.com/golang-standards/project-layout">golang-standards/project-layout</a></li>
+          <li><a href="https://go.dev/doc/modules/layout">Organizing a Go module - The Go Programming Language</a></li>
+          <li><a href="https://pkg.go.dev/cmd/go#hdr-Internal_Directories">cmd/go: Internal Directories</a></li>
+          <li><a href="https://go.dev/doc/go1.4#internalpackages">Go 1.4 Release Notes: Internal packages</a></li>
+          <li><a href="https://go.dev/doc/modules/gomod-ref">go.mod file reference - The Go Programming Language</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>

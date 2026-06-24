@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+  <title id="title">Goプロジェクトレイアウトの主要ディレクトリ</title>
+  <desc id="desc">cmd、internal、pkg、api、configs、scriptsなどの役割を示す図</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .root { fill: #ffffff; stroke: #0f172a; stroke-width: 3; }
+      .box { fill: #ffffff; stroke-width: 2.5; rx: 12; }
+      .primary { stroke: #2563eb; }
+      .private { stroke: #16a34a; }
+      .public { stroke: #dc2626; }
+      .support { stroke: #64748b; }
+      .title { fill: #0f172a; font: 700 26px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .label { fill: #0f172a; font: 700 19px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .small { fill: #475569; font: 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .code { fill: #0f172a; font: 700 18px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .arrow { stroke: #334155; stroke-width: 2.5; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="960" height="560"/>
+  <rect class="root" x="42" y="36" width="876" height="488" rx="18"/>
+  <text class="title" x="78" y="82">my-go-project/</text>
+  <text class="small" x="78" y="112">必要になった棚だけを足していく</text>
+
+  <rect class="box primary" x="78" y="150" width="230" height="118"/>
+  <text class="code" x="102" y="188">cmd/</text>
+  <text class="label" x="102" y="220">実行入口</text>
+  <text class="small" x="102" y="247">main.goは薄く保つ</text>
+
+  <rect class="box private" x="365" y="150" width="230" height="118"/>
+  <text class="code" x="389" y="188">internal/</text>
+  <text class="label" x="389" y="220">非公開の本体</text>
+  <text class="small" x="389" y="247">外部importを制限</text>
+
+  <rect class="box public" x="652" y="150" width="230" height="118"/>
+  <text class="code" x="676" y="188">pkg/</text>
+  <text class="label" x="676" y="220">公開ライブラリ</text>
+  <text class="small" x="676" y="247">外部利用前提なら使う</text>
+
+  <path class="arrow" d="M308 209 C330 209 340 209 365 209"/>
+  <path class="arrow" d="M595 209 C617 209 627 209 652 209"/>
+
+  <rect class="box support" x="78" y="318" width="180" height="82"/>
+  <text class="code" x="102" y="350">api/</text>
+  <text class="small" x="102" y="376">API仕様</text>
+
+  <rect class="box support" x="286" y="318" width="180" height="82"/>
+  <text class="code" x="310" y="350">configs/</text>
+  <text class="small" x="310" y="376">設定テンプレート</text>
+
+  <rect class="box support" x="494" y="318" width="180" height="82"/>
+  <text class="code" x="518" y="350">scripts/</text>
+  <text class="small" x="518" y="376">補助スクリプト</text>
+
+  <rect class="box support" x="702" y="318" width="180" height="82"/>
+  <text class="code" x="726" y="350">deployments/</text>
+  <text class="small" x="726" y="376">配置・運用設定</text>
+
+  <rect class="box support" x="78" y="430" width="180" height="58"/>
+  <text class="code" x="102" y="466">docs/</text>
+
+  <rect class="box support" x="286" y="430" width="180" height="58"/>
+  <text class="code" x="310" y="466">test/</text>
+
+  <rect class="box support" x="494" y="430" width="180" height="58"/>
+  <text class="code" x="518" y="466">build/</text>
+
+  <rect class="box support" x="702" y="430" width="180" height="58"/>
+  <text class="code" x="726" y="466">web/</text>
+</svg>

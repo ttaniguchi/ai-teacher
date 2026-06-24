@@ -57,6 +57,16 @@
         <p class="section-note">直近 6 件。作成日は git の初回コミット日です。</p>
       </div>
       <div class="article-list recent-list">
+            <a class="article-card" href="articles/go-project-layout.html">
+              <p class="card-meta-row">
+                <time class="article-date" datetime="2026-06-24">2026年6月24日</time>
+                <span class="eyebrow">Go / プロジェクト構成</span>
+              </p>
+              <h4>Goプロジェクトレイアウトの考え方</h4>
+              <p>golang-standards/project-layoutの位置づけ、cmd・internal・pkgの使い分け、実用面のメリットを整理します。</p>
+              <span class="meta">図解あり · 公式情報確認済み</span>
+            </a>
+
             <a class="article-card" href="articles/forward-deployed-engineer.html">
               <p class="card-meta-row">
                 <time class="article-date" datetime="2026-06-22">2026年6月22日</time>
@@ -106,16 +116,6 @@
               <p>ライセンス、費用、企業事例、Webアプリ構成、導入時の注意点を公式情報から整理します。</p>
               <span class="meta">規約確認済み · 企業事例あり</span>
             </a>
-
-            <a class="article-card" href="articles/torvalds-ai-programming-productivity.html">
-              <p class="card-meta-row">
-                <time class="article-date" datetime="2026-06-06">2026年6月6日</time>
-                <span class="eyebrow">AI記事 / 開発生産性</span>
-              </p>
-              <h4>Linus TorvaldsのAIプログラミング観を読む</h4>
-              <p>AIは強力な道具だが理解と保守責任は人間に残る、という発言を要約し、賛否の反応を整理します。</p>
-              <span class="meta">記事読解 · ネット反応整理</span>
-            </a>
       </div>
     </section>
 
@@ -126,6 +126,98 @@
       </div>
 
       <div class="cluster-stack">
+        <section class="article-cluster" aria-labelledby="dev-toolchain-heading">
+          <div class="cluster-heading">
+            <p class="eyebrow">開発 &gt; 開発基盤</p>
+            <h3 id="dev-toolchain-heading">言語、ランタイム、パッケージ、リポジトリ、品質ツール</h3>
+          </div>
+          <div class="article-row-list">
+            <a class="article-row" href="articles/go-project-layout.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-24">2026年6月24日</time>
+                <span class="article-row-eyebrow">Go / プロジェクト構成</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Goプロジェクトレイアウトの考え方</span>
+                <p class="article-row-desc">golang-standards/project-layoutの位置づけ、cmd・internal・pkgの使い分け、実用面のメリットを整理します。</p>
+              </div>
+              <span class="article-row-meta">図解あり · 公式情報確認済み</span>
+            </a>
+
+            <a class="article-row" href="articles/package-managers.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">JavaScript / パッケージ管理</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">npm、Yarn、pnpmなどの違いと優位性</span>
+                <p class="article-row-desc">主要なパッケージ管理ツールの特徴、使い分け、新しい候補としてのBunやDenoを整理します。</p>
+              </div>
+              <span class="article-row-meta">比較表あり</span>
+            </a>
+
+            <a class="article-row" href="articles/nodejs-versions.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">Node.js / バージョン管理</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Node.jsの現在の安定版と前後バージョンの違い</span>
+                <p class="article-row-desc">Node.js 24 LTSを中心に、Node.js 22 LTSとの差分とNode.js 26 Currentの優位性を整理します。</p>
+              </div>
+              <span class="article-row-meta">公式情報確認済み</span>
+            </a>
+
+            <a class="article-row" href="articles/temporal-api.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">JavaScript / 日付時刻</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Temporal APIとは何か</span>
+                <p class="article-row-desc">Node.js 26で標準有効化されたTemporal APIについて、Dateとの違い、主要な型、使いどころを整理します。</p>
+              </div>
+              <span class="article-row-meta">別ページ解説</span>
+            </a>
+
+            <a class="article-row" href="articles/typescript-5-6-7.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">TypeScript / バージョン移行</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">TypeScript 5→6→7で起きるインパクト</span>
+                <p class="article-row-desc">言語機能の拡張、tsconfigの現代化、Goネイティブ実装による高速化まで、3世代の設計思想と移行影響を整理します。</p>
+              </div>
+              <span class="article-row-meta">公式情報確認済み · 図解あり</span>
+            </a>
+
+            <a class="article-row" href="articles/typescript-lint-format-tooling.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">TypeScript / コーディング基盤</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">静的解析と自動整形ツールの現在地</span>
+                <p class="article-row-desc">ESLint、typescript-eslint、Prettier、Biome、Oxlintの役割と、後継ツールの進化を整理します。</p>
+              </div>
+              <span class="article-row-meta">比較表あり</span>
+            </a>
+
+            <a class="article-row" href="articles/turborepo-monorepo.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">JavaScript / モノレポ</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Turborepoを用いたモノレポの構成例</span>
+                <p class="article-row-desc">apps/packagesの切り方、pnpm workspace、Next.js・Hono・Prisma・Biome構成を整理します。</p>
+              </div>
+              <span class="article-row-meta">図解あり · 構成例あり</span>
+            </a>
+          </div>
+        </section>
+
         <section class="article-cluster" aria-labelledby="dev-backend-heading">
           <div class="cluster-heading">
             <p class="eyebrow">開発 &gt; バックエンド &amp; API</p>
@@ -246,86 +338,6 @@
                 <p class="article-row-desc">Reactコンポーネントをフレーム単位で描画し、動画へエンコードする流れを整理します。</p>
               </div>
               <span class="article-row-meta">公式情報確認済み · 図解あり</span>
-            </a>
-          </div>
-        </section>
-
-        <section class="article-cluster" aria-labelledby="dev-toolchain-heading">
-          <div class="cluster-heading">
-            <p class="eyebrow">開発 &gt; 開発基盤</p>
-            <h3 id="dev-toolchain-heading">言語、ランタイム、パッケージ、リポジトリ、品質ツール</h3>
-          </div>
-          <div class="article-row-list">
-            <a class="article-row" href="articles/package-managers.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">JavaScript / パッケージ管理</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">npm、Yarn、pnpmなどの違いと優位性</span>
-                <p class="article-row-desc">主要なパッケージ管理ツールの特徴、使い分け、新しい候補としてのBunやDenoを整理します。</p>
-              </div>
-              <span class="article-row-meta">比較表あり</span>
-            </a>
-
-            <a class="article-row" href="articles/nodejs-versions.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">Node.js / バージョン管理</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">Node.jsの現在の安定版と前後バージョンの違い</span>
-                <p class="article-row-desc">Node.js 24 LTSを中心に、Node.js 22 LTSとの差分とNode.js 26 Currentの優位性を整理します。</p>
-              </div>
-              <span class="article-row-meta">公式情報確認済み</span>
-            </a>
-
-            <a class="article-row" href="articles/temporal-api.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">JavaScript / 日付時刻</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">Temporal APIとは何か</span>
-                <p class="article-row-desc">Node.js 26で標準有効化されたTemporal APIについて、Dateとの違い、主要な型、使いどころを整理します。</p>
-              </div>
-              <span class="article-row-meta">別ページ解説</span>
-            </a>
-
-            <a class="article-row" href="articles/typescript-5-6-7.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">TypeScript / バージョン移行</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">TypeScript 5→6→7で起きるインパクト</span>
-                <p class="article-row-desc">言語機能の拡張、tsconfigの現代化、Goネイティブ実装による高速化まで、3世代の設計思想と移行影響を整理します。</p>
-              </div>
-              <span class="article-row-meta">公式情報確認済み · 図解あり</span>
-            </a>
-
-            <a class="article-row" href="articles/typescript-lint-format-tooling.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">TypeScript / コーディング基盤</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">静的解析と自動整形ツールの現在地</span>
-                <p class="article-row-desc">ESLint、typescript-eslint、Prettier、Biome、Oxlintの役割と、後継ツールの進化を整理します。</p>
-              </div>
-              <span class="article-row-meta">比較表あり</span>
-            </a>
-
-            <a class="article-row" href="articles/turborepo-monorepo.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">JavaScript / モノレポ</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">Turborepoを用いたモノレポの構成例</span>
-                <p class="article-row-desc">apps/packagesの切り方、pnpm workspace、Next.js・Hono・Prisma・Biome構成を整理します。</p>
-              </div>
-              <span class="article-row-meta">図解あり · 構成例あり</span>
             </a>
           </div>
         </section>
