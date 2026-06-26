@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520" role="img" aria-labelledby="title desc">
+  <title id="title">H0からH3までのハーネス段階</title>
+  <desc id="desc">H0は最小構成、H1はツール、H2は文脈と記憶、H3は観測と検証を追加する段階図</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#34536c"/>
+    </marker>
+  </defs>
+  <rect width="960" height="520" rx="28" fill="#f7fafc"/>
+  <text x="480" y="58" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="26" font-weight="700" fill="#182f43">ハーネス支援を段階的に増やして比較する</text>
+  <text x="480" y="88" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" fill="#557084">同じモデル・同じタスクで、実行基盤だけを変える</text>
+
+  <g font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif">
+    <rect x="68" y="150" width="184" height="230" rx="18" fill="#ffffff" stroke="#c7d8e5" stroke-width="2"/>
+    <circle cx="160" cy="138" r="34" fill="#fff8e6" stroke="#d9a632" stroke-width="2"/>
+    <text x="160" y="146" text-anchor="middle" font-size="22" font-weight="700" fill="#183247">H0</text>
+    <text x="160" y="188" text-anchor="middle" font-size="18" font-weight="700" fill="#183247">最小構成</text>
+    <text x="160" y="226" text-anchor="middle" font-size="14" fill="#435f73">タスク説明</text>
+    <text x="160" y="252" text-anchor="middle" font-size="14" fill="#435f73">リポジトリ</text>
+    <text x="160" y="315" text-anchor="middle" font-size="13" fill="#657b8d">証拠は主に</text>
+    <text x="160" y="338" text-anchor="middle" font-size="13" fill="#657b8d">最終パッチ</text>
+
+    <rect x="286" y="150" width="184" height="230" rx="18" fill="#ffffff" stroke="#c7d8e5" stroke-width="2"/>
+    <circle cx="378" cy="138" r="34" fill="#eef8f0" stroke="#55a46b" stroke-width="2"/>
+    <text x="378" y="146" text-anchor="middle" font-size="22" font-weight="700" fill="#183247">H1</text>
+    <text x="378" y="188" text-anchor="middle" font-size="18" font-weight="700" fill="#183247">ツール支援</text>
+    <text x="378" y="226" text-anchor="middle" font-size="14" fill="#435f73">ツール一覧</text>
+    <text x="378" y="252" text-anchor="middle" font-size="14" fill="#435f73">テストコマンド</text>
+    <text x="378" y="278" text-anchor="middle" font-size="14" fill="#435f73">使用ルール</text>
+    <text x="378" y="338" text-anchor="middle" font-size="13" fill="#657b8d">ツール履歴が残る</text>
+
+    <rect x="504" y="150" width="184" height="230" rx="18" fill="#ffffff" stroke="#c7d8e5" stroke-width="2"/>
+    <circle cx="596" cy="138" r="34" fill="#f3efff" stroke="#7c67c8" stroke-width="2"/>
+    <text x="596" y="146" text-anchor="middle" font-size="22" font-weight="700" fill="#183247">H2</text>
+    <text x="596" y="188" text-anchor="middle" font-size="18" font-weight="700" fill="#183247">文脈・記憶</text>
+    <text x="596" y="226" text-anchor="middle" font-size="14" fill="#435f73">構成ガイド</text>
+    <text x="596" y="252" text-anchor="middle" font-size="14" fill="#435f73">テスト方針</text>
+    <text x="596" y="278" text-anchor="middle" font-size="14" fill="#435f73">作業状態</text>
+    <text x="596" y="338" text-anchor="middle" font-size="13" fill="#657b8d">文脈の使い方が残る</text>
+
+    <rect x="722" y="150" width="184" height="230" rx="18" fill="#ffffff" stroke="#c7d8e5" stroke-width="2"/>
+    <circle cx="814" cy="138" r="34" fill="#eaf7fb" stroke="#4b9db8" stroke-width="2"/>
+    <text x="814" y="146" text-anchor="middle" font-size="22" font-weight="700" fill="#183247">H3</text>
+    <text x="814" y="188" text-anchor="middle" font-size="18" font-weight="700" fill="#183247">観測・検証</text>
+    <text x="814" y="226" text-anchor="middle" font-size="14" fill="#435f73">バグ再現</text>
+    <text x="814" y="252" text-anchor="middle" font-size="14" fill="#435f73">失敗分類</text>
+    <text x="814" y="278" text-anchor="middle" font-size="14" fill="#435f73">要件別チェック</text>
+    <text x="814" y="338" text-anchor="middle" font-size="13" fill="#657b8d">検証レポートが残る</text>
+  </g>
+
+  <g fill="none" stroke="#34536c" stroke-width="3" marker-end="url(#arrow)">
+    <path d="M252 265 L278 265"/>
+    <path d="M470 265 L496 265"/>
+    <path d="M688 265 L714 265"/>
+  </g>
+
+  <rect x="158" y="424" width="644" height="48" rx="24" fill="#ffffff" stroke="#c7d8e5"/>
+  <text x="480" y="454" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="15" fill="#31506a">高い段階ほど「成功したか」だけでなく「なぜ成功と言えるか」を記録できる</text>
+</svg>
