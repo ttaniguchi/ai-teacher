@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="560" viewBox="0 0 920 560" role="img" aria-labelledby="title desc">
+  <title id="title">Go net/http の主要機能マップ</title>
+  <desc id="desc">net/http を中心に、サーバー、ルーティング、クライアント、Transport、静的配信、テスト、観測を関連づけた図。</desc>
+  <defs>
+    <style>
+      .bg { fill: #fffefa; }
+      .panel { fill: #f6f7f4; stroke: #d9ded6; stroke-width: 2; rx: 14; }
+      .core { fill: #d8f3ef; stroke: #0f766e; stroke-width: 3; rx: 18; }
+      .client { fill: #e7f0f8; stroke: #315f8c; stroke-width: 2.5; rx: 14; }
+      .server { fill: #fbefd1; stroke: #9a6b18; stroke-width: 2.5; rx: 14; }
+      .support { fill: #f1f4ef; stroke: #6f6a58; stroke-width: 2; rx: 14; }
+      .text { fill: #202124; font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif; }
+      .title { font-size: 24px; font-weight: 700; }
+      .label { font-size: 17px; font-weight: 700; }
+      .small { font-size: 13px; fill: #5b625f; }
+      .arrow { stroke: #5b625f; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5b625f"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="920" height="560"/>
+  <text class="text title" x="40" y="48">net/http は HTTP の共通語彙と実行基盤を持つ</text>
+  <text class="text small" x="40" y="75">Handler / Request / ResponseWriter を軸に、サーバー側とクライアント側の両方を扱う。</text>
+
+  <rect class="core" x="320" y="145" width="280" height="130"/>
+  <text class="text label" x="355" y="180">中心インターフェース</text>
+  <text class="text small" x="355" y="210">http.Handler</text>
+  <text class="text small" x="355" y="232">http.Request</text>
+  <text class="text small" x="355" y="254">http.ResponseWriter</text>
+
+  <rect class="server" x="40" y="130" width="230" height="175"/>
+  <text class="text label" x="70" y="166">サーバー側</text>
+  <text class="text small" x="70" y="196">Server / ServeMux</text>
+  <text class="text small" x="70" y="218">ルーティングとPathValue</text>
+  <text class="text small" x="70" y="240">タイムアウトとShutdown</text>
+  <text class="text small" x="70" y="262">TLS / HTTP/2</text>
+
+  <rect class="client" x="650" y="130" width="230" height="175"/>
+  <text class="text label" x="680" y="166">クライアント側</text>
+  <text class="text small" x="680" y="196">Client / Request</text>
+  <text class="text small" x="680" y="218">Transport / RoundTripper</text>
+  <text class="text small" x="680" y="240">Proxy / TLS / Keep-Alive</text>
+  <text class="text small" x="680" y="262">CookieJar / Redirect</text>
+
+  <rect class="support" x="80" y="370" width="220" height="120"/>
+  <text class="text label" x="110" y="405">補助機能</text>
+  <text class="text small" x="110" y="433">Header / Cookie / Status</text>
+  <text class="text small" x="110" y="455">静的ファイル配信</text>
+  <text class="text small" x="110" y="477">制限、リダイレクト、CORS系</text>
+
+  <rect class="support" x="350" y="370" width="220" height="120"/>
+  <text class="text label" x="380" y="405">テスト</text>
+  <text class="text small" x="380" y="433">net/http/httptest</text>
+  <text class="text small" x="380" y="455">Recorder / Server</text>
+  <text class="text small" x="380" y="477">ハンドラー境界の検証</text>
+
+  <rect class="support" x="620" y="370" width="220" height="120"/>
+  <text class="text label" x="650" y="405">観測と拡張</text>
+  <text class="text small" x="650" y="433">httptrace</text>
+  <text class="text small" x="650" y="455">ResponseController</text>
+  <text class="text small" x="650" y="477">Flusher / Hijacker</text>
+
+  <path class="arrow" d="M 270 215 C 292 215 298 215 318 215"/>
+  <path class="arrow" d="M 600 215 C 622 215 628 215 648 215"/>
+  <path class="arrow" d="M 420 277 C 360 330 290 348 205 368"/>
+  <path class="arrow" d="M 460 277 C 460 310 460 335 460 368"/>
+  <path class="arrow" d="M 500 277 C 560 330 635 348 725 368"/>
+</svg>

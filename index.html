@@ -57,6 +57,16 @@
         <p class="section-note">直近 6 件。作成日は git の初回コミット日です。</p>
       </div>
       <div class="article-list recent-list">
+            <a class="article-card" href="articles/golang-net-http.html">
+              <p class="card-meta-row">
+                <time class="article-date" datetime="2026-06-29">2026年6月29日</time>
+                <span class="eyebrow">Go / net/http</span>
+              </p>
+              <h4>Goのnet/httpは何ができるのか</h4>
+              <p>Go標準ライブラリnet/httpのサーバー、クライアント、Transport、ServeMux、静的配信、テスト機能を整理します。</p>
+              <span class="meta">機能地図 · 公式情報確認済み</span>
+            </a>
+
             <a class="article-card" href="articles/go-project-layout.html">
               <p class="card-meta-row">
                 <time class="article-date" datetime="2026-06-24">2026年6月24日</time>
@@ -106,16 +116,6 @@
               <p>OIDCの認証フロー、必要なインフラ、既存アカウントとの紐付け、実装時の注意点を整理します。</p>
               <span class="meta">導入手順 · セキュリティ</span>
             </a>
-
-            <a class="article-card" href="articles/aws-google-sso-architecture.html">
-              <p class="card-meta-row">
-                <time class="article-date" datetime="2026-06-14">2026年6月14日</time>
-                <span class="eyebrow">AWS / 認証アーキテクチャ</span>
-              </p>
-              <h4>AWS上のGoogle SSO構成案を比較する</h4>
-              <p>AWS上のtoBサービスで、企業・個人Googleアカウントの双方を認証する5構成を比較します。</p>
-              <span class="meta">5構成比較 · 両アカウント対応</span>
-            </a>
       </div>
     </section>
 
@@ -126,6 +126,74 @@
       </div>
 
       <div class="cluster-stack">
+        <section class="article-cluster" aria-labelledby="dev-backend-heading">
+          <div class="cluster-heading">
+            <p class="eyebrow">開発 &gt; バックエンド &amp; API</p>
+            <h3 id="dev-backend-heading">サーバー側フレームワークと API 設計</h3>
+          </div>
+          <div class="article-row-list">
+            <a class="article-row" href="articles/golang-net-http.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-29">2026年6月29日</time>
+                <span class="article-row-eyebrow">Go / net/http</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Goのnet/httpは何ができるのか</span>
+                <p class="article-row-desc">Go標準ライブラリnet/httpのサーバー、クライアント、Transport、ServeMux、静的配信、テスト機能を整理します。</p>
+              </div>
+              <span class="article-row-meta">機能地図 · 公式情報確認済み</span>
+            </a>
+
+            <a class="article-row" href="articles/google-sso.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-14">2026年6月14日</time>
+                <span class="article-row-eyebrow">認証 / OpenID Connect</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Google認証によるSSOの仕組みと導入手順</span>
+                <p class="article-row-desc">OIDCの認証フロー、必要なインフラ、既存アカウントとの紐付け、実装時の注意点を整理します。</p>
+              </div>
+              <span class="article-row-meta">導入手順 · セキュリティ</span>
+            </a>
+
+            <a class="article-row" href="articles/go-backend-api-frameworks.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-04">2026年6月4日</time>
+                <span class="article-row-eyebrow">Go / バックエンドAPI</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">GoでWeb APIバックエンドを構築する方法</span>
+                <p class="article-row-desc">net/http、chi、Gin、Echo、Fiber、Humaなどの選択肢と、API実装の基本プラクティスを整理します。</p>
+              </div>
+              <span class="article-row-meta">公式情報確認済み · 比較表あり</span>
+            </a>
+
+            <a class="article-row" href="articles/nestjs.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">Node.js / サーバーサイド</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">NestJSの特徴と使い方</span>
+                <p class="article-row-desc">TypeScript、DI、Module、Controller、Serviceを軸に、NestJSでAPIサーバーを作る基本を整理します。</p>
+              </div>
+              <span class="article-row-meta">コード例あり</span>
+            </a>
+
+            <a class="article-row" href="articles/hono.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">JavaScript / Webフレームワーク</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Honoの概要と使い方</span>
+                <p class="article-row-desc">軽量なAPIフレームワークとしての特徴、基本コード、ExpressやFastify、NestJSとの違いを整理します。</p>
+              </div>
+              <span class="article-row-meta">公式情報確認済み · 比較表あり</span>
+            </a>
+          </div>
+        </section>
+
         <section class="article-cluster" aria-labelledby="dev-toolchain-heading">
           <div class="cluster-heading">
             <p class="eyebrow">開発 &gt; 開発基盤</p>
@@ -214,62 +282,6 @@
                 <p class="article-row-desc">apps/packagesの切り方、pnpm workspace、Next.js・Hono・Prisma・Biome構成を整理します。</p>
               </div>
               <span class="article-row-meta">図解あり · 構成例あり</span>
-            </a>
-          </div>
-        </section>
-
-        <section class="article-cluster" aria-labelledby="dev-backend-heading">
-          <div class="cluster-heading">
-            <p class="eyebrow">開発 &gt; バックエンド &amp; API</p>
-            <h3 id="dev-backend-heading">サーバー側フレームワークと API 設計</h3>
-          </div>
-          <div class="article-row-list">
-            <a class="article-row" href="articles/google-sso.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-14">2026年6月14日</time>
-                <span class="article-row-eyebrow">認証 / OpenID Connect</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">Google認証によるSSOの仕組みと導入手順</span>
-                <p class="article-row-desc">OIDCの認証フロー、必要なインフラ、既存アカウントとの紐付け、実装時の注意点を整理します。</p>
-              </div>
-              <span class="article-row-meta">導入手順 · セキュリティ</span>
-            </a>
-
-            <a class="article-row" href="articles/go-backend-api-frameworks.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-04">2026年6月4日</time>
-                <span class="article-row-eyebrow">Go / バックエンドAPI</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">GoでWeb APIバックエンドを構築する方法</span>
-                <p class="article-row-desc">net/http、chi、Gin、Echo、Fiber、Humaなどの選択肢と、API実装の基本プラクティスを整理します。</p>
-              </div>
-              <span class="article-row-meta">公式情報確認済み · 比較表あり</span>
-            </a>
-
-            <a class="article-row" href="articles/nestjs.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">Node.js / サーバーサイド</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">NestJSの特徴と使い方</span>
-                <p class="article-row-desc">TypeScript、DI、Module、Controller、Serviceを軸に、NestJSでAPIサーバーを作る基本を整理します。</p>
-              </div>
-              <span class="article-row-meta">コード例あり</span>
-            </a>
-
-            <a class="article-row" href="articles/hono.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">JavaScript / Webフレームワーク</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">Honoの概要と使い方</span>
-                <p class="article-row-desc">軽量なAPIフレームワークとしての特徴、基本コード、ExpressやFastify、NestJSとの違いを整理します。</p>
-              </div>
-              <span class="article-row-meta">公式情報確認済み · 比較表あり</span>
             </a>
           </div>
         </section>

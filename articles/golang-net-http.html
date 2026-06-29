@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Goのnet/httpは何ができるのか | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">Go / net/http</p>
+        <h1>Goのnet/httpは何ができるのか</h1>
+        <p class="article-created"><time datetime="2026-06-29">作成日: 2026年6月29日</time></p>
+        <p class="lead"><code>net/http</code>は単なる小さなWebサーバー用ライブラリではなく、HTTPクライアント、サーバー、ルーティング、接続管理、静的ファイル配信、Cookie、テスト支援、HTTP/2、低レベル拡張まで含む標準ライブラリです。GoでWeb APIやHTTP連携を書くときの共通語彙だと考えると理解しやすくなります。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. Goの<code>net/http</code>は、何が多機能なのですか？</dt>
+          <dd>A. サーバーを立てる機能だけでなく、HTTPクライアント、リクエスト/レスポンス表現、ルーティング、接続プール、TLS、HTTP/2、静的ファイル配信、Cookie、フォーム処理、タイムアウト、Graceful Shutdown、テスト用サーバーまで揃っています。</dd>
+          <dt>Q. フレームワークなしでWeb APIを作れますか？</dt>
+          <dd>A. 作れます。Go 1.22以降の<code>ServeMux</code>は<code>GET /users/{id}</code>のようなメソッド付きパターンとパス変数に対応しているため、小から中規模のREST APIなら標準機能だけでも始めやすくなりました。</dd>
+          <dt>Q. それでもGinやEchoなどを使う理由は何ですか？</dt>
+          <dd>A. ルートグループ、バリデーション、バインディング、ミドルウェア集、エラー応答の整備、OpenAPI連携などをまとめて欲しい場合です。土台の考え方は<code>http.Handler</code>互換を理解しているほど移行しやすくなります。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/golang-net-http-map.svg" alt="Goのnet/httpがサーバー、クライアント、補助機能、テスト、観測機能をつなぐ図">
+        <figcaption><code>net/http</code>は、<code>Handler</code>、<code>Request</code>、<code>ResponseWriter</code>を中心に、サーバー側とクライアント側のHTTP処理を一つの語彙で扱えるようにしています。</figcaption>
+      </figure>
+
+      <h2>まず押さえる中心概念</h2>
+      <p><code>net/http</code>の中心は、<code>http.Handler</code>、<code>http.Request</code>、<code>http.ResponseWriter</code>です。ハンドラーは「リクエストを受け取り、レスポンスを書き込むもの」です。この小さな約束に合わせると、標準の<code>ServeMux</code>、サードパーティのルーター、ミドルウェア、テスト用の<code>httptest</code>をつなげやすくなります。</p>
+      <pre><code>func hello(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(map[string]string{"message": "hello"})
+}
+
+mux := http.NewServeMux()
+mux.HandleFunc("GET /hello", hello)
+
+log.Fatal(http.ListenAndServe(":8080", mux))</code></pre>
+
+      <h2>機能マップ</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">領域</th>
+            <th scope="col">主なAPI</th>
+            <th scope="col">できること</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>HTTPサーバー</td>
+            <td><code>ListenAndServe</code>, <code>Server</code>, <code>Serve</code></td>
+            <td>TCPリスナー上でHTTPサーバーを動かす。読み書きタイムアウト、ヘッダーサイズ、TLS、終了処理などを制御する。</td>
+          </tr>
+          <tr>
+            <td>ルーティング</td>
+            <td><code>ServeMux</code>, <code>Handle</code>, <code>HandleFunc</code>, <code>PathValue</code></td>
+            <td>URLパスとHTTPメソッドに応じてハンドラーへ振り分ける。Go 1.22以降はパス変数を標準で扱える。</td>
+          </tr>
+          <tr>
+            <td>ハンドラー共通規格</td>
+            <td><code>Handler</code>, <code>HandlerFunc</code>, <code>ResponseWriter</code></td>
+            <td>アプリ本体、ミドルウェア、ルーター、テストを同じ形でつなぐ。GoのWebエコシステムの接着面になる。</td>
+          </tr>
+          <tr>
+            <td>HTTPクライアント</td>
+            <td><code>Client</code>, <code>NewRequestWithContext</code>, <code>Do</code>, <code>Get</code>, <code>Post</code></td>
+            <td>外部APIへHTTPリクエストを送る。ヘッダー、メソッド、ボディ、リダイレクト、Cookie、タイムアウトを制御する。</td>
+          </tr>
+          <tr>
+            <td>接続管理</td>
+            <td><code>Transport</code>, <code>RoundTripper</code></td>
+            <td>接続プール、Keep-Alive、プロキシ、TLS、圧縮、HTTP/2などの通信層を調整する。</td>
+          </tr>
+          <tr>
+            <td>リクエスト解析</td>
+            <td><code>Request</code>, <code>ParseForm</code>, <code>ParseMultipartForm</code>, <code>FormValue</code></td>
+            <td>クエリ、フォーム、multipartアップロード、ヘッダー、Cookie、Basic認証、User-Agentなどを読む。</td>
+          </tr>
+          <tr>
+            <td>レスポンス補助</td>
+            <td><code>Error</code>, <code>Redirect</code>, <code>StatusText</code>, <code>SetCookie</code></td>
+            <td>HTTPステータス、エラーレスポンス、リダイレクト、Cookie設定を扱う。</td>
+          </tr>
+          <tr>
+            <td>静的ファイル配信</td>
+            <td><code>FileServer</code>, <code>FileServerFS</code>, <code>ServeFile</code>, <code>ServeContent</code></td>
+            <td>ディレクトリや<code>io/fs</code>互換のファイルシステムから静的ファイルを配る。更新日時やRangeリクエストにも関係する。</td>
+          </tr>
+          <tr>
+            <td>制限と安全策</td>
+            <td><code>MaxBytesReader</code>, <code>MaxBytesHandler</code>, <code>TimeoutHandler</code>, <code>CrossOriginProtection</code></td>
+            <td>リクエストボディサイズ、処理時間、クロスオリジン系の防御など、入口での制御を行う。</td>
+          </tr>
+          <tr>
+            <td>低レベル拡張</td>
+            <td><code>Flusher</code>, <code>Hijacker</code>, <code>ResponseController</code></td>
+            <td>ストリーミング、WebSocket風の接続引き継ぎ、読み書き期限、フラッシュなど、通常より低い層を触る。</td>
+          </tr>
+          <tr>
+            <td>テスト</td>
+            <td><code>net/http/httptest</code></td>
+            <td>実サーバーに近いテストサーバーやレスポンス記録器を使い、ハンドラーやHTTPクライアントを検証する。</td>
+          </tr>
+          <tr>
+            <td>観測</td>
+            <td><code>net/http/httptrace</code></td>
+            <td>DNS、接続、TLS、リクエスト送信、最初のレスポンス受信など、クライアント側の細かいタイミングを追う。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>サーバー側: Web APIの入口を作る</h2>
+      <p>サーバー側で最も基本になるのは<code>http.Server</code>と<code>ServeMux</code>です。小さい例では<code>http.ListenAndServe(":8080", mux)</code>で起動できますが、実務ではタイムアウトや終了処理を設定するため、<code>http.Server</code>を明示的に作ることが多いです。</p>
+      <pre><code>mux := http.NewServeMux()
+mux.HandleFunc("GET /users/{id}", func(w http.ResponseWriter, r *http.Request) {
+    id := r.PathValue("id")
+    fmt.Fprintf(w, "user id = %s", id)
+})
+
+srv := &amp;http.Server{
+    Addr:         ":8080",
+    Handler:      mux,
+    ReadTimeout:  5 * time.Second,
+    WriteTimeout: 10 * time.Second,
+}
+
+log.Fatal(srv.ListenAndServe())</code></pre>
+      <p><code>ReadTimeout</code>や<code>WriteTimeout</code>を入れる理由は、遅いクライアントや詰まった接続でサーバー資源を持たれ続けるのを避けるためです。さらにデプロイ環境では、シグナルを受け取って<code>Server.Shutdown(ctx)</code>を呼び、処理中リクエストに猶予を与えて終了する設計が重要になります。</p>
+
+      <h2>ルーティング: Go 1.22以降のServeMux</h2>
+      <p>以前の標準<code>ServeMux</code>は素朴なパス一致が中心だったため、REST APIでは<code>chi</code>などのルーターを使う場面が多くありました。Go 1.22以降は、メソッド付きパターン、パス変数、末尾ワイルドカードが入り、標準機能だけで書ける範囲が広がりました。</p>
+      <pre><code>mux.HandleFunc("GET /posts/{id}", getPost)
+mux.HandleFunc("POST /posts", createPost)
+mux.HandleFunc("GET /files/{path...}", getFile)</code></pre>
+      <p>ただし、ルートグループ、認証のかけ分け、複雑なミドルウェア構成、OpenAPI生成などが欲しい場合は、標準<code>http.Handler</code>互換のルーターを足す判断も自然です。</p>
+
+      <h2>クライアント側: 外部APIを呼ぶ</h2>
+      <p><code>http.Get</code>や<code>http.Post</code>は手軽ですが、実務では<code>http.Client</code>と<code>http.NewRequestWithContext</code>を使うのが基本です。タイムアウト、キャンセル、ヘッダー、認証、JSONボディなどを明示できるからです。</p>
+      <pre><code>ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+defer cancel()
+
+req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+if err != nil {
+    return err
+}
+req.Header.Set("Accept", "application/json")
+
+resp, err := http.DefaultClient.Do(req)
+if err != nil {
+    return err
+}
+defer resp.Body.Close()</code></pre>
+      <p>レスポンスボディは必ず閉じます。閉じないと接続が再利用されにくくなり、負荷時に接続数やファイルディスクリプタの問題につながります。</p>
+
+      <h2>Transport: 見えにくいが重要な通信層</h2>
+      <p><code>http.Transport</code>は、HTTPクライアントの下で接続プール、プロキシ、TLS設定、Keep-Alive、圧縮、HTTP/2などを扱う部品です。公式ドキュメントでも、<code>Client</code>と<code>Transport</code>は並行利用して再利用することが推奨されています。リクエストごとに作り直すと、接続プールが効かず性能と安定性を落としやすくなります。</p>
+      <pre><code>tr := &amp;http.Transport{
+    MaxIdleConns:        100,
+    MaxIdleConnsPerHost: 10,
+    IdleConnTimeout:     90 * time.Second,
+}
+
+client := &amp;http.Client{
+    Timeout:   5 * time.Second,
+    Transport: tr,
+}</code></pre>
+      <p>独自の<code>RoundTripper</code>を実装すると、リトライ、ログ、メトリクス、認証ヘッダー付与などをクライアント側ミドルウェアのように差し込めます。</p>
+
+      <h2>静的ファイルとコンテンツ配信</h2>
+      <p><code>FileServer</code>、<code>FileServerFS</code>、<code>ServeFile</code>、<code>ServeContent</code>を使うと、HTML、CSS、画像、埋め込みファイルなどを配信できます。単なるファイル読み出しではなく、Content-Type推定、更新日時、条件付きリクエスト、RangeリクエストなどHTTPらしい配信の土台になります。</p>
+      <pre><code>assets := http.FileServerFS(os.DirFS("public"))
+mux.Handle("GET /assets/", http.StripPrefix("/assets/", assets))</code></pre>
+      <p>注意点として、ディレクトリをそのまま公開すると不要なファイルまで見える可能性があります。公開するファイルの範囲、ドットファイル、キャッシュヘッダー、認証の有無は別途設計します。</p>
+
+      <h2>フォーム、Cookie、ヘッダー、ステータス</h2>
+      <p><code>Request</code>には、ヘッダー、URL、クエリ、ボディ、フォーム、Cookie、Basic認証、User-Agent、RefererなどHTTPの典型的な情報がまとまっています。<code>Header</code>型は大文字小文字の扱いをHTTPらしく吸収し、<code>Cookie</code>型は<code>SameSite</code>や有効期限などの属性を表現します。</p>
+      <pre><code>name := r.FormValue("name")
+cookie, err := r.Cookie("session")
+
+http.SetCookie(w, &amp;http.Cookie{
+    Name:     "theme",
+    Value:    "dark",
+    Path:     "/",
+    HttpOnly: true,
+    SameSite: http.SameSiteLaxMode,
+})</code></pre>
+      <p>フォームやmultipartアップロードを扱うときは、ボディサイズ制限も合わせて考えます。<code>MaxBytesReader</code>や<code>MaxBytesHandler</code>は、大きすぎるリクエストを入口で抑えるための道具です。</p>
+
+      <h2>HTTP/2、TLS、プロトコル設定</h2>
+      <p><code>net/http</code>はHTTP/2にも対応しています。公式ドキュメントでは、HTTPS利用時に<code>Server</code>と<code>DefaultTransport</code>がHTTP/2を自動的に有効化することが説明されています。さらに新しいAPIでは、HTTP/1、HTTP/2、暗号化なしHTTP/2の有効・無効を<code>Protocols</code>関連の設定で扱えます。</p>
+      <p>多くのアプリでは細かいHTTP/2設定を直接触る必要はありません。ただし、プロキシ、ロードバランサー、gRPC、ストリーミング、長時間接続が絡む場合は、サーバーとクライアントのプロトコル設定を確認する価値があります。</p>
+
+      <h2>低レベル機能: ストリーミングや接続制御</h2>
+      <p>通常のJSON APIでは<code>ResponseWriter</code>に書くだけで十分ですが、Server-Sent Events、ログストリーム、大きなデータの分割送信などでは<code>Flusher</code>や<code>ResponseController</code>が関係します。WebSocketのようにHTTP接続を別プロトコルへ引き継ぐ場面では<code>Hijacker</code>が使われることもあります。</p>
+      <p>このあたりは便利な反面、プロキシやHTTP/2との相性、タイムアウト、クライアント切断時の扱いが難しくなります。まずはフレームワークや専用ライブラリがどう<code>net/http</code>上に乗っているかを理解するための知識として押さえるのがよいです。</p>
+
+      <h2>テスト: httptestでHTTP境界を検証する</h2>
+      <p><code>net/http/httptest</code>を使うと、ハンドラーを直接呼ぶテストと、実際にHTTPサーバーを立てるテストの両方を書けます。<code>ResponseRecorder</code>はハンドラーの出力を記録し、<code>httptest.Server</code>はクライアントからアクセスできる一時サーバーを作ります。</p>
+      <pre><code>req := httptest.NewRequest(http.MethodGet, "/hello", nil)
+rec := httptest.NewRecorder()
+
+hello(rec, req)
+
+if rec.Code != http.StatusOK {
+    t.Fatalf("status = %d", rec.Code)
+}</code></pre>
+      <p>この仕組みのおかげで、ルーター、ミドルウェア、ハンドラーを実際のHTTPに近い境界で検証できます。外部APIクライアントのテストでは<code>httptest.Server</code>で偽APIを立てると、モックより自然な検証になることがあります。</p>
+
+      <h2>観測: httptraceでクライアント処理を分解する</h2>
+      <p><code>net/http/httptrace</code>は、クライアント側のHTTPリクエストがどこで時間を使っているかを追うためのパッケージです。DNS解決、接続取得、TLSハンドシェイク、リクエスト送信、最初のレスポンスバイト受信などをフックできます。</p>
+      <p>API呼び出しが遅いとき、アプリの処理が遅いのか、名前解決なのか、接続確立なのか、TLSなのか、相手サーバーの応答待ちなのかを切り分ける助けになります。</p>
+
+      <h2>実務での使い分け</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">やりたいこと</th>
+            <th scope="col">まず見るもの</th>
+            <th scope="col">注意点</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>小さなREST APIを作る</td>
+            <td><code>ServeMux</code>, <code>HandlerFunc</code>, <code>Server</code></td>
+            <td>タイムアウト、エラーJSON、ログ、認証は自分で設計する。</td>
+          </tr>
+          <tr>
+            <td>外部APIを呼ぶ</td>
+            <td><code>Client</code>, <code>Request</code>, <code>Transport</code></td>
+            <td>タイムアウトと<code>Body.Close()</code>を忘れない。Clientは再利用する。</td>
+          </tr>
+          <tr>
+            <td>ファイルを配る</td>
+            <td><code>FileServerFS</code>, <code>ServeContent</code></td>
+            <td>公開範囲、キャッシュ、ディレクトリリスト、認証を確認する。</td>
+          </tr>
+          <tr>
+            <td>大きいアップロードを受ける</td>
+            <td><code>MaxBytesReader</code>, <code>ParseMultipartForm</code></td>
+            <td>メモリ使用量、保存先、サイズ上限、タイムアウトをまとめて設計する。</td>
+          </tr>
+          <tr>
+            <td>ハンドラーをテストする</td>
+            <td><code>httptest.NewRecorder</code>, <code>httptest.NewServer</code></td>
+            <td>サービス層の単体テストとHTTP境界のテストを分けると見通しがよい。</td>
+          </tr>
+          <tr>
+            <td>通信が遅い理由を調べる</td>
+            <td><code>httptrace</code>, <code>Transport</code></td>
+            <td>アプリログだけではなく、DNS、接続、TLS、相手応答を分けて見る。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>よくある誤解</h2>
+      <h3><code>net/http</code>は「低機能だからフレームワーク必須」ではない</h3>
+      <p>標準ライブラリだけでも、サーバー、ルーティング、クライアント、静的配信、テストは十分に扱えます。フレームワークを使う理由は、標準では足りないからというより、周辺機能とチーム内の書き方をまとめるため、という見方が近いです。</p>
+
+      <h3><code>DefaultClient</code>や<code>DefaultServeMux</code>に寄せすぎない</h3>
+      <p>サンプルでは便利ですが、実務では明示的な<code>http.Client</code>や<code>http.Server</code>、<code>http.NewServeMux()</code>を作るほうが設定、テスト、依存関係の見通しがよくなります。</p>
+
+      <h3>タイムアウトは一つ入れれば終わりではない</h3>
+      <p>サーバー側の読み書きタイムアウト、クライアント全体のタイムアウト、リクエストごとの<code>context</code>、<code>Transport</code>の接続タイムアウトは役割が違います。どこで待ってよく、どこで諦めるかを処理単位で考えます。</p>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p><code>net/http</code>は、GoでHTTPを扱うための基礎レイヤーです。Webサーバー、HTTPクライアント、ルーター、接続管理、静的配信、Cookie、フォーム、テスト、観測まで含みます。まず<code>Handler</code>、<code>Request</code>、<code>ResponseWriter</code>、<code>Client</code>、<code>Transport</code>の役割を押さえると、標準ライブラリだけで作る場合も、GinやEchoなどを使う場合も、内部で何が起きているかを読み解きやすくなります。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://pkg.go.dev/net/http">Go package documentation: net/http</a></li>
+          <li><a href="https://pkg.go.dev/net/http/httptest">Go package documentation: net/http/httptest</a></li>
+          <li><a href="https://pkg.go.dev/net/http/httptrace">Go package documentation: net/http/httptrace</a></li>
+          <li><a href="https://go.dev/blog/routing-enhancements">Go Blog: Routing Enhancements for Go 1.22</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
