@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+  <title id="title">リスクとAI成熟度によるループ選択マトリクス</title>
+  <desc id="desc">影響度と不可逆性が高いほどHITL寄り、AIの確信度と成熟度が高く影響が小さいほどHOOTL寄りになるマトリクス。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#202124"/>
+    </marker>
+    <style>
+      .bg { fill: #fffefa; }
+      .grid { fill: #f6f7f4; stroke: #d9ded6; stroke-width: 2; }
+      .cell { stroke: #d9ded6; stroke-width: 2; }
+      .hitl { fill: #d8f3ef; }
+      .hotl { fill: #e7f0f8; }
+      .hootl { fill: #fbefd1; }
+      .text { fill: #202124; font-family: sans-serif; }
+      .title { font-size: 30px; font-weight: 700; }
+      .label { font-size: 22px; font-weight: 700; }
+      .sub { fill: #5b625f; font-size: 15px; }
+      .axis { stroke: #202124; stroke-width: 3; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect class="bg" width="960" height="560" rx="20"/>
+  <text class="text title" x="48" y="58">リスクベースでループを選ぶ</text>
+
+  <line class="axis" x1="150" y1="468" x2="850" y2="468"/>
+  <line class="axis" x1="150" y1="468" x2="150" y2="118"/>
+  <text class="text sub" x="304" y="512">AIの確信度・成熟度・検証可能性が高い</text>
+  <text class="text sub" x="24" y="116" transform="rotate(-90 24 116)">影響度・不可逆性・規制リスクが高い</text>
+
+  <rect class="cell hootl" x="170" y="132" width="210" height="140" rx="8"/>
+  <text class="text label" x="215" y="188">HOTL</text>
+  <text class="text sub" x="202" y="224">高リスクだが</text>
+  <text class="text sub" x="202" y="248">監視で回せる範囲</text>
+
+  <rect class="cell hitl" x="400" y="132" width="210" height="140" rx="8"/>
+  <text class="text label" x="448" y="188">HITL</text>
+  <text class="text sub" x="430" y="224">不可逆・対人影響・</text>
+  <text class="text sub" x="430" y="248">説明責任が重い</text>
+
+  <rect class="cell hitl" x="630" y="132" width="210" height="140" rx="8"/>
+  <text class="text label" x="678" y="188">HITL</text>
+  <text class="text sub" x="660" y="224">AIが強くても</text>
+  <text class="text sub" x="660" y="248">人間承認を残す</text>
+
+  <rect class="cell hotl" x="170" y="292" width="210" height="140" rx="8"/>
+  <text class="text label" x="214" y="348">HOTL</text>
+  <text class="text sub" x="202" y="384">例外検知と</text>
+  <text class="text sub" x="202" y="408">キルスイッチ前提</text>
+
+  <rect class="cell hotl" x="400" y="292" width="210" height="140" rx="8"/>
+  <text class="text label" x="444" y="348">HOTL</text>
+  <text class="text sub" x="430" y="384">通常は自動</text>
+  <text class="text sub" x="430" y="408">異常時だけ介入</text>
+
+  <rect class="cell hootl" x="630" y="292" width="210" height="140" rx="8"/>
+  <text class="text label" x="666" y="348">HOOTL</text>
+  <text class="text sub" x="660" y="384">低影響・可逆・高速</text>
+  <text class="text sub" x="660" y="408">事後監査で足りる</text>
+
+  <text class="text sub" x="170" y="102">確信度が低い</text>
+  <text class="text sub" x="710" y="102">確信度が高い</text>
+  <text class="text sub" x="64" y="444">低リスク</text>
+  <text class="text sub" x="64" y="152">高リスク</text>
+</svg>

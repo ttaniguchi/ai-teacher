@@ -57,6 +57,16 @@
         <p class="section-note">直近 6 件。作成日は git の初回コミット日です。</p>
       </div>
       <div class="article-list recent-list">
+            <a class="article-card" href="articles/hitl-hotl-hootl-loop-design.html">
+              <p class="card-meta-row">
+                <time class="article-date" datetime="2026-06-30">2026年6月30日</time>
+                <span class="eyebrow">AI Agent / ガバナンス</span>
+              </p>
+              <h4>業務システムにおけるループ設計の効果的な設計</h4>
+              <p>提供PDFの章立てに沿って、HITL、HOTL、HOOTLの定義、設計原則、現場適用をHTML化します。</p>
+              <span class="meta">PDF本文HTML化 · 図解あり</span>
+            </a>
+
             <a class="article-card" href="articles/golang-net-http.html">
               <p class="card-meta-row">
                 <time class="article-date" datetime="2026-06-29">2026年6月29日</time>
@@ -105,16 +115,6 @@
               <h4>ハーネスエンジニアリングは何に使うのか</h4>
               <p>AI Harness Engineering論文をもとに、モデル単体ではなく実行基盤としてエージェントを評価する考え方を整理します。</p>
               <span class="meta">論文要約 · H0-H3図解</span>
-            </a>
-
-            <a class="article-card" href="articles/google-sso.html">
-              <p class="card-meta-row">
-                <time class="article-date" datetime="2026-06-14">2026年6月14日</time>
-                <span class="eyebrow">認証 / OpenID Connect</span>
-              </p>
-              <h4>Google認証によるSSOの仕組みと導入手順</h4>
-              <p>OIDCの認証フロー、必要なインフラ、既存アカウントとの紐付け、実装時の注意点を整理します。</p>
-              <span class="meta">導入手順 · セキュリティ</span>
             </a>
       </div>
     </section>
@@ -390,6 +390,50 @@
       </div>
 
       <div class="cluster-stack">
+        <section class="article-cluster" aria-labelledby="ai-governance-heading">
+          <div class="cluster-heading">
+            <p class="eyebrow">AI &gt; 安全・運用</p>
+            <h3 id="ai-governance-heading">企業利用、リスク、ガバナンス</h3>
+          </div>
+          <div class="article-row-list">
+            <a class="article-row" href="articles/hitl-hotl-hootl-loop-design.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-30">2026年6月30日</time>
+                <span class="article-row-eyebrow">AI Agent / ガバナンス</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">業務システムにおけるループ設計の効果的な設計</span>
+                <p class="article-row-desc">提供PDFの章立てに沿って、HITL、HOTL、HOOTLの定義、設計原則、現場適用をHTML化します。</p>
+              </div>
+              <span class="article-row-meta">PDF本文HTML化 · 図解あり</span>
+            </a>
+
+            <a class="article-row" href="articles/gemma-on-premise-web-app.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-11">2026年6月11日</time>
+                <span class="article-row-eyebrow">AI運用 / オンプレミス</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">GemmaはオンプレWebアプリで有用か</span>
+                <p class="article-row-desc">ライセンス、費用、企業事例、Webアプリ構成、導入時の注意点を公式情報から整理します。</p>
+              </div>
+              <span class="article-row-meta">規約確認済み · 企業事例あり</span>
+            </a>
+
+            <a class="article-row" href="articles/chatgpt-enterprise-risk.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">AIセキュリティ / 企業利用</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">ChatGPT消費者版を企業利用するときの情報漏えいリスク</span>
+                <p class="article-row-desc">IPAとOpenAIの一次情報をもとに、真偽、企業で取るべき対応、日常的なリスク例を整理します。</p>
+              </div>
+              <span class="article-row-meta">公式情報確認済み</span>
+            </a>
+          </div>
+        </section>
+
         <section class="article-cluster" aria-labelledby="ai-workflow-heading">
           <div class="cluster-heading">
             <p class="eyebrow">AI &gt; 開発ワークフロー</p>
@@ -466,38 +510,6 @@
                 <p class="article-row-desc">複雑な依頼に応じて作業手順を生成し、承認後に実行する機能の全体像と使いどころを整理します。</p>
               </div>
               <span class="article-row-meta">公式情報確認済み · 図解あり</span>
-            </a>
-          </div>
-        </section>
-
-        <section class="article-cluster" aria-labelledby="ai-governance-heading">
-          <div class="cluster-heading">
-            <p class="eyebrow">AI &gt; 安全・運用</p>
-            <h3 id="ai-governance-heading">企業利用、リスク、ガバナンス</h3>
-          </div>
-          <div class="article-row-list">
-            <a class="article-row" href="articles/gemma-on-premise-web-app.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-11">2026年6月11日</time>
-                <span class="article-row-eyebrow">AI運用 / オンプレミス</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">GemmaはオンプレWebアプリで有用か</span>
-                <p class="article-row-desc">ライセンス、費用、企業事例、Webアプリ構成、導入時の注意点を公式情報から整理します。</p>
-              </div>
-              <span class="article-row-meta">規約確認済み · 企業事例あり</span>
-            </a>
-
-            <a class="article-row" href="articles/chatgpt-enterprise-risk.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">AIセキュリティ / 企業利用</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">ChatGPT消費者版を企業利用するときの情報漏えいリスク</span>
-                <p class="article-row-desc">IPAとOpenAIの一次情報をもとに、真偽、企業で取るべき対応、日常的なリスク例を整理します。</p>
-              </div>
-              <span class="article-row-meta">公式情報確認済み</span>
             </a>
           </div>
         </section>

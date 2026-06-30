@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">HITL、HOTL、HOOTLの関与度スペクトラム</title>
+  <desc id="desc">人間の関与度が高いHITLから、監督中心のHOTL、事前事後統制中心のHOOTLへ移る関係を示す図。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#115e59"/>
+    </marker>
+    <style>
+      .bg { fill: #fffefa; }
+      .panel { fill: #f6f7f4; stroke: #d9ded6; stroke-width: 2; }
+      .hitl { fill: #d8f3ef; stroke: #0f766e; }
+      .hotl { fill: #e7f0f8; stroke: #315f8c; }
+      .hootl { fill: #fbefd1; stroke: #9a6b18; }
+      .title { fill: #202124; font: 700 30px sans-serif; }
+      .label { fill: #202124; font: 700 24px sans-serif; }
+      .sub { fill: #5b625f; font: 16px sans-serif; }
+      .small { fill: #5b625f; font: 14px sans-serif; }
+      .axis { stroke: #115e59; stroke-width: 4; marker-end: url(#arrow); }
+      .dot { fill: #115e59; }
+    </style>
+  </defs>
+  <rect class="bg" width="960" height="420" rx="20"/>
+  <text class="title" x="48" y="58">人間の関与度で見る3つのループ</text>
+  <line class="axis" x1="105" y1="108" x2="855" y2="108"/>
+  <text class="small" x="68" y="92">高関与</text>
+  <text class="small" x="780" y="92">高自律</text>
+
+  <g>
+    <rect class="panel hitl" x="54" y="148" width="260" height="190" rx="8"/>
+    <circle class="dot" cx="184" cy="128" r="8"/>
+    <text class="label" x="94" y="198">HITL</text>
+    <text class="sub" x="94" y="232">Human-in-the-Loop</text>
+    <text class="small" x="94" y="268">人間が一件ごとに</text>
+    <text class="small" x="94" y="294">承認・修正・却下してから実行</text>
+  </g>
+
+  <g>
+    <rect class="panel hotl" x="350" y="148" width="260" height="190" rx="8"/>
+    <circle class="dot" cx="480" cy="128" r="8"/>
+    <text class="label" x="390" y="198">HOTL</text>
+    <text class="sub" x="390" y="232">Human-on-the-Loop</text>
+    <text class="small" x="390" y="268">AIが通常実行し</text>
+    <text class="small" x="390" y="294">人間は監視・例外介入する</text>
+  </g>
+
+  <g>
+    <rect class="panel hootl" x="646" y="148" width="260" height="190" rx="8"/>
+    <circle class="dot" cx="776" cy="128" r="8"/>
+    <text class="label" x="686" y="198">HOOTL</text>
+    <text class="sub" x="686" y="232">Human-out-of-the-Loop</text>
+    <text class="small" x="686" y="268">個々の実行には介在せず</text>
+    <text class="small" x="686" y="294">事前設計と事後監査で統制</text>
+  </g>
+
+  <text class="small" x="130" y="382">ポイント: 優劣ではなくスペクトラム。金額、不可逆性、確信度、法規制でモードを切り替える。</text>
+</svg>
