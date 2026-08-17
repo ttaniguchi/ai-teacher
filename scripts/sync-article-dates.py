@@ -165,6 +165,7 @@ ARTICLE_CLUSTER: dict[str, str] = {
     "go-task.html": "dev-toolchain",
     "package-managers.html": "dev-toolchain",
     "nodejs-versions.html": "dev-toolchain",
+    "nodejs-bun-production-comparison.html": "dev-toolchain",
     "temporal-api.html": "dev-toolchain",
     "typescript-5-6-7.html": "dev-toolchain",
     "typescript-lint-format-tooling.html": "dev-toolchain",
@@ -231,6 +232,12 @@ ARTICLE_CARD_OVERRIDES: dict[str, dict[str, str]] = {
         "title": "ハーネスエンジニアリングは何に使うのか",
         "description": "AI Harness Engineering論文をもとに、モデル単体ではなく実行基盤としてエージェントを評価する考え方を整理します。",
         "meta": "論文要約 · H0-H3図解",
+    },
+    "nodejs-bun-production-comparison.html": {
+        "eyebrow": "JavaScript / ランタイム選定",
+        "title": "Node.jsとBunを本番プロダクト視点で比較する",
+        "description": "設計思想、互換性、ユースケース、監視やCI/CDまで含めて、実運用で採用判断する観点を整理します。",
+        "meta": "本番運用比較 · 公式情報確認済み",
     },
     "cursor-vs-github-ai-coding.html": {
         "eyebrow": "AI開発環境 / Cursor",

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Node.jsとBunを本番プロダクト視点で比較する | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">JavaScript / ランタイム選定</p>
+        <h1>Node.jsとBunを本番プロダクト視点で比較する</h1>
+        <p class="article-created"><time datetime="2026-08-17">作成日: 2026年8月17日</time></p>
+        <p class="lead">Node.jsとBunの比較は、速度だけで決めると危険です。実際にサービス運用するなら、設計思想、Node.js互換性、依存パッケージ、監視、CI/CD、障害対応まで含めて評価する必要があります。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. 本番プロダクトでNode.jsとBunのどちらを選ぶべき？</dt>
+          <dd>A. 長期運用、採用しやすさ、監視、クラウド対応、依存パッケージ互換性を重視するならNode.js LTSが第一候補です。Bunは新規開発、CLI、社内ツール、小さめのAPI、起動速度が効く用途で有力です。</dd>
+          <dt>Q. BunはNode.jsの完全な置き換えになる？</dt>
+          <dd>A. BunはNode.js互換を目指していますが、公式の互換性表でも未実装または部分実装のAPIがあります。既存Node.jsサービスをそのまま置き換える前提では、使用ライブラリごとの検証が必要です。</dd>
+          <dt>Q. 比較検証では何を見るべき？</dt>
+          <dd>A. HTTP処理、DB、認証、ファイルアップロード、stream、worker、native addon、テスト、APM、Docker、CI/CDを実ワークロードで確認します。単純なhello worldベンチマークだけでは本番判断には足りません。</dd>
+        </dl>
+      </section>
+
+      <h2>まず結論</h2>
+      <p>実運用するプロダクトでは、Node.js LTSを基準線に置き、Bunを置き換え候補または部分採用候補として検証するのが堅実です。Node.jsはランタイムとしての実績、npmエコシステム、監視・診断ツール、クラウド対応、採用市場の厚みがあります。Bunは単一バイナリでランタイム、パッケージマネージャ、テストランナー、バンドラーをまとめて提供し、起動やインストールが速く、TypeScript/JSXを扱いやすい点が強みです。</p>
+      <p>ただし、Bunの価値は「Node.jsより速いから全面移行する」ではなく、「プロダクトのどの部分なら互換性リスクより得られる効率が大きいか」を見極めることで活きます。</p>
+
+      <h2>設計思想の違い</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">観点</th>
+            <th scope="col">Node.js</th>
+            <th scope="col">Bun</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>中心思想</td>
+            <td>汎用JavaScriptランタイム。後方互換、標準化、巨大なnpmエコシステムとの安定運用を重視する。</td>
+            <td>JavaScript/TypeScriptアプリ向けの統合ツールキット。runtime、package manager、test runner、bundlerを単一CLIで扱う。</td>
+          </tr>
+          <tr>
+            <td>JavaScriptエンジン</td>
+            <td>V8。</td>
+            <td>JavaScriptCore。</td>
+          </tr>
+          <tr>
+            <td>運用の強み</td>
+            <td>LTS、実績、監視・デバッグ、クラウド・PaaS・CIでの前提化。</td>
+            <td>起動速度、インストール速度、TypeScript/JSXの直接実行、構成の少なさ。</td>
+          </tr>
+          <tr>
+            <td>主なリスク</td>
+            <td>ツールチェーンが分散し、設定が増えやすい。</td>
+            <td>Node.js APIや周辺ツールとの完全互換ではない領域が残る。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>互換性は「動くか」ではなく「本番条件で壊れないか」で見る</h2>
+      <p>Bun公式は、Next.jsやExpress、多くのnpmパッケージがBunで動くと説明しています。一方で、Node.js互換性ページには、<code>node:v8</code>、<code>node:worker_threads</code>、<code>node:inspector</code>、<code>node:test</code>などに部分実装の領域があり、<code>node:repl</code>、<code>node:trace_events</code>など未実装の領域も示されています。</p>
+      <p>本番サービスでは、通常リクエストが返るだけでは十分ではありません。大量リクエスト、長いstream、アップロード、DBコネクション、再試行、タイムアウト、ログ、APM、メモリリーク調査、CPUプロファイルまで含めて動く必要があります。</p>
+
+      <h2>本番採用で確認するチェックリスト</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">領域</th>
+            <th scope="col">確認すること</th>
+            <th scope="col">判断の目安</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>HTTP/API</td>
+            <td>Express、Fastify、Hono、独自middleware、body parser、cookie、CORS、圧縮、streaming。</td>
+            <td>SSE、WebSocket、ファイルアップロード、大きなJSONでNode.js版と同じ挙動になるか。</td>
+          </tr>
+          <tr>
+            <td>DB/ORM</td>
+            <td>Prisma、Drizzle、TypeORM、MongoDB client、Redis client、接続プール、トランザクション。</td>
+            <td>実DBでマイグレーション、長時間接続、再接続、タイムアウトを検証する。</td>
+          </tr>
+          <tr>
+            <td>認証・暗号化</td>
+            <td>JWT、OAuth、session、cookie署名、TLS、<code>crypto</code>依存処理。</td>
+            <td>ログイン、更新トークン、鍵ローテーション、期限切れ処理をE2Eで見る。</td>
+          </tr>
+          <tr>
+            <td>依存パッケージ</td>
+            <td>native addon、postinstall、optional dependencies、worker、<code>child_process</code>、<code>fs</code>。</td>
+            <td>ロックファイル再現性とCI上のinstall/build/testが安定するか。</td>
+          </tr>
+          <tr>
+            <td>監視・診断</td>
+            <td>OpenTelemetry、Sentry、Datadog、New Relic、source map、heap snapshot、CPU profile。</td>
+            <td>障害時にNode.js運用と同等に原因追跡できるか。</td>
+          </tr>
+          <tr>
+            <td>デプロイ</td>
+            <td>Docker image、base image、環境変数、health check、graceful shutdown。</td>
+            <td>ビルド時間だけでなく、停止時処理、ログ、ロールバック手順まで確認する。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Node.jsを選ぶ理由</h2>
+      <p>Node.jsは、プロダクト開発で「未知のリスクを減らす」選択肢です。公式は本番アプリケーションではActive LTSまたはMaintenance LTSを使うべきと説明しており、長期サポートを前提に運用計画を立てられます。ライブラリ作者、クラウド事業者、監視ツール、CI/CDの多くもNode.jsを第一級の対象として扱います。</p>
+      <p>特に、既存サービス、複数チーム運用、障害対応の当番制、外部委託、金融・医療・業務基幹系のような保守性重視のプロダクトでは、Node.js LTSを選ぶ理由が強くなります。</p>
+
+      <h2>Bunを選ぶ理由</h2>
+      <p>Bunは、開発体験と実行効率を圧縮する選択肢です。公式ドキュメントでは、BunをJavaScript/TypeScriptアプリ向けのall-in-one toolkitと説明し、runtime、package manager、test runner、bundlerを単一バイナリに含めています。TypeScriptやJSXを直接扱えるため、小さなAPI、CLI、開発補助スクリプト、社内ツールでは導入効果が出やすいです。</p>
+      <p><code>bun install</code>には高速な依存解決だけでなく、ライフサイクルスクリプトの扱いや、公開直後のパッケージを避ける<code>minimumReleaseAge</code>のようなサプライチェーン対策もあります。これは速度だけでなく、依存導入ポリシーの観点でも評価できます。</p>
+
+      <h2>ユースケース別の判断</h2>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">ユースケース</th>
+            <th scope="col">第一候補</th>
+            <th scope="col">理由</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>既存のNode.js本番API</td>
+            <td>Node.js LTS</td>
+            <td>依存パッケージ、監視、運用手順の互換性を保ちやすい。</td>
+          </tr>
+          <tr>
+            <td>新規の小〜中規模API</td>
+            <td>Node.js LTSまたはBun</td>
+            <td>依存が少なく、チームが検証できるならBunも候補になる。</td>
+          </tr>
+          <tr>
+            <td>CLI、社内ツール、バッチ</td>
+            <td>Bun</td>
+            <td>起動速度、TypeScript直接実行、単一バイナリの利点が大きい。</td>
+          </tr>
+          <tr>
+            <td>大規模SaaS、長期運用プロダクト</td>
+            <td>Node.js LTS</td>
+            <td>採用市場、運用知見、APM、クラウド対応の厚みが効く。</td>
+          </tr>
+          <tr>
+            <td>serverlessや短命プロセス</td>
+            <td>実行基盤次第</td>
+            <td>Bunの起動速度は魅力だが、ホスティング側の対応と監視を確認する。</td>
+          </tr>
+          <tr>
+            <td>streaming、WebSocket、native addon多用</td>
+            <td>Node.js LTSから検証開始</td>
+            <td>差異が出やすいため、Bun採用時は実負荷テストが必須。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>比較検証の進め方</h2>
+      <ol>
+        <li>Node.js LTS版を基準実装として用意する。</li>
+        <li>同じアプリをBunで起動し、ユニットテスト、統合テスト、E2Eを通す。</li>
+        <li>実ワークロードに近い負荷で、p95/p99 latency、CPU、メモリ、起動時間、デプロイ時間を見る。</li>
+        <li>DB、認証、外部API、ファイル処理、stream、ジョブキューを含めたシナリオで比較する。</li>
+        <li>APM、ログ、source map、heap snapshot、CPU profileで障害調査できるかを確認する。</li>
+        <li>依存パッケージごとに、<code>OK</code>、<code>注意</code>、<code>NG</code>、<code>回避策あり</code>を記録する。</li>
+      </ol>
+
+      <h2>採用判断の基準</h2>
+      <p>本番ランタイムとして採用するなら、速さより先に「障害時に調べられるか」「チームが保守できるか」「依存パッケージの更新に追随できるか」を見るべきです。Bunで十分に検証でき、運用ツールも揃い、得られる速度やDXの価値が明確なら採用できます。そこまで確認できない場合は、Node.js LTSを本番基盤にし、Bunを開発補助や限定サービスから使うほうが現実的です。</p>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>Node.jsは安定運用の基準線、Bunは高速で統合された有力な新選択肢です。本番プロダクトでは、Bunを「速そうだから選ぶ」のではなく、Node.js互換性、監視、CI/CD、障害対応、依存パッケージの実挙動まで検証してから採用範囲を決めるのが適切です。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://nodejs.org/en/about/previous-releases">Node.js Releases</a></li>
+          <li><a href="https://bun.sh/docs">Bun Docs</a></li>
+          <li><a href="https://bun.sh/docs/runtime/nodejs-compat">Bun Node.js Compatibility</a></li>
+          <li><a href="https://bun.sh/docs/runtime/module-resolution">Bun Module Resolution</a></li>
+          <li><a href="https://bun.sh/docs/pm/cli/install">bun install</a></li>
+          <li><a href="https://bun.sh/docs/test">Bun Test Runner</a></li>
+          <li><a href="https://bun.sh/docs/bundler">Bun Bundler</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="インデックスへの戻りリンク">
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
