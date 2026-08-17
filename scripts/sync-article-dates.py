@@ -179,6 +179,7 @@ ARTICLE_CLUSTER: dict[str, str] = {
     "harness-engineering.html": "ai-workflow",
     "rag.html": "ai-app",
     "graph-engineering.html": "ai-app",
+    "personal-knowledge-graph.html": "ai-app",
     "ai-agent.html": "ai-app",
     "ai-friendly-relational-database.html": "ai-app",
     "transformer-paper.html": "ai-foundation",
@@ -275,6 +276,12 @@ ARTICLE_CARD_OVERRIDES: dict[str, dict[str, str]] = {
         "title": "Graph Engineeringとは何か",
         "description": "Xの長文記事をもとに、GraphRAG、知識グラフ、Kimi K3、検証付き検索設計の要点を整理します。",
         "meta": "記事読解 · 図解あり",
+    },
+    "personal-knowledge-graph.html": {
+        "eyebrow": "AI / Knowledge Graph",
+        "title": "個人開発で使う知識グラフの考え方",
+        "description": "チケット駆動の個人環境で、ノード、エッジ、重み、名寄せ、検索時評価をどう設計するかを整理します。",
+        "meta": "グラフ管理 · 実装指針",
     },
 }
 

@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>個人開発で使う知識グラフの考え方 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+    </div>
+  </header>
+
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">AI / Knowledge Graph</p>
+        <h1>個人開発で使う知識グラフの考え方</h1>
+        <p class="article-created"><time datetime="2026-08-17">作成日: 2026年8月17日</time></p>
+        <p class="lead">知識グラフは、単なる「リレーションで構築された情報集」ではなく、ノード、関係タイプ、根拠、重み、鮮度を使って、後から意味のある経路を取り出すための作業記憶です。</p>
+      </header>
+
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&A</h2>
+        <dl>
+          <dt>Q. グラフ管理とは何を管理することなのか？</dt>
+          <dd>A. ノードだけでなく、関係の種類、方向、根拠、確信度、鮮度、重み、削除や統合の履歴を管理することです。DBは箱で、価値はスキーマと評価ルールにあります。</dd>
+          <dt>Q. 紐付きはどう評価されるのか？</dt>
+          <dd>A. 関係タイプ、根拠の強さ、距離、更新日、利用頻度、明示性を組み合わせて検索時に評価します。グラフDBが自動で「良い紐付き」を決めるわけではありません。</dd>
+          <dt>Q. 個人開発では何から始めるべきか？</dt>
+          <dd>A. チケット、ファイル、意思決定、テスト、バグをノードにし、<code>touches</code>、<code>decided_by</code>、<code>tested_by</code>、<code>regressed_by</code>のような少数の関係から始めるのがよいです。</dd>
+        </dl>
+      </section>
+
+      <figure class="figure">
+        <img src="../images/personal-knowledge-graph-scoring.svg" alt="チケット、ファイル、意思決定、テスト、バグをつなぎ、関係タイプや重みで評価する個人開発向け知識グラフ">
+        <figcaption>個人開発の知識グラフでは、関係の有無だけでなく、関係の型と根拠の強さが重要です。</figcaption>
+      </figure>
+
+      <h2>リレーション集との違い</h2>
+      <p>現状の理解として「リレーションで構築された情報集」という捉え方はかなり近いです。ただし実務で効くグラフは、単に何かと何かがつながっているだけではありません。重要なのは、その紐付きが「何を意味するのか」「どれくらい信用してよいのか」「いつの時点で有効なのか」「どの根拠から作られたのか」を持つことです。</p>
+      <p>たとえば<code>Ticket A -> File X</code>という関係だけでは弱いです。これは「そのファイルを読んだ」のか、「変更した」のか、「バグ原因だった」のか、「将来触るべき候補」なのかが分かりません。グラフ管理では、この違いを関係タイプとして分けます。</p>
+
+      <h2>グラフの基本単位</h2>
+      <p>property graphの世界では、情報は主にノード、エッジ、プロパティで表します。Neo4jの説明でも、ノードはドメイン上の個別オブジェクト、リレーションはノード間の方向つき接続、プロパティはキーと値の情報として扱われます。RDFでは、subject、predicate、objectの三つ組で関係を表します。</p>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">要素</th>
+            <th scope="col">個人開発での例</th>
+            <th scope="col">見るべき点</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Node</td>
+            <td>Ticket、File、Decision、Bug、Test、Spec</td>
+            <td>一意なID、種類、表示名、作成日</td>
+          </tr>
+          <tr>
+            <td>Edge</td>
+            <td><code>touches</code>、<code>tested_by</code>、<code>caused_by</code></td>
+            <td>方向、関係タイプ、根拠、確信度</td>
+          </tr>
+          <tr>
+            <td>Property</td>
+            <td><code>confidence</code>、<code>source</code>、<code>created_at</code></td>
+            <td>検索時の評価に使えるメタデータ</td>
+          </tr>
+          <tr>
+            <td>Path</td>
+            <td>Ticket -> File -> Bug -> Test</td>
+            <td>質問への根拠になる経路</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>グラフ管理で本当にやること</h2>
+      <p>グラフ管理は、グラフDBにデータを入れる作業そのものではありません。むしろ次の四つを継続的に整える作業です。</p>
+      <ol>
+        <li><strong>スキーマを管理する:</strong> どんなノード種別と関係タイプを許すかを決める。</li>
+        <li><strong>名寄せを管理する:</strong> 同じものを同じIDに、別物を別IDに保つ。</li>
+        <li><strong>根拠を管理する:</strong> 関係がどのチケット、差分、ログ、本文から来たかを残す。</li>
+        <li><strong>評価を管理する:</strong> 質問ごとに、どの関係を強く扱い、どれを弱く扱うかを決める。</li>
+      </ol>
+      <p>このうち一番ピンと来にくいのが評価です。ここは「DBが自動で賢く判断する」と考えるとずれます。グラフDBは高速にたどれる箱であって、何を有意義な紐付きと見るかは、スキーマ、重み、クエリ、ランキングの設計で決まります。</p>
+
+      <h2>紐付きの評価は検索時に決まる</h2>
+      <p>紐付きの評価は、登録時に固定される部分と、検索時に決まる部分に分かれます。登録時には、関係タイプ、根拠、確信度、作成日、作成方法を保存します。検索時には、質問の目的に合わせて、それらを足し合わせたり、弱い関係を除外したりします。</p>
+      <p>たとえば「このファイルを触る前に読むべき過去チケットは？」という質問では、<code>touches</code>、<code>previously_broke</code>、<code>tested_by</code>は強く、<code>mentioned_with</code>は弱く扱います。一方、「関連しそうな背景を広く見たい」なら、弱い関係も候補として残します。</p>
+      <pre class="figure"><code>score =
+  relation_weight
+  * confidence
+  * recency_boost
+  * evidence_quality
+  / path_length_penalty</code></pre>
+      <p>これは厳密な公式ではなく、設計の考え方です。関係タイプの重要度、抽出の確信度、新しさ、根拠の質、経路の長さを使って、答えに使う順番を決めます。ベクトル検索のスコアと違って、理由を説明しやすいのがグラフ評価の良さです。</p>
+
+      <h2>加点方式で考える</h2>
+      <p>個人環境では、最初から高度なグラフアルゴリズムを使うより、単純な加点方式が扱いやすいです。関係タイプごとに初期点を決め、根拠や鮮度で補正します。</p>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">関係タイプ</th>
+            <th scope="col">意味</th>
+            <th scope="col">初期点の例</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>caused_by</code></td>
+            <td>原因として明示された</td>
+            <td>1.0</td>
+          </tr>
+          <tr>
+            <td><code>decided_by</code></td>
+            <td>設計判断の根拠になった</td>
+            <td>1.0</td>
+          </tr>
+          <tr>
+            <td><code>tested_by</code></td>
+            <td>テストで検証された</td>
+            <td>0.9</td>
+          </tr>
+          <tr>
+            <td><code>touches</code></td>
+            <td>変更または参照した</td>
+            <td>0.7</td>
+          </tr>
+          <tr>
+            <td><code>related_to</code></td>
+            <td>関連があるが意味は広い</td>
+            <td>0.4</td>
+          </tr>
+          <tr>
+            <td><code>mentioned_with</code></td>
+            <td>同じ文脈で出た</td>
+            <td>0.2</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>大事なのは、何でも<code>related_to</code>に逃がさないことです。<code>related_to</code>は便利ですが、増えすぎると「なんとなく関係ありそう」の海になります。強い関係タイプを少数に絞り、曖昧な関係は低い点で候補に留めるのが扱いやすいです。</p>
+
+      <h2>有意義な紐付けの条件</h2>
+      <p>有意義な紐付きには、少なくとも三つの条件があります。第一に、関係タイプが具体的であること。第二に、根拠が追えること。第三に、次の行動を変えることです。</p>
+      <p>たとえば「Ticket AはFile Xに関係する」より、「Ticket AはFile Xを変更した」「Ticket AのバグはFile Xの入力検証漏れで起きた」「Ticket AはTest Yで再発防止された」の方が強いです。後者は、次にFile Xを触るときに読むべきチケットや実行すべきテストを変えます。</p>
+      <p>逆に、行動を変えない紐付きは記録コストに見合いません。何でも保存するほど賢くなるわけではなく、後で検索したときに判断を助ける関係だけを濃く残す方がよいです。グラフは日記ではなく、未来の検索と判断のための索引です。</p>
+
+      <h2>個人開発向けの最小スキーマ</h2>
+      <p>チケット駆動でプロダクト開発をしている個人環境なら、最初は次の程度で十分です。</p>
+      <pre class="figure"><code>Node types:
+  Ticket(id, title, status, created_at)
+  File(path, module, language)
+  Decision(id, summary, decided_at)
+  Bug(id, symptom, severity)
+  Test(name, command)
+  Spec(id, title, version)
+
+Edge types:
+  Ticket -touches-> File
+  Ticket -decided_by-> Decision
+  Ticket -fixes-> Bug
+  Bug -caused_by-> File
+  File -covered_by-> Test
+  Decision -supersedes-> Decision
+  Ticket -relates_to-> Ticket</code></pre>
+      <p>これだけでも、RAGに渡す文脈がかなり変わります。質問に似たメモを拾うだけでなく、「このチケットから2ホップ以内のファイル、テスト、過去バグ、設計判断」をまとめて渡せるようになります。</p>
+
+      <h2>名寄せは評価の前提</h2>
+      <p>表記ゆれの名寄せは、グラフ評価の前提です。同じものが複数ノードに分かれると、関係が分散してスコアが低くなります。逆に別物を統合すると、関係が濁って誤った経路が出ます。</p>
+      <p>個人環境では、最初から完全自動化せず、候補を出して人間が確定する形が向いています。たとえば<code>auth</code>、<code>authentication</code>、<code>login</code>が近い概念として出ても、同じノードにするのか、関連ノードにするのかはプロダクトの文脈で変わります。</p>
+      <p>名寄せで守るべきルールは単純です。「似ている」は統合理由にしない。「同じIDとして扱っても将来の判断が壊れない」と言えるときだけ統合します。迷う場合は、同一化せず<code>related_to</code>や<code>alias_candidate</code>で弱くつなぐ方が安全です。</p>
+
+      <h2>グラフDBを使う意味</h2>
+      <p>グラフDBを使う意味は、関係を保存すること自体よりも、関係をたどる問い合わせが自然に書けることです。Neo4jのCypherやTinkerPopのGremlinは、ノードから関係をたどる traversal を中心に考えます。これは「JOINを何度も書いて表を結合する」より、関係の経路を考えやすい場面があります。</p>
+      <p>ただし、個人環境では最初からグラフDBでなくても構いません。SQLiteに<code>nodes</code>と<code>edges</code>を作るだけでも始められます。グラフDBが欲しくなるのは、2ホップ、3ホップの関係探索や、関係タイプごとのランキング、可視化、中心性の分析を頻繁にやりたくなったときです。</p>
+
+      <h2>ツール構成の具体案</h2>
+      <p>個人環境では、道具を一度に増やさない方が続きます。おすすめは、記録、保存、検索、可視化、LLM連携を薄く分ける構成です。</p>
+      <table class="figure">
+        <thead>
+          <tr>
+            <th scope="col">段階</th>
+            <th scope="col">ツール候補</th>
+            <th scope="col">役割</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>最小</td>
+            <td>Markdown / JSONL + SQLite</td>
+            <td>チケット、判断、ファイル、関係をローカルで保存する。</td>
+          </tr>
+          <tr>
+            <td>探索</td>
+            <td>SQLite + 小さなCLI</td>
+            <td>中心ノードから1から2ホップの関連情報を取り出す。</td>
+          </tr>
+          <tr>
+            <td>グラフDB</td>
+            <td>Kuzu または Neo4j</td>
+            <td>Cypherでパス検索、関係タイプごとの探索、可視化を行う。</td>
+          </tr>
+          <tr>
+            <td>分析</td>
+            <td>NetworkX / Neo4j GDS</td>
+            <td>中心性、近さ、頻出経路、孤立ノードを調べる。</td>
+          </tr>
+          <tr>
+            <td>LLM連携</td>
+            <td>Codex skill / MCP / ローカルCLI</td>
+            <td>検索したサブグラフをプロンプトに差し込む。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Kuzuはアプリに組み込みやすいグラフDB、Neo4jは成熟したサーバー型グラフDBとして考えると選びやすいです。個人の作業記憶なら、まずSQLiteでスキーマと評価ルールを固め、クエリが窮屈になったらKuzuやNeo4jへ移す順番が現実的です。</p>
+
+      <h2>SQLiteで始める最小実装</h2>
+      <p>最初の実装は、ノード表とエッジ表だけで十分です。SQLiteならリポジトリ内に<code>.graph/knowledge.db</code>のようなDBを置き、チケット完了時にCLIで追記できます。</p>
+      <pre class="figure"><code>CREATE TABLE nodes (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  body TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE edges (
+  id TEXT PRIMARY KEY,
+  from_id TEXT NOT NULL,
+  to_id TEXT NOT NULL,
+  type TEXT NOT NULL,
+  confidence REAL NOT NULL DEFAULT 0.7,
+  evidence TEXT,
+  source_ref TEXT,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (from_id) REFERENCES nodes(id),
+  FOREIGN KEY (to_id) REFERENCES nodes(id)
+);</code></pre>
+      <p>ここで<code>source_ref</code>には、チケットID、コミットID、ファイルパス、作業ログの行番号などを入れます。あとから「なぜこの関係があるのか」を見返せないエッジは、検索結果に混ざるほど邪魔になります。</p>
+
+      <h2>スコアリングSQLの例</h2>
+      <p>たとえば、あるファイルに関係するチケットや判断を取り出すなら、関係タイプごとの重みをSQL側で足せます。</p>
+      <pre class="figure"><code>SELECT
+  n.id,
+  n.type,
+  n.title,
+  e.type AS relation_type,
+  e.evidence,
+  (
+    CASE e.type
+      WHEN 'caused_by' THEN 1.0
+      WHEN 'decided_by' THEN 1.0
+      WHEN 'tested_by' THEN 0.9
+      WHEN 'touches' THEN 0.7
+      WHEN 'related_to' THEN 0.4
+      ELSE 0.2
+    END
+    * e.confidence
+  ) AS score
+FROM edges e
+JOIN nodes n ON n.id = e.from_id
+WHERE e.to_id = 'file:src/auth/session.ts'
+ORDER BY score DESC
+LIMIT 20;</code></pre>
+      <p>このクエリは単純ですが、思想としては十分です。強い関係を上位にし、曖昧な関係を下に回します。LLMへ渡すときは、上位の数件だけを根拠として渡す方が、雑多なメモを大量に渡すより安定します。</p>
+
+      <h2>Neo4jやKuzuに移した場合のCypher例</h2>
+      <p>グラフDBに移すと、パスをそのまま問い合わせられるのが気持ちよくなります。Neo4jのCypherでは、<code>MATCH</code>でグラフの形を指定して、該当するパスを探します。</p>
+      <pre class="figure"><code>MATCH path =
+  (t:Ticket)-[r1:TOUCHES|FIXES|DECIDED_BY]->(x)
+  -[r2:COVERED_BY|CAUSED_BY|SUPERSEDES*0..2]->(y)
+WHERE t.id = 'ticket:T-142'
+RETURN path
+LIMIT 20;</code></pre>
+      <p>この例では、あるチケットから、変更ファイル、修正したバグ、設計判断を起点に、さらに2ホップ以内の関係を取り出します。SQLでも可能ですが、経路そのものを扱うならCypherの方が読みやすくなります。</p>
+
+      <h2>チケット完了時の登録フロー</h2>
+      <p>運用は、チケット完了時の短いチェックリストに寄せると続きます。</p>
+      <ol>
+        <li>今回の中心チケットを<code>Ticket</code>ノードとして登録する。</li>
+        <li>変更した主要ファイルを<code>File</code>ノードとして登録し、<code>touches</code>でつなぐ。</li>
+        <li>設計判断があれば<code>Decision</code>ノードにして、<code>decided_by</code>でつなぐ。</li>
+        <li>直した不具合があれば<code>Bug</code>ノードにして、<code>fixes</code>や<code>caused_by</code>でつなぐ。</li>
+        <li>実行したテストを<code>Test</code>ノードにして、<code>tested_by</code>または<code>covered_by</code>でつなぐ。</li>
+        <li>各エッジに根拠となる差分、ログ、本文、コミットIDを入れる。</li>
+      </ol>
+      <p>大事なのは、毎回完璧なグラフを作ろうとしないことです。チケット完了時に3から5本の強いエッジを残すだけで、数十チケット後にはかなり効く作業記憶になります。</p>
+
+      <h2>Codexに渡すサブグラフの形</h2>
+      <p>Codexやローカルスキルに渡すときは、DBの生データではなく、短い「根拠パック」に整形します。</p>
+      <pre class="figure"><code>Context graph for ticket:T-142
+
+Strong paths:
+1. ticket:T-142 -touches(0.8)-> file:src/auth/session.ts
+   evidence: git diff shows session validation changed
+
+2. file:src/auth/session.ts -previously_broke(0.7)-> bug:B-019
+   evidence: ticket:T-088 regression note
+
+3. file:src/auth/session.ts -covered_by(0.9)-> test:session.spec.ts
+   evidence: test added in commit abc123
+
+Instruction:
+- Prefer strong paths over loose related_to links.
+- Do not infer causation from mentioned_with.
+- If a required path is missing, say what node or edge should be added.</code></pre>
+      <p>この形なら、Codexは「関係があるらしい」ではなく、「なぜ読むべきか」「どのテストを気にすべきか」を持って作業できます。スキル改善にも使いやすく、後から「このタスクではどのスキルとどの関係が効いたか」を記録できます。</p>
+
+      <h2>検索時の使い方</h2>
+      <p>RAGやCodexに渡すときは、グラフ全体を渡すのではなく、質問に合わせた小さなサブグラフを切り出します。</p>
+      <ol>
+        <li>質問から中心ノードを決める。例: チケットID、ファイルパス、エラー名。</li>
+        <li>強い関係タイプを優先して1から2ホップたどる。</li>
+        <li>候補パスにスコアを付ける。</li>
+        <li>上位のパスと根拠だけをLLMに渡す。</li>
+        <li>LLMには「このパスにない因果は推測扱いにする」と指示する。</li>
+      </ol>
+      <p>この形にすると、グラフは回答の材料であると同時に、回答の制約にもなります。LLMが自由に連想するのではなく、「この根拠パスから言えること」と「推測」を分けやすくなります。</p>
+
+      <h2>よくある失敗</h2>
+      <ul>
+        <li><strong>関係タイプが粗すぎる:</strong> 何でも<code>related_to</code>にすると、検索結果が濁る。</li>
+        <li><strong>根拠がない:</strong> なぜつないだか不明なエッジは、後で信用できない。</li>
+        <li><strong>自動抽出を信じすぎる:</strong> LLMは共起を因果にしてしまうことがある。</li>
+        <li><strong>古い情報を消さない:</strong> 仕様変更後も古い判断が同じ強さで残ると誤誘導する。</li>
+        <li><strong>可視化に満足する:</strong> きれいな図より、次の検索で使える関係タイプの方が重要。</li>
+      </ul>
+
+      <section class="note">
+        <h2>要点</h2>
+        <p>グラフ管理の肝は、ノードを集めることではなく、関係に意味、根拠、重み、鮮度を持たせることです。個人開発では、チケット、ファイル、意思決定、テスト、バグを少数の明確な関係でつなぎ、検索時にスコアリングして小さなサブグラフとして取り出すところから始めるのが実用的です。</p>
+      </section>
+
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://neo4j.com/docs/getting-started/appendix/graphdb-concepts/">Neo4j: Graph database concepts</a></li>
+          <li><a href="https://neo4j.com/docs/getting-started/graph-database/">Neo4j: What is a graph database</a></li>
+          <li><a href="https://www.w3.org/TR/rdf11-concepts/">W3C: RDF 1.1 Concepts and Abstract Syntax</a></li>
+          <li><a href="https://www.w3.org/TR/rdf11-primer/">W3C: RDF 1.1 Primer</a></li>
+          <li><a href="https://tinkerpop.apache.org/docs/current/reference/">Apache TinkerPop Documentation</a></li>
+          <li><a href="https://kuzudb.github.io/docs/">Kuzu Documentation</a></li>
+          <li><a href="https://www.sqlite.org/lang_createtable.html">SQLite: CREATE TABLE</a></li>
+          <li><a href="https://neo4j.com/docs/cypher-manual/current/patterns/">Neo4j Cypher Manual: Patterns</a></li>
+          <li><a href="https://neo4j.com/docs/graph-data-science/current/algorithms/centrality/">Neo4j Graph Data Science: Centrality</a></li>
+        </ul>
+      </section>
+
+      <nav class="related" aria-label="関連ページとインデックスへの戻りリンク">
+        <p><a href="graph-engineering.html">Graph Engineeringとは何か</a></p>
+        <p><a href="../index.html">インデックスへ戻る</a></p>
+      </nav>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>技術質問ノート</p>
+  </footer>
+</body>
+</html>
