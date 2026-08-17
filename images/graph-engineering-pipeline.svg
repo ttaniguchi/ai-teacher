@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520" role="img" aria-labelledby="title desc">
+  <title id="title">Graph Engineeringの基本パイプライン</title>
+  <desc id="desc">文書から事実と関係を抽出し、知識グラフに保存し、質問時に関係パスを検索して検証付き回答を作る流れ。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#2f5f7f"/>
+    </marker>
+    <style>
+      .bg{fill:#f7fafb}
+      .panel{fill:#fff;stroke:#cad8df;stroke-width:2}
+      .node{fill:#e7f0f4;stroke:#2f5f7f;stroke-width:2}
+      .store{fill:#f2eadf;stroke:#876640;stroke-width:2}
+      .verify{fill:#e9efe5;stroke:#547a4b;stroke-width:2}
+      .text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#17313f}
+      .label{font-size:24px;font-weight:700}
+      .small{font-size:18px}
+      .tiny{font-size:15px;fill:#4d6470}
+      .line{stroke:#2f5f7f;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .loop{stroke:#547a4b;stroke-width:3;fill:none;stroke-dasharray:9 7;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect class="bg" width="960" height="520" rx="28"/>
+  <rect class="panel" x="34" y="36" width="892" height="418" rx="18"/>
+
+  <rect class="node" x="72" y="96" width="170" height="96" rx="14"/>
+  <text class="text label" x="157" y="133" text-anchor="middle">Ingestion</text>
+  <text class="text tiny" x="157" y="162" text-anchor="middle">PDF / Web / DB</text>
+
+  <rect class="node" x="294" y="96" width="170" height="96" rx="14"/>
+  <text class="text label" x="379" y="133" text-anchor="middle">Extraction</text>
+  <text class="text tiny" x="379" y="162" text-anchor="middle">entities / triples</text>
+
+  <rect class="node" x="516" y="96" width="170" height="96" rx="14"/>
+  <text class="text label" x="601" y="133" text-anchor="middle">Resolution</text>
+  <text class="text tiny" x="601" y="162" text-anchor="middle">重複・別名を統合</text>
+
+  <rect class="store" x="738" y="96" width="150" height="96" rx="14"/>
+  <text class="text label" x="813" y="133" text-anchor="middle">Graph</text>
+  <text class="text tiny" x="813" y="162" text-anchor="middle">nodes + edges</text>
+
+  <path class="line" d="M242 144 H286"/>
+  <path class="line" d="M464 144 H508"/>
+  <path class="line" d="M686 144 H730"/>
+
+  <rect class="node" x="128" y="292" width="170" height="96" rx="14"/>
+  <text class="text label" x="213" y="329" text-anchor="middle">Question</text>
+  <text class="text tiny" x="213" y="358" text-anchor="middle">why / how connected</text>
+
+  <rect class="node" x="350" y="292" width="170" height="96" rx="14"/>
+  <text class="text label" x="435" y="329" text-anchor="middle">Retrieval</text>
+  <text class="text tiny" x="435" y="358" text-anchor="middle">path / community</text>
+
+  <rect class="verify" x="572" y="292" width="170" height="96" rx="14"/>
+  <text class="text label" x="657" y="329" text-anchor="middle">Verify</text>
+  <text class="text tiny" x="657" y="358" text-anchor="middle">根拠パスを確認</text>
+
+  <rect class="verify" x="770" y="292" width="118" height="96" rx="14"/>
+  <text class="text label" x="829" y="329" text-anchor="middle">Update</text>
+  <text class="text tiny" x="829" y="358" text-anchor="middle">差分を反映</text>
+
+  <path class="line" d="M298 340 H342"/>
+  <path class="line" d="M520 340 H564"/>
+  <path class="line" d="M742 340 H762"/>
+  <path class="line" d="M813 192 V278"/>
+  <path class="loop" d="M829 388 C829 442 350 442 350 398"/>
+
+  <text class="text small" x="480" y="482" text-anchor="middle">ベクトル検索だけで似た文書を拾うのではなく、事実同士の関係をたどって根拠付きで答える</text>
+</svg>

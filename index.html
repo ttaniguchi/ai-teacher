@@ -67,6 +67,16 @@
               <span class="meta">本番運用比較 · 公式情報確認済み</span>
             </a>
 
+            <a class="article-card" href="articles/graph-engineering.html">
+              <p class="card-meta-row">
+                <time class="article-date" datetime="2026-08-17">2026年8月17日</time>
+                <span class="eyebrow">AI / GraphRAG</span>
+              </p>
+              <h4>Graph Engineeringとは何か</h4>
+              <p>Xの長文記事をもとに、GraphRAG、知識グラフ、Kimi K3、検証付き検索設計の要点を整理します。</p>
+              <span class="meta">記事読解 · 図解あり</span>
+            </a>
+
             <a class="article-card" href="articles/go-task.html">
               <p class="card-meta-row">
                 <time class="article-date" datetime="2026-07-02">2026年7月2日</time>
@@ -105,16 +115,6 @@
               <h4>Goプロジェクトレイアウトの考え方</h4>
               <p>golang-standards/project-layoutの位置づけ、cmd・internal・pkgの使い分け、実用面のメリットを整理します。</p>
               <span class="meta">図解あり · 公式情報確認済み</span>
-            </a>
-
-            <a class="article-card" href="articles/cursor-vs-github-ai-coding.html">
-              <p class="card-meta-row">
-                <time class="article-date" datetime="2026-06-24">2026年6月24日</time>
-                <span class="eyebrow">AI開発環境 / Cursor</span>
-              </p>
-              <h4>CursorはGitHubに対して何が強いのか</h4>
-              <p>CursorのAIエージェント中心設計と、GitHub / Copilotの開発基盤としての強みを比較します。</p>
-              <span class="meta">一次情報確認済み · 展望整理</span>
             </a>
       </div>
     </section>
@@ -414,6 +414,62 @@
       </div>
 
       <div class="cluster-stack">
+        <section class="article-cluster" aria-labelledby="ai-app-heading">
+          <div class="cluster-heading">
+            <p class="eyebrow">AI &gt; アプリケーション設計</p>
+            <h3 id="ai-app-heading">RAG、Agent、データと検索の設計</h3>
+          </div>
+          <div class="article-row-list">
+            <a class="article-row" href="articles/graph-engineering.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-08-17">2026年8月17日</time>
+                <span class="article-row-eyebrow">AI / GraphRAG</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">Graph Engineeringとは何か</span>
+                <p class="article-row-desc">Xの長文記事をもとに、GraphRAG、知識グラフ、Kimi K3、検証付き検索設計の要点を整理します。</p>
+              </div>
+              <span class="article-row-meta">記事読解 · 図解あり</span>
+            </a>
+
+            <a class="article-row" href="articles/rag.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">知識拡張</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">RAGによる知識の拡充はどのように行われるのか</span>
+                <p class="article-row-desc">検索、埋め込み、チャンク、プロンプト注入の流れと、今後変わりそうな点を説明します。</p>
+              </div>
+              <span class="article-row-meta">図解あり</span>
+            </a>
+
+            <a class="article-row" href="articles/ai-agent.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">AI Agent</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">AI Agentの定義と通常のLLMチャットとの違い</span>
+                <p class="article-row-desc">Agentを「目標に向けて判断と実行を反復するシステム」として捉え、チャットとの差分を整理します。</p>
+              </div>
+              <span class="article-row-meta">図解あり</span>
+            </a>
+
+            <a class="article-row" href="articles/ai-friendly-relational-database.html">
+              <div class="article-row-aside">
+                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
+                <span class="article-row-eyebrow">AI / データ設計</span>
+              </div>
+              <div class="article-row-main">
+                <span class="article-row-title">リレーショナルデータベースをAIフレンドリーに再構築する手法</span>
+                <p class="article-row-desc">意味、制約、メタデータ、AI向けビュー、検索索引、安全境界を整える技法を整理します。</p>
+              </div>
+              <span class="article-row-meta">図解あり</span>
+            </a>
+          </div>
+        </section>
+
         <section class="article-cluster" aria-labelledby="ai-governance-heading">
           <div class="cluster-heading">
             <p class="eyebrow">AI &gt; 安全・運用</p>
@@ -554,50 +610,6 @@
                 <p class="article-row-desc">AIは強力な道具だが理解と保守責任は人間に残る、という発言を要約し、賛否の反応を整理します。</p>
               </div>
               <span class="article-row-meta">記事読解 · ネット反応整理</span>
-            </a>
-          </div>
-        </section>
-
-        <section class="article-cluster" aria-labelledby="ai-app-heading">
-          <div class="cluster-heading">
-            <p class="eyebrow">AI &gt; アプリケーション設計</p>
-            <h3 id="ai-app-heading">RAG、Agent、データと検索の設計</h3>
-          </div>
-          <div class="article-row-list">
-            <a class="article-row" href="articles/rag.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">知識拡張</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">RAGによる知識の拡充はどのように行われるのか</span>
-                <p class="article-row-desc">検索、埋め込み、チャンク、プロンプト注入の流れと、今後変わりそうな点を説明します。</p>
-              </div>
-              <span class="article-row-meta">図解あり</span>
-            </a>
-
-            <a class="article-row" href="articles/ai-agent.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">AI Agent</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">AI Agentの定義と通常のLLMチャットとの違い</span>
-                <p class="article-row-desc">Agentを「目標に向けて判断と実行を反復するシステム」として捉え、チャットとの差分を整理します。</p>
-              </div>
-              <span class="article-row-meta">図解あり</span>
-            </a>
-
-            <a class="article-row" href="articles/ai-friendly-relational-database.html">
-              <div class="article-row-aside">
-                <time class="article-date" datetime="2026-06-02">2026年6月2日</time>
-                <span class="article-row-eyebrow">AI / データ設計</span>
-              </div>
-              <div class="article-row-main">
-                <span class="article-row-title">リレーショナルデータベースをAIフレンドリーに再構築する手法</span>
-                <p class="article-row-desc">意味、制約、メタデータ、AI向けビュー、検索索引、安全境界を整える技法を整理します。</p>
-              </div>
-              <span class="article-row-meta">図解あり</span>
             </a>
           </div>
         </section>

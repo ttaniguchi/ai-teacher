@@ -178,6 +178,7 @@ ARTICLE_CLUSTER: dict[str, str] = {
     "forward-deployed-engineer.html": "ai-workflow",
     "harness-engineering.html": "ai-workflow",
     "rag.html": "ai-app",
+    "graph-engineering.html": "ai-app",
     "ai-agent.html": "ai-app",
     "ai-friendly-relational-database.html": "ai-app",
     "transformer-paper.html": "ai-foundation",
@@ -268,6 +269,12 @@ ARTICLE_CARD_OVERRIDES: dict[str, dict[str, str]] = {
         "title": "業務システムにおけるループ設計の効果的な設計",
         "description": "提供PDFの章立てに沿って、HITL、HOTL、HOOTLの定義、設計原則、現場適用をHTML化します。",
         "meta": "PDF本文HTML化 · 図解あり",
+    },
+    "graph-engineering.html": {
+        "eyebrow": "AI / GraphRAG",
+        "title": "Graph Engineeringとは何か",
+        "description": "Xの長文記事をもとに、GraphRAG、知識グラフ、Kimi K3、検証付き検索設計の要点を整理します。",
+        "meta": "記事読解 · 図解あり",
     },
 }
 
