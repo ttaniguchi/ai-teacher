@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spec Kitとは？概要と簡潔な使い方 | 技術質問ノート</title>
+  <link rel="stylesheet" href="../styles/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">技術質問ノート</a>
+      <nav class="nav" aria-label="関連ページ"><a href="harness-engineering.html">ハーネス設計</a></nav>
+    </div>
+  </header>
+  <main class="page">
+    <article>
+      <header class="hero">
+        <p class="eyebrow">AI開発 / 仕様駆動開発</p>
+        <h1>Spec Kitとは？概要と簡潔な使い方</h1>
+        <p class="article-created"><time datetime="2026-10-19">作成日: 2026年10月19日</time></p>
+        <p class="lead">Spec Kitは、AIによる開発を「仕様 → 設計 → タスク → 実装 → 検証」の順に進めるためのGitHubのオープンソースツールキットです。作りたいものを文章で明確にし、仕様と実装を照らし合わせながら開発を進めます。</p>
+      </header>
+      <section class="qa" aria-labelledby="quick-answer">
+        <h2 id="quick-answer">簡潔なQ&amp;A</h2>
+        <dl>
+          <dt>Q. Spec Kitは何をするものですか？</dt>
+          <dd>A. AIコーディングエージェントに、仕様書・設計・タスク一覧を作る手順とテンプレートを提供し、それらに基づく実装と確認を支援します。</dd>
+          <dt>Q. 単独でコードを生成するAIですか？</dt>
+          <dd>A. 実際の生成・編集はGitHub CopilotやClaude Codeなどの連携するAIエージェントが行います。Spec Kitは、その作業の進め方を整える役割です。</dd>
+          <dt>Q. 最初に何をすればよいですか？</dt>
+          <dd>A. CLIでプロジェクトを初期化し、AIのチャットで方針、仕様、設計、タスク化、実装、完了確認の各工程を一つずつ実行します。</dd>
+        </dl>
+      </section>
+      <p>確認日: <time datetime="2026-10-19">2026年10月19日</time>。以下は公式ドキュメントに基づく説明です。コマンド表記は導入バージョンやエージェントのモードによって異なります。</p>
+
+      <h2>概要：仕様を開発の基準として残す</h2>
+      <p>中心となるのは仕様駆動開発（Spec-Driven Development、SDD）です。「何を作るか」「どう作るか」「何を実行するか」を文書として整理し、実装後もその文書とコードを照合します。Spec Kitは再利用できるテンプレートと構造化された工程を提供します。</p>
+      <table class="figure">
+        <thead><tr><th scope="col">文書</th><th scope="col">役割</th><th scope="col">ToDoアプリの例</th></tr></thead>
+        <tbody>
+          <tr><td><code>spec.md</code></td><td>何を・なぜ作るか</td><td>タスクを追加・完了・削除でき、再読み込みしても残る</td></tr>
+          <tr><td><code>plan.md</code></td><td>技術選択と設計</td><td>ReactとTypeScriptを使い、localStorageに保存する</td></tr>
+          <tr><td><code>tasks.md</code></td><td>依存関係を踏まえた作業一覧</td><td>保存処理、一覧画面、操作、テストを順に実装する</td></tr>
+        </tbody>
+      </table>
+      <p>SDDは標準で利用できます。バグ修正やアイデア評価の工程も、必要に応じて追加する拡張として用意されています。詳細は<a href="https://github.com/github/spec-kit">公式リポジトリ</a>を参照してください。</p>
+
+      <h2>1. インストールして初期化する</h2>
+      <p>Python 3.11以上、<code>uv</code>、対応するAIコーディングエージェントを用意します。次はGitHub Copilotを使う新規プロジェクトの例です。<strong>ここはターミナルで実行します。</strong></p>
+      <pre><code>uv tool install specify-cli
+specify version
+specify init my-app --integration copilot
+cd my-app</code></pre>
+      <p><code>specify-cli</code>は公式のPyPI配布パッケージです。GitHubのリリースタグを指定するソースインストールも公式に案内されています。既存プロジェクトには<code>specify init --here</code>で導入できますが、既存ファイルとのマージがあるため、変更をコミットまたはバックアップしてから行います。<a href="https://github.github.com/spec-kit/installation.html">公式インストールガイド</a></p>
+
+      <h2>2. AIのチャットで工程を進める</h2>
+      <p>プロジェクト内でAIエージェントを起動します。以下は公式クイックスタートの<strong>GitHub Copilot・skillsモード</strong>の表記です。ターミナルにまとめて貼り付けず、チャットで一つずつ入力し、結果を確認してから次へ進みます。</p>
+      <h3>方針を決める：プロジェクトの最初に実行</h3>
+      <pre><code>/speckit-constitution 保守性を優先し、主要機能にテストを用意する。</code></pre>
+      <p>後続の工程で守る原則を定義します。機能ごとの仕様を作る前に、プロジェクト全体の基準をそろえます。</p>
+      <h3>仕様を作る：何を実現したいかを書く</h3>
+      <pre><code>/speckit-specify 個人用ToDoアプリを作る。タスクを追加・完了・削除でき、再読み込み後も内容を保持する。ログインと共有機能は不要。</code></pre>
+      <p>ここでは目的、利用者、期待する動作、対象範囲を伝えます。技術選択は次の設計段階に分けます。</p>
+      <h3>設計する：使う技術と構成を伝える</h3>
+      <pre><code>/speckit-plan TypeScriptとReactを使い、データはlocalStorageに保存する。バックエンドは設けない。</code></pre>
+      <h3>タスク化・実装・完了確認を順に行う</h3>
+      <ol>
+        <li><code>/speckit-tasks</code>：設計から作業一覧を作る。抜けや作業順を確認する。</li>
+        <li><code>/speckit-implement</code>：タスクに沿って実装する。</li>
+        <li><code>/speckit-converge</code>：仕様・設計・タスクとコードを照合する。</li>
+      </ol>
+      <p>完了確認で不足が見つかると追加タスクが記録されます。その場合は実装と完了確認を繰り返し、最後に変更内容とテスト結果をレビューします。<a href="https://github.github.com/spec-kit/quickstart.html">公式クイックスタート</a></p>
+
+      <h2>必要に応じて追加する確認工程</h2>
+      <ul>
+        <li><code>/speckit-clarify</code>：仕様作成後・設計前に、曖昧な点を質問で解消する。</li>
+        <li><code>/speckit-checklist</code>：設計後・タスク化前に、要件の明確さや網羅性を確認するチェックリストを作る。</li>
+        <li><code>/speckit-analyze</code>：タスク化後・実装前に、仕様・設計・タスク間の矛盾や不足を読み取り専用で点検する。</li>
+      </ul>
+      <p>チェックリストは要件の品質を確認するためのもので、実装完了やテスト合格を意味しません。AIが出力した文書についても、人が意図に合っているか確認します。</p>
+
+      <h2>使いどころと注意点</h2>
+      <p>工程の性質から、複数の要件を整理したい機能追加や、設計の意図を後から追いたい開発に向いていると考えられます。一方、数行の修正では文書を整える負担が大きくなる場合があります。最初は小さな機能を一つ選ぶと、工程の役割を理解しやすくなります。</p>
+      <p>仕様が誤っていれば、その仕様に沿った実装も目的から外れます。各工程の出力確認と、動作テスト・コードレビューを組み合わせて使います。また、資料によっては<code>/speckit.specify</code>など別の呼び出し表記が使われています。利用するエージェントとモードに合う表記を公式資料で確認してください。</p>
+      <section class="note">
+        <h2>要点</h2>
+        <p>Spec Kitは、AI開発に仕様と工程を持たせるツールキットです。まず方針を決め、「仕様 → 設計 → タスク → 実装 → 完了確認」を一つずつ進めます。仕様では目的と動作、設計では技術と構成を伝えるのが基本です。</p>
+      </section>
+      <section class="related" aria-label="参考資料">
+        <h2>参考資料</h2>
+        <ul>
+          <li><a href="https://github.com/github/spec-kit">GitHub公式リポジトリ：Spec Kit</a></li>
+          <li><a href="https://github.github.com/spec-kit/">Spec Kit公式ドキュメント</a></li>
+          <li><a href="https://github.github.com/spec-kit/installation.html">Installation Guide</a></li>
+          <li><a href="https://github.github.com/spec-kit/quickstart.html">Spec-Driven Development Quickstart</a></li>
+        </ul>
+      </section>
+      <nav class="related" aria-label="関連ページ">
+        <p><a href="../index.html">インデックスへ戻る</a> / <a href="harness-engineering.html">ハーネスエンジニアリング</a> / <a href="claude-code-dynamic-workflows.html">Claude Codeのワークフロー</a></p>
+      </nav>
+    </article>
+  </main>
+  <footer class="site-footer"><p>技術質問ノート</p></footer>
+</body>
+</html>

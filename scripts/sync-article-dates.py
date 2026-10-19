@@ -150,6 +150,7 @@ CLUSTER_ORDER: dict[str, list[str]] = {
 }
 
 ARTICLE_CLUSTER: dict[str, str] = {
+    "spec-kit.html": "ai-workflow",
     "golang-net-http.html": "dev-backend",
     "go-backend-api-frameworks.html": "dev-backend",
     "google-sso.html": "dev-backend",
@@ -252,6 +253,12 @@ ARTICLE_CARD_OVERRIDES: dict[str, dict[str, str]] = {
         "title": "Goプロジェクトレイアウトの考え方",
         "description": "golang-standards/project-layoutの位置づけ、cmd・internal・pkgの使い分け、実用面のメリットを整理します。",
         "meta": "図解あり · 公式情報確認済み",
+    },
+    "spec-kit.html": {
+        "eyebrow": "AI開発 / 仕様駆動開発",
+        "title": "Spec Kitとは？概要と簡潔な使い方",
+        "description": "仕様・設計・タスク・実装・検証の流れと、ToDoアプリを例にした最小手順を整理します。",
+        "meta": "最小例あり · 公式情報確認済み",
     },
     "go-task.html": {
         "eyebrow": "開発基盤 / タスクランナー",
